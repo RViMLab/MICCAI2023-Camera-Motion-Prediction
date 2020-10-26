@@ -1,0 +1,32 @@
+{
+'SurgVisDom_test_no_indicators': {
+      'type1': ['Crop': {'top_left_corner': [18, 164], 'shape': [506, 632]}],
+      'type2': ['Crop': {'top_left_corner': [18,  29], 'shape': [506, 899]}]
+    },
+'SurgVisDom_test_indicators': {
+  'default':                      ['Crop': {'top_left_corner': [ 64, 163], 'shape': [424, 632]}],
+  'bs indicator':                 ['Crop': {'top_left_corner': [ 64, 163], 'shape': [404, 632]}],
+  'rhs indicator':                ['Crop': {'top_left_corner': [ 64, 163], 'shape': [426, 591]}],
+  'rhs indicator, bs indicator':  ['Crop': {'top_left_corner': [ 64, 163], 'shape': [404, 591]}],
+  'lhs indicator, rhs indicator': ['Crop': {'top_left_corner': [ 64, 204], 'shape': [424, 550]}],
+  'obstruction':                  ['Crop': {'top_left_corner': [160, 260], 'shape': [328, 535]}],
+},
+'SurgVisDom_train_indicators': {
+  'default':                          ['Crop': {'top_left_corner': [64, 163], 'shape': [424, 632]}],
+  'bs indicator':                     ['Crop': {'top_left_corner': [64, 163], 'shape': [404, 632]}],
+  'big bs indicator':                 ['Crop': {'top_left_corner': [64, 163], 'shape': [348, 632]}],
+  'tlhs indicator':                   ['Crop': {'top_left_corner': [80, 163], 'shape': [408, 632]}],
+  'big bs indicator, tlhs indicator': ['Crop': {'top_left_corner': [80, 163], 'shape': [332, 632]}],
+  'lhs indicator':                    ['Crop': {'top_left_corner': [64, 204], 'shape': [424, 591]}],
+  'rhs indicator':                    ['Crop': {'top_left_corner': [64, 163], 'shape': [424, 591]}],
+  'lhs indicator, bs indicator':      ['Crop': {'top_left_corner': [64, 204], 'shape': [404, 591]}],
+  'rhs indicator, bs indicator':      ['Crop': {'top_left_corner': [64, 163], 'shape': [404, 591]}],
+  'lhs indicator, rhs indicator':     ['Crop': {'top_left_corner': [64, 204], 'shape': [424, 550]}]
+},
+'Mountney': {
+  'default': ['Crop': {'top_left_corner': [0, 9], 'shape': [480, 631]}]
+},
+'Giannarou': {
+  'default': ['Crop': {'top_left_corner': [0, 9], 'shape': [480, 631]}]
+}
+}

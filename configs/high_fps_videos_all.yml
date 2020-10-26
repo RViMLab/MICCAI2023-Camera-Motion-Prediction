@@ -1,0 +1,116 @@
+# list of databases
+databases:
+    - name: 'SurgVisDom_test_no_indicators'
+      prefix: '/media/martin/Samsung_T5/data/endoscopic_data/SurgVisDom'
+      videos: [
+        'test/test_video_0002.mp4',
+        'test/test_video_0003.mp4',
+        'test/test_video_0005.mp4',
+        'test/test_video_0006.mp4',
+        'test/test_video_0007.mp4',
+        'test/test_video_0010.mp4',
+        'test/test_video_0011.mp4',
+        'test/test_video_0013.mp4',
+        'test/test_video_0014.mp4',
+        'test/test_video_0015.mp4'
+      ]
+      transforms: [
+        ['Crop': {'top_left_corner': [18, 164], 'shape': [506, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [18,  29], 'shape': [506, 899]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [18,  29], 'shape': [506, 899]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [18, 164], 'shape': [506, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [18,  29], 'shape': [506, 899]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [18,  29], 'shape': [506, 899]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [18,  29], 'shape': [506, 899]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [18, 164], 'shape': [506, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [18, 164], 'shape': [506, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [18,  29], 'shape': [506, 899]}, 'Resize': {'dsize': [720, 540]}]
+      ]
+    - name: 'SurgVisDom_test_indicators'
+      prefix: '/media/martin/Samsung_T5/data/endoscopic_data/SurgVisDom'
+      videos: [
+        'test/test_video_0000.mp4',
+        'test/test_video_0001.mp4',
+        'test/test_video_0004.mp4',
+        'test/test_video_0008.mp4',
+        'test/test_video_0009.mp4',
+        'test/test_video_0012.mp4'
+      ]
+      transforms: [
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}]
+      ]
+    - name: 'SurgVisDom_train_indicators'
+      prefix: '/media/martin/Samsung_T5/data/endoscopic_data/SurgVisDom'
+      videos: [
+        'train_1/Porcine/Dissection/DS_0001.mp4',
+        'train_1/Porcine/Dissection/DS_0002.mp4',
+        'train_1/Porcine/Dissection/DS_0003.mp4',
+        'train_1/Porcine/Dissection/DS_0004.mp4',
+        'train_1/Porcine/Dissection/DS_0005.mp4',
+        'train_1/Porcine/Dissection/DS_0006.mp4',
+        'train_1/Porcine/Dissection/DS_0007.mp4',
+        'train_1/Porcine/Dissection/DS_0008.mp4',
+        'train_1/Porcine/Knot_Tying/KT_0001.mp4',
+        'train_1/Porcine/Knot_Tying/KT_0002.mp4',
+        'train_1/Porcine/Knot_Tying/KT_0003.mp4',
+        'train_1/Porcine/Knot_Tying/KT_0004.mp4',
+        'train_1/Porcine/Knot_Tying/KT_0005.mp4',
+        'train_1/Porcine/Knot_Tying/KT_0006.mp4',
+        'train_1/Porcine/Knot_Tying/KT_0007.mp4',
+        'train_1/Porcine/Knot_Tying/KT_0008.mp4',
+        'train_1/Porcine/Needle_Driving/ND_0001.mp4',
+        'train_1/Porcine/Needle_Driving/ND_0002.mp4',
+        'train_1/Porcine/Needle_Driving/ND_0003.mp4',
+        'train_1/Porcine/Needle_Driving/ND_0004.mp4',
+        'train_1/Porcine/Needle_Driving/ND_0005.mp4',
+        'train_1/Porcine/Needle_Driving/ND_0006.mp4',
+        'train_1/Porcine/Needle_Driving/ND_0007.mp4',
+        'train_1/Porcine/Needle_Driving/ND_0008.mp4',
+        'train_1/Porcine/Needle_Driving/ND_0009.mp4',
+        'train_1/Porcine/Needle_Driving/ND_0010.mp4'
+      ]
+      transforms: [
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [79, 163], 'shape': [411, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [79, 163], 'shape': [411, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}],
+        ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}]
+      ]
+    - name: 'Mountney'
+      prefix: '/media/martin/Samsung_T5/data/endoscopic_data/Mountney'
+      videos: ['left.avi']
+      transforms: [
+        ['Crop': {'top_left_corner': [0, 9], 'shape': [540, 631]}, 'Resize': {'dsize': [720, 540]}]
+      ]
+    - name: 'Giannarou'
+      prefix: '/media/martin/Samsung_T5/data/endoscopic_data/Giannarou'
+      videos: ['left.avi']
+      transforms: [
+        ['Crop': {'top_left_corner': [0, 9], 'shape': [540, 631]}, 'Resize': {'dsize': [720, 540]}]
+      ]
