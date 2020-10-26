@@ -1,14 +1,14 @@
 import cv2
 import numpy as np
-from enum import Enum
+from enum import IntEnum
 from shapely.geometry import Point
 from shapely.geometry import MultiPoint
 from typing import List, Tuple
 
 
-class HOMOGRAPHY_RETURN(Enum):
+class HOMOGRAPHY_RETURN(IntEnum):
     DEFAULT = 1
-    VISUAL = 1
+    VISUAL = 2
     DATASET = 3
 
 
@@ -20,9 +20,9 @@ class RandomEdgeHomography(object):
     Args:
         rho (int): uv are perturbed within [-rho, rho]
         crp_shape (tuple of int): Crop shape
-        homography_return (Enum): Return different outputs on __call__()
+        homography_return (IntEnum): Return different outputs on __call__()
     """
-    def __init__(self, rho: int, crp_shape: List[int], homography_return: Enum=HOMOGRAPHY_RETURN.DEFAULT):
+    def __init__(self, rho: int, crp_shape: List[int], homography_return: IntEnum=HOMOGRAPHY_RETURN.DEFAULT):
         self.rho = rho
         self.crp_shape = crp_shape
         self.homography_return = homography_return
