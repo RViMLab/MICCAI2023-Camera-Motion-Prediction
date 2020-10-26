@@ -14,6 +14,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id001
   - *id001
   - *id001
@@ -32,6 +38,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id002
   - *id002
   - *id002
@@ -296,6 +308,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id003
   - *id003
   - *id003
@@ -315,6 +333,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id003
   - *id003
   - *id003
@@ -336,6 +360,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id003
   - *id003
   - *id003
@@ -350,6 +380,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id003
   - *id003
   - *id003
@@ -369,6 +405,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id003
   - *id004
   - *id003
@@ -386,6 +428,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id003
   - *id004
   - *id003
@@ -739,6 +787,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - &id012
     - Crop:
         shape:
@@ -751,6 +805,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id008
   - &id009
     - Crop:
@@ -764,6 +824,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id008
   - *id009
   - *id008
@@ -794,6 +860,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id008
   - *id009
   - *id008
@@ -873,6 +945,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - &id010
     - Crop:
         shape:
@@ -885,6 +963,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id010
   - *id008
   - &id011
@@ -899,6 +983,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id011
   - *id011
   - *id011
@@ -1072,6 +1162,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id013
   - *id013
   - *id013
@@ -1097,6 +1193,12 @@ databases:
         dsize:
         - 740
         - 555
+    - RandomEdgeHomography:
+        rho: 32
+        crp_shape:
+        - 480
+        - 640
+        homography_return: 2
   - *id014
   videos:
   - without_camera_motion/test/vid_447.avi

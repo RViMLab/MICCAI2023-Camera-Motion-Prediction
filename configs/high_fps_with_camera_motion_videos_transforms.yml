@@ -12,8 +12,8 @@ databases:
         - 164
     - Resize:
         dsize:
-        - 720
-        - 540
+        - 740
+        - 555
   - *id001
   - *id001
   - *id001
@@ -29,8 +29,8 @@ databases:
         - 29
     - Resize:
         dsize:
-        - 720
-        - 540
+        - 740
+        - 555
   - *id002
   - *id002
   - *id002
@@ -274,8 +274,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 720
-        - 540
+        - 740
+        - 555
   - *id003
   - *id003
   - *id003
@@ -310,8 +310,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 720
-        - 540
+        - 740
+        - 555
   - *id003
   - *id003
   - *id003
@@ -373,8 +373,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 720
-        - 540
+        - 740
+        - 555
   - *id004
   - *id004
   - *id004
@@ -390,8 +390,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 720
-        - 540
+        - 740
+        - 555
   - *id004
   - *id004
   - *id005
@@ -411,8 +411,8 @@ databases:
         - 204
     - Resize:
         dsize:
-        - 720
-        - 540
+        - 740
+        - 555
   - &id006
     - Crop:
         shape:
@@ -423,8 +423,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 720
-        - 540
+        - 740
+        - 555
   - *id006
   - *id006
   - *id006
@@ -478,8 +478,8 @@ databases:
         - 9
     - Resize:
         dsize:
-        - 720
-        - 540
+        - 740
+        - 555
   - *id007
   - *id007
   - *id007
@@ -502,7 +502,7 @@ databases:
         - 9
     - Resize:
         dsize:
-        - 720
-        - 540
+        - 740
+        - 555
   videos:
   - with_camera_motion/test/vid_189.avi
