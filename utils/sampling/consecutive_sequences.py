@@ -12,8 +12,9 @@ class ConsecutiveSequences():
         seq_len (int): Length of returned sequence
         seq_stride (int): Stride inbetween initial frames of sequences, defaults to seq_len
         transforms (list of callables): Transforming videos
+        verbose (bool): Return verbose output if true
     """
-    def __init__(self, paths, stride=1, max_seq=None, seq_len=1, seq_stride=None, transforms=None):
+    def __init__(self, paths, stride=1, max_seq=None, seq_len=1, seq_stride=None, transforms=None, verbose=False):
         self.video_captures = []
         self.seq = 0
         self.max_seq = max_seq
@@ -25,6 +26,7 @@ class ConsecutiveSequences():
         if not seq_stride:
             self.seq_stride = seq_len
         self.transforms = transforms
+        self.verbose = verbose
         self.frame_counts = np.empty(len(paths))
         for idx, p in enumerate(paths):
             video_capture = cv2.VideoCapture(p)
@@ -39,12 +41,19 @@ class ConsecutiveSequences():
 
         Returns:
             imgs (np.array): Sequence of shape LxHxWxC
+
+            if self.verbose == True:
+                vid_idx (int): Video index, as sorted in paths
+                frame_idx (int): Initial frame index in video
         """
         if self.vid_idx < len(self.video_captures):
             if self.transforms:
                 imgs = self._sample(self.video_captures[self.vid_idx], self.frame_idx, self.stride, self.transforms[self.vid_idx])
             else:
                 imgs = self._sample(self.video_captures[self.vid_idx], self.frame_idx, self.stride)
+
+            vid_idx = self.vid_idx
+            frame_idx = self.frame_idx
 
             # increment counters
             if self.max_seq is not None:
@@ -55,7 +64,10 @@ class ConsecutiveSequences():
             if self.frame_counts[self.vid_idx] - self.stride*self.seq_len < self.frame_idx:
                 self.frame_idx = 0
                 self.vid_idx += 1
-            return imgs
+            if self.verbose:
+                return imgs, vid_idx, frame_idx
+            else:
+                return imgs
         raise StopIteration
 
     def __len__(self):

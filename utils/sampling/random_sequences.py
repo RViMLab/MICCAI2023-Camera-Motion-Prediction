@@ -11,8 +11,9 @@ class RandomSequences():
         seq_len (int): Length of returned sequence
         strides (list of int): Strides in between single frames to randomly sample from
         transforms (list of callables): Transforming videos
+        verbose (bool): Return verbose output if true
     """
-    def __init__(self, max_seq, paths, seq_len=1, strides=[1], transforms=None):
+    def __init__(self, max_seq, paths, seq_len=1, strides=[1], transforms=None, verbose=False):
         self.video_captures = []
         self.prob_vid = []
         self.seq = 0
@@ -20,6 +21,7 @@ class RandomSequences():
         self.seq_len = seq_len
         self.strides = strides
         self.transforms = transforms
+        self.verbose = verbose
         frame_counts = np.empty(len(paths))
         for idx, p in enumerate(paths):
             video_capture = cv2.VideoCapture(p)
@@ -36,6 +38,10 @@ class RandomSequences():
 
         Returns:
             imgs (np.array): Randomly sampled sequence of shape LxHxWxC
+
+            if self.verbose == True:
+                vid_idx (int): Video index, as sorted in paths
+                frame_idx (int): Initial frame index in video
         """
         if self.seq < self.max_seq:
             vid_idx = np.random.choice(len(self.video_captures), 1, p=self.prob_vid)
@@ -48,9 +54,15 @@ class RandomSequences():
             self.seq += 1
             
             if self.transforms:
-                return self._sample(self.video_captures[vid_idx.item(0)], frame_idx.item(0), stride, self.transforms[vid_idx])
+                if self.verbose:
+                    return self._sample(self.video_captures[vid_idx.item(0)], frame_idx.item(0), stride, self.transforms[vid_idx]), vid_idx, frame_idx
+                else:
+                    return self._sample(self.video_captures[vid_idx.item(0)], frame_idx.item(0), stride, self.transforms[vid_idx])
             else:
-                return self._sample(self.video_captures[vid_idx.item(0)], frame_idx.item(0), stride)
+                if self.verbose:
+                    return self._sample(self.video_captures[vid_idx.item(0)], frame_idx.item(0), stride), vid_idx, frame_idx
+                else:
+                    return self._sample(self.video_captures[vid_idx.item(0)], frame_idx.item(0), stride)
         raise StopIteration
 
     def __len__(self):
