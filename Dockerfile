@@ -1,7 +1,7 @@
 # Start from nvidia base image 
 # - cuda only: https://hub.docker.com/r/nvidia/cuda
 # - torch: https://ngc.nvidia.com/catalog/containers/nvidia:pytorch has conda by default
-FROM nvcr.io/nvidia/pytorch:20.07-py3
+FROM nvidia/cuda:10.1-base-ubuntu18.04
 
 ARG USER_ID
 ARG GROUP_ID
