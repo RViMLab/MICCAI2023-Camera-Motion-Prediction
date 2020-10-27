@@ -1,7 +1,7 @@
 # list of databases without camera motion
 databases:
   - name: 'SurgVisDom_test_no_indicators_without_camera_motion'
-    prefix: '/media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated'
+    prefix: 'camera_motion_separated'
     test: false
     videos: 
       prefix: 'without_camera_motion/train'

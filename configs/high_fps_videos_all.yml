@@ -1,7 +1,7 @@
 # list of databases
 databases:
     - name: 'SurgVisDom_test_no_indicators'
-      prefix: '/media/martin/Samsung_T5/data/endoscopic_data/SurgVisDom'
+      prefix: 'SurgVisDom'
       videos: [
         'test/test_video_0002.mp4',
         'test/test_video_0003.mp4',
@@ -27,7 +27,7 @@ databases:
         ['Crop': {'top_left_corner': [18,  29], 'shape': [506, 899]}, 'Resize': {'dsize': [720, 540]}]
       ]
     - name: 'SurgVisDom_test_indicators'
-      prefix: '/media/martin/Samsung_T5/data/endoscopic_data/SurgVisDom'
+      prefix: 'SurgVisDom'
       videos: [
         'test/test_video_0000.mp4',
         'test/test_video_0001.mp4',
@@ -45,7 +45,7 @@ databases:
         ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}]
       ]
     - name: 'SurgVisDom_train_indicators'
-      prefix: '/media/martin/Samsung_T5/data/endoscopic_data/SurgVisDom'
+      prefix: 'SurgVisDom'
       videos: [
         'train_1/Porcine/Dissection/DS_0001.mp4',
         'train_1/Porcine/Dissection/DS_0002.mp4',
@@ -103,13 +103,13 @@ databases:
         ['Crop': {'top_left_corner': [64, 163], 'shape': [426, 632]}, 'Resize': {'dsize': [720, 540]}]
       ]
     - name: 'Mountney'
-      prefix: '/media/martin/Samsung_T5/data/endoscopic_data/Mountney'
+      prefix: 'Mountney'
       videos: ['left.avi']
       transforms: [
         ['Crop': {'top_left_corner': [0, 9], 'shape': [540, 631]}, 'Resize': {'dsize': [720, 540]}]
       ]
     - name: 'Giannarou'
-      prefix: '/media/martin/Samsung_T5/data/endoscopic_data/Giannarou'
+      prefix: 'Giannarou'
       videos: ['left.avi']
       transforms: [
         ['Crop': {'top_left_corner': [0, 9], 'shape': [540, 631]}, 'Resize': {'dsize': [720, 540]}]

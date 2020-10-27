@@ -1,6 +1,6 @@
 databases:
 - name: SurgVisDom_test_no_indicators_with_camera_motion
-  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
+  prefix: camera_motion_separated
   test: false
   transforms:
   - &id001
@@ -217,7 +217,7 @@ databases:
     - vid_117.mp4
     prefix: with_camera_motion/train
 - name: SurgVisDom_test_no_indicators_with_camera_motion
-  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
+  prefix: camera_motion_separated
   test: true
   transforms:
   - *id001
@@ -272,7 +272,7 @@ databases:
     - vid_115.mp4
     prefix: with_camera_motion/test
 - name: SurgVisDom_test_indicators_with_camera_motion
-  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
+  prefix: camera_motion_separated
   test: false
   transforms:
   - &id003
@@ -356,7 +356,7 @@ databases:
     - vid_154.mp4
     prefix: with_camera_motion/train
 - name: SurgVisDom_test_indicators_with_camera_motion
-  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
+  prefix: camera_motion_separated
   test: true
   transforms:
   - *id003
@@ -381,7 +381,7 @@ databases:
     - vid_152.mp4
     prefix: with_camera_motion/test
 - name: SurgVisDom_train_indicators_with_camera_motion
-  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
+  prefix: camera_motion_separated
   test: false
   transforms:
   - &id004
@@ -461,7 +461,7 @@ databases:
     - vid_182.mp4
     prefix: with_camera_motion/train
 - name: SurgVisDom_train_indicators_with_camera_motion
-  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
+  prefix: camera_motion_separated
   test: true
   transforms:
   - *id004
@@ -496,7 +496,7 @@ databases:
     - vid_183.mp4
     prefix: with_camera_motion/test
 - name: Mountney_with_camera_motion
-  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
+  prefix: camera_motion_separated
   test: false
   transforms:
   - &id007
@@ -522,7 +522,7 @@ databases:
     - vid_188.avi
     prefix: with_camera_motion/train
 - name: Mountney_with_camera_motion
-  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
+  prefix: camera_motion_separated
   test: true
   transforms:
   - *id007
@@ -531,7 +531,7 @@ databases:
     - vid_187.avi
     prefix: with_camera_motion/test
 - name: Giannarou_with_camera_motion
-  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
+  prefix: camera_motion_separated
   test: true
   transforms:
   - - Crop:
