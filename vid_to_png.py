@@ -34,6 +34,7 @@ if __name__ == '__main__':
     df = pd.DataFrame(columns=['file_sequence', 'path', 'vid_idx', 'frame_idcs', 'database'])
 
     for database in yml['databases']:
+        print('Processing database {}'.format(database['name']))
         paths = []
         for files in database['videos']['files']:
             paths.append(os.path.join(
@@ -56,7 +57,7 @@ if __name__ == '__main__':
             verbose=True
         ) # generate iterator
         
-        for cs, vid_idx, frame_idx in consecutive_sequences:
+        for cs, vid_idx, frame_idx in tqdm(consecutive_sequences):
             frame_idcs = []
             file_sequence = []
             if database['test'] == True:
@@ -86,9 +87,6 @@ if __name__ == '__main__':
                 'frame_idcs': frame_idcs,
                 'database': {'name': database['name'], 'prefix': database['prefix'], 'test': database['test']}
             }, ignore_index=True)
-
-            # cv2.imshow('img', cs[0])
-            # cv2.waitKey()
                 
     df_name = 'log'
     df.to_pickle(os.path.join(absolute_prefix, '{}.pkl'.format(df_name)))
