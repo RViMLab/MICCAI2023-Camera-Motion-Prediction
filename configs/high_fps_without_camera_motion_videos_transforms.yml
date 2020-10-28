@@ -221,7 +221,7 @@ databases:
     - vid_127.mp4
     prefix: without_camera_motion/train
 - name: SurgVisDom_test_no_indicators_without_camera_motion
-  prefix: camera_motion_separated
+  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
   test: true
   transforms:
   - *id001
@@ -292,7 +292,7 @@ databases:
     - vid_124.mp4
     prefix: without_camera_motion/test
 - name: SurgVisDom_test_indicators_without_camera_motion
-  prefix: camera_motion_separated
+  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
   test: false
   transforms:
   - &id003
@@ -656,7 +656,7 @@ databases:
     - vid_313.mp4
     prefix: without_camera_motion/train
 - name: SurgVisDom_test_indicators_without_camera_motion
-  prefix: camera_motion_separated
+  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
   test: true
   transforms:
   - *id003
@@ -745,7 +745,7 @@ databases:
     - vid_314.mp4
     prefix: without_camera_motion/test
 - name: SurgVisDom_train_indicators_without_camera_motion
-  prefix: camera_motion_separated
+  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
   test: false
   transforms:
   - &id008
@@ -1001,7 +1001,7 @@ databases:
     - vid_437.mp4
     prefix: without_camera_motion/train
 - name: SurgVisDom_train_indicators_without_camera_motion
-  prefix: camera_motion_separated
+  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
   test: true
   transforms:
   - *id009
@@ -1088,7 +1088,7 @@ databases:
     - vid_441.mp4
     prefix: without_camera_motion/test
 - name: Mountney_without_camera_motion
-  prefix: camera_motion_separated
+  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
   test: false
   transforms:
   - &id013
@@ -1114,7 +1114,7 @@ databases:
     - vid_446.avi
     prefix: without_camera_motion/train
 - name: Mountney_without_camera_motion
-  prefix: camera_motion_separated
+  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
   test: true
   transforms:
   - *id013
@@ -1123,7 +1123,7 @@ databases:
     - vid_445.avi
     prefix: without_camera_motion/test
 - name: Giannarou_without_camera_motion
-  prefix: camera_motion_separated
+  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
   test: false
   transforms:
   - &id014
@@ -1143,7 +1143,7 @@ databases:
     - vid_448.avi
     prefix: without_camera_motion/train
 - name: Giannarou_without_camera_motion
-  prefix: camera_motion_separated
+  prefix: /media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated
   test: true
   transforms:
   - *id014
