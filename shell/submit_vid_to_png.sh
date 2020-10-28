@@ -1,4 +1,4 @@
-runai submit hil \
+runai submit hil-vid-to-png \
   -p mhuber \
   -i 10.202.67.201:32581/mhuber:hil \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
