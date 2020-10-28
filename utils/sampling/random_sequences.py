@@ -30,6 +30,10 @@ class RandomSequences():
         for fc in frame_counts:
             self.prob_vid.append(fc/frame_counts.sum())
 
+    def __del__(self):
+        for i in range(len(self.video_captures)):
+            self.video_captures[i].release()
+
     def __iter__(self):
         return self
 
@@ -63,6 +67,8 @@ class RandomSequences():
                     return self._sample(self.video_captures[vid_idx.item(0)], frame_idx.item(0), stride), vid_idx, frame_idx
                 else:
                     return self._sample(self.video_captures[vid_idx.item(0)], frame_idx.item(0), stride)
+
+        self.__del__()
         raise StopIteration
 
     def __len__(self):

@@ -33,6 +33,10 @@ class ConsecutiveSequences():
             self.video_captures.append(video_capture)
             self.frame_counts[idx] = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
 
+    def __del__(self):
+        for i in range(len(self.video_captures)):
+            self.video_captures[i].release()
+
     def __iter__(self):
         return self
 
@@ -58,16 +62,20 @@ class ConsecutiveSequences():
             # increment counters
             if self.max_seq is not None:
                 if self.seq >= self.max_seq:
+                    self.__del__()
                     raise StopIteration
                 self.seq += 1
             self.frame_idx += self.seq_stride
             if self.frame_counts[self.vid_idx] - self.stride*self.seq_len < self.frame_idx:
+                self.video_captures[self.vid_idx].release()
                 self.frame_idx = 0
                 self.vid_idx += 1
             if self.verbose:
                 return imgs, vid_idx, frame_idx
             else:
                 return imgs
+
+        self.__del__()
         raise StopIteration
 
     def __len__(self):
