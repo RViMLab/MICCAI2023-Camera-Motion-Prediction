@@ -1,25 +1,40 @@
+import os
+import pandas as pd
+import pytorch_lightning as pl
+from pytorch_lightning.loggers import TensorBoardLogger
+import torch
+
+from lightning_modules import SupervisedHomographyModule
+from lightning_data_modules import ConsecutiveDataModule
+
+
 if __name__ == '__main__':
-    import argparse
-    import cv2
-    from tqdm import tqdm
 
-    from utils.sampling import ConsecutiveSequences
-    from utils.transforms import *
+    prefix = '/media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated_png/without_camera_motion'
+    pkl_name = 'log_without_camera_motion_seq_len_2.pkl'
+    df = pd.read_pickle(os.path.join(prefix, pkl_name))
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--paths', type=str, nargs='+', required=True, help='Set list of paths to videos.')
-    parser.add_argument('-m', '--max_seq', type=int, default=None, help='Set number of frames to return.')
-    args = parser.parse_args()
+    cdm = ConsecutiveDataModule(df, prefix, train_split=0.8, batch_size=2, num_workers=2, rho=32, crp_shape=[240, 320])
+    cdm.setup()
 
-    resize = Resize((1000, 500))
-    crop = Crop([0, 0], [200, 200])
-    compose = Compose([resize, crop])
+    shape = next(iter(cdm.train_dataloader()))['img_seq'][0].shape
+    shm = SupervisedHomographyModule(
+        shape=[2*shape[1], shape[2], shape[3]]
+    )
 
+    logger = TensorBoardLogger(save_dir='tb_log', name='experiment1')
 
-    consecutive_seq = ConsecutiveSequences(paths=args.paths, max_seq=args.max_seq, seq_stride=100, seq_len=1, stride=1, transforms=None)
+    trainer = pl.Trainer(
+        max_epochs=10,
+        logger=logger,
+        limit_train_batches=0.001,
+        limit_val_batches=0.001,
+        limit_test_batches=0.001,
+        gpus=1
+    )
 
-    for cs in tqdm(consecutive_seq):
+    # fit and validation
+    trainer.fit(shm, cdm)
 
-        for i in range(cs.shape[0]):
-            cv2.imshow('random_frame', cs[i])
-            cv2.waitKey()
+    # # test
+    trainer.test()
