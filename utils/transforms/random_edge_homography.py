@@ -155,8 +155,20 @@ class RandomEdgeHomography(object):
             [top_left[0] + crp_shape[0], top_left[1] + crp_shape[1]],
             [top_left[0] + crp_shape[0], top_left[1]               ]
         ])
-        crp = img[uv[0,0]:uv[2,0],uv[0,1]:uv[2,1]]
+        crp = self.crop(img, uv)
         return crp, uv
+
+    def crop(self, img: np.array, uv: np.array):
+        r"""Performs crop on image.
+
+        Args:
+            img (np.array): Input image of shape HxWxC
+            uv (np.array): Edges for crop
+        Return:
+            crp (np.array): Cropped image
+        """
+        crp = img[uv[0,0]:uv[2,0],uv[0,1]:uv[2,1]]
+        return crp
 
 
 if __name__ == '__main__':
