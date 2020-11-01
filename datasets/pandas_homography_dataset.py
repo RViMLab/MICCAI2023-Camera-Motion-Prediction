@@ -2,6 +2,7 @@ import os
 import cv2
 import pandas as pd
 from torch.utils.data import Dataset
+from torchvision.transforms import ToTensor
 from typing import List
 
 from utils.transforms import RandomEdgeHomography, HOMOGRAPHY_RETURN
@@ -13,13 +14,17 @@ class PandasHomographyDataset(Dataset):
         self.prefix = prefix
         self.reh = RandomEdgeHomography(rho=rho, crp_shape=crp_shape, homography_return=HOMOGRAPHY_RETURN.DATASET)
         self.transforms = transforms
+        self.tt = ToTensor()
 
     def __getitem__(self, idx):
         file_seq = self.df['file_seq'][idx]
+        img_seq_org = []
         img_seq = []
 
         for file in file_seq:
-            img_seq.append(cv2.imread(os.path.join(self.prefix, self.df['path'][idx], file)))
+            img = cv2.imread(os.path.join(self.prefix, self.df['path'][idx], file))
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img_seq.append(img)
 
         if self.transforms:
             for i in range(len(img_seq)):
@@ -31,7 +36,11 @@ class PandasHomographyDataset(Dataset):
         img_seq[0] = self.reh.crop(img_seq[0], reh['uv'])
         img_seq[1] = reh['wrp_crp']
 
+        for i in range(len(img_seq)):
+            img_seq[i] = self.tt(img_seq[i])
+
         return {
+            'img': reh['img'],
             'img_seq': img_seq, 
             'uv': reh['uv'], 
             'duv': reh['duv'], 
