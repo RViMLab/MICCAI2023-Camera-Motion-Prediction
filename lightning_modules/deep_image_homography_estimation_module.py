@@ -7,7 +7,7 @@ from models import DeepHomographyRegression
 from utils.viz import warp_figure
 
 
-class SupervisedHomographyModule(pl.LightningModule):
+class DeepImageHomographyEstimationModule(pl.LightningModule):
     def __init__(self, shape, lr: float=1e-4, betas: List[float]=[0.9, 0.999]):
         super().__init__()
         self.save_hyperparameters('lr', 'betas')
@@ -58,13 +58,4 @@ class SupervisedHomographyModule(pl.LightningModule):
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
         self.log('test_loss', loss)
-
-        figure = warp_figure(
-            img=batch['img'][0].squeeze().numpy(), 
-            uv=batch['uv'][0].squeeze().numpy(), 
-            duv=batch['duv'][0].squeeze().cpu().numpy(), 
-            duv_pred=duv_pred[0].squeeze().cpu().numpy(), 
-            H=batch['H'][0].squeeze().numpy()
-        )
-        self.logger.experiment.add_figure('test_wrp', figure, self.global_step)
         return loss

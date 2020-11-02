@@ -1,1 +1,1 @@
-from .supervised_homography_module import SupervisedHomographyModule
+from .deep_image_homography_estimation_module import DeepImageHomographyEstimationModule
