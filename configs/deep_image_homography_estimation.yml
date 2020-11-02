@@ -2,7 +2,7 @@ experiment: 'deep_image_homography_estimation'
 lightning_module: 'DeepImageHomographyEstimationModule'
 trainer:
     gpus: 1
-    max_epochs: 50
+    max_epochs: 20
     limit_train_batches: 1.0
     limit_val_batches: 1.0
     limit_test_batches: 1.0
