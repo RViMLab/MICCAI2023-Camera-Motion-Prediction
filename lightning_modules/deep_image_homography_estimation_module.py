@@ -48,7 +48,7 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
             duv_pred=duv_pred[0].squeeze().cpu().numpy(), 
             H=batch['H'][0].squeeze().numpy()
         )
-        self.logger.experiment.add_figure('val_wrp', figure, self.global_step)
+        self.logger.experiment.add_figure('val_wrp', figure, batch_idx)
         return loss
 
     def test_step(self, batch, batch_idx):
