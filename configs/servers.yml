@@ -1,6 +1,10 @@
 local: 
     database:
         location: '/media/martin/Samsung_T5/data/endoscopic_data'
+    logging:
+        location: '/media/martin/Samsung_T5/logs'
 dgx1-1:
     database: 
         location: '/nfs/home/mhuber/data/endoscopic_data'
+    logging:
+        location: '/nfs/home/mhuber/logs'
