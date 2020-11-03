@@ -7,7 +7,7 @@ import torch
 
 from utils.io import load_yaml
 import lightning_modules
-from lightning_data_modules import ConsecutiveDataModule
+import lightning_data_modules
 
 
 if __name__ == '__main__':
@@ -30,15 +30,19 @@ if __name__ == '__main__':
             configs['data']['pkl_name']
     ))
 
-    dm = ConsecutiveDataModule(
-        df, 
-        prefix, 
-        train_split=configs['data']['train_split'],
-        batch_size=configs['data']['batch_size'],
-        num_workers=configs['data']['num_workers'],
-        rho=configs['data']['rho'],
-        crp_shape=configs['data']['crp_shape']
-    )
+    # load specific data module
+    kwargs = {
+        'df': df, 
+        'prefix': prefix, 
+        'train_split': configs['data']['train_split'],
+        'batch_size': configs['data']['batch_size'],
+        'num_workers': configs['data']['num_workers'],
+        'rho': configs['data']['rho'],
+        'crp_shape': configs['data']['crp_shape'],
+        'unsupervised': configs['data']['unsupervised']
+    } 
+
+    dm = getattr(lightning_data_modules, configs['lightning_data_module'])(**kwargs)
     dm.setup()
 
     # load specific module

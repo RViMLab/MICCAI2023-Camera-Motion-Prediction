@@ -1,5 +1,6 @@
 experiment: 'deep_image_homography_estimation'
 lightning_module: 'DeepImageHomographyEstimationModule'
+lightning_data_module: 'ConsecutiveDataModule'
 trainer:
     gpus: 1
     max_epochs: 50
@@ -14,6 +15,7 @@ data:
     num_workers: 4
     rho: 32
     crp_shape: [480, 640]
+    unsupervised: False
 hparams:
     lr: 1.e-4
     betas: [0.9, 0.999]
