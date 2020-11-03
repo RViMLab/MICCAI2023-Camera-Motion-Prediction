@@ -8,7 +8,7 @@ from datasets import PandasHomographyDataset
 
 
 class ConsecutiveDataModule(pl.LightningDataModule):
-    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, rho: int=32, crp_shape: List[int]=[480, 640]):
+    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, rho: int=32, crp_shape: List[int]=[480, 640], unsupervised: bool=False):
         super().__init__()
         self.train_df = df[df['test'] == False].reset_index()
         self.test_df = df[df['test'] == True].reset_index()
@@ -18,6 +18,7 @@ class ConsecutiveDataModule(pl.LightningDataModule):
         self.num_workers = num_workers
         self.rho = rho
         self.crp_shape = crp_shape
+        self.unsupervised = unsupervised
 
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
@@ -32,6 +33,8 @@ class ConsecutiveDataModule(pl.LightningDataModule):
         batch['img_seq'][0] = batch['img_seq'][0].to(device)
         batch['img_seq'][1] = batch['img_seq'][1].to(device)
         batch['duv'] = batch['duv'].to(device)
+        if self.unsupervised:
+            batch['img'] = batch-'img'.to(device)
         return batch
 
     def train_dataloader(self):
