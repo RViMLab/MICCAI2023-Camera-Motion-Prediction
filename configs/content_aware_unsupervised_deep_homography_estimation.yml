@@ -1,0 +1,21 @@
+experiment: 'content_aware_unsupervised_deep_homography_estimation'
+lightning_module: 'ContentAwareUnsupervisedDeepHomographyEstimationModule'
+lightning_data_module: 'ConsecutiveDataModule'
+trainer:
+    gpus: 1
+    max_epochs: 50
+    limit_train_batches: 1.0
+    limit_val_batches: 1.0
+    limit_test_batches: 1.0
+data:
+    pkl_name: 'log_without_camera_motion_seq_len_2.pkl'
+    pkl_path: 'camera_motion_separated_png/without_camera_motion'
+    train_split: 0.8
+    batch_size: 16
+    num_workers: 4
+    rho: 32
+    crp_shape: [480, 640]
+    unsupervised: True
+hparams:
+    lr: 1.e-4
+    betas: [0.9, 0.999]
