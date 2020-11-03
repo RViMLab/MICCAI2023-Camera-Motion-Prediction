@@ -63,6 +63,7 @@ if __name__ == '__main__':
     trainer = pl.Trainer(
         max_epochs=configs['trainer']['max_epochs'],
         logger=logger,
+        log_every_n_steps=configs['trainer']['log_every_n_steps']
         limit_train_batches=configs['trainer']['limit_train_batches'],
         limit_val_batches=configs['trainer']['limit_val_batches'],
         limit_test_batches=configs['trainer']['limit_test_batches'],
