@@ -2,18 +2,7 @@ import torch
 import torch.nn as nn
 from collections import OrderedDict
 
-
-class ConvBlock(nn.Module):
-    def __init__(self, in_channels, out_channels):
-        super(ConvBlock, self).__init__()
-        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=3)
-        self.norm = nn.BatchNorm2d(num_features=out_channels)
-
-    def forward(self, x):
-        x = self.conv(x)
-        x = self.norm(x)
-        x = torch.relu(x)
-        return x
+from models import ConvBlock
 
 
 class DeepHomographyRegression(nn.Module):
