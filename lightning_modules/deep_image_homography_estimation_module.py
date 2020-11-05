@@ -25,7 +25,7 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
         return optimizer
 
     def training_step(self, batch, batch_idx):
-        duv_pred = self.model(batch['img_seq'][0], batch['img_seq'][1])
+        duv_pred = self.model(batch['img_seq_crp'][0], batch['img_seq_crp'][1])
         loss = self.loss(
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
@@ -34,7 +34,7 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
         return loss     
 
     def validation_step(self, batch, batch_idx):
-        duv_pred = self.model(batch['img_seq'][0], batch['img_seq'][1])
+        duv_pred = self.model(batch['img_seq_crp'][0], batch['img_seq_crp'][1])
         loss = self.loss(
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
@@ -42,7 +42,7 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
         self.log('val_loss', loss, on_epoch=True)
 
         figure = warp_figure(
-            img=batch['img'][0].squeeze().numpy(), 
+            img=batch['img_seq'][0].squeeze().numpy(), 
             uv=batch['uv'][0].squeeze().numpy(), 
             duv=batch['duv'][0].squeeze().cpu().numpy(), 
             duv_pred=duv_pred[0].squeeze().cpu().numpy(), 
@@ -52,7 +52,7 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
         return loss
 
     def test_step(self, batch, batch_idx):
-        duv_pred = self.model(batch['img_seq'][0], batch['img_seq'][1])
+        duv_pred = self.model(batch['img_seq_crp'][0], batch['img_seq_crp'][1])
         loss = self.loss(
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
