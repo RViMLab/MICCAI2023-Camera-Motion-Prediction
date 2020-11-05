@@ -13,7 +13,7 @@ from utils.viz import warp_figure
 
 
 class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule):
-    def __init__(self, shape: List[int], lam: float=2.0, mu: float=0.01, lr: float=1e-4, betas: List[float]=[0.9, 0.999]):
+    def __init__(self, shape: List[int], lam: float=2.0, mu: float=0.01, pre_train_epochs: int=3, lr: float=1e-4, betas: List[float]=[0.9, 0.999]):
         r"""Content-aware unsupervised deep homography estimation model from https://arxiv.org/abs/1909.05983.
 
         Args:
@@ -51,6 +51,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
 
         self.lam = lam
         self.mu = mu
+        self.pre_train_epochs = pre_train_epochs
         self.lr = lr
         self.betas = betas
 
@@ -158,8 +159,12 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         m_b_prime = warp_perspective(ba_dic['m_0'], torch.inverse(h_ba), ba_dic['m_0'].shape[-2:])
 
         # compute losses
-        l_content_ab = self.content_loss(self.feature_extractor(i_a_prime), ab_dic['f_1'], m_a_prime, ab_dic['m_1'])
-        l_content_ba = self.content_loss(self.feature_extractor(i_b_prime), ba_dic['f_1'], m_b_prime, ba_dic['m_1'])
+        if self.current_epoch < self.pre_train_epochs:
+            l_content_ab = F.l1_loss(self.feature_extractor(i_a_prime), ab_dic['f_1'])
+            l_content_ba = F.l1_loss(self.feature_extractor(i_b_prime), ba_dic['f_1'])
+        else:
+            l_content_ab = self.content_loss(self.feature_extractor(i_a_prime), ab_dic['f_1'], m_a_prime, ab_dic['m_1'])
+            l_content_ba = self.content_loss(self.feature_extractor(i_b_prime), ba_dic['f_1'], m_b_prime, ba_dic['m_1'])
         l_reg = self.regularizer_loss(ab_dic['f_0'], ab_dic['f_1'])
         l_consistency = self.consistency_loss(h_ab, h_ba)
         loss = l_content_ab + l_content_ba - self.lam*l_reg + self.mu*l_consistency
