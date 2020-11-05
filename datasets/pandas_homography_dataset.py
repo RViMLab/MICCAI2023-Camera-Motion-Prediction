@@ -18,8 +18,8 @@ class PandasHomographyDataset(Dataset):
 
     def __getitem__(self, idx):
         file_seq = self.df['file_seq'][idx]
-        img_seq_org = []
         img_seq = []
+        img_seq_crp = []
 
         for file in file_seq:
             img = cv2.imread(os.path.join(self.prefix, self.df['path'][idx], file))
@@ -33,15 +33,16 @@ class PandasHomographyDataset(Dataset):
         # apply random edge homography
         reh = self.reh(img_seq[1])
 
-        img_seq[0] = self.reh.crop(img_seq[0], reh['uv'])
-        img_seq[1] = reh['wrp_crp']
+        img_seq_crp.append(self.reh.crop(img_seq[0], reh['uv']))
+        img_seq_crp.append(reh['wrp_crp'])
 
         for i in range(len(img_seq)):
             img_seq[i] = self.tt(img_seq[i])
+            img_seq_crp[i] = self.tt(img_seq_crp[i])
 
         return {
-            'img': reh['img'],
-            'img_seq': img_seq, 
+            'img_seq': img_seq,
+            'img_seq_crp': img_seq_crp, 
             'uv': reh['uv'], 
             'duv': reh['duv'], 
             'H': reh['H']

@@ -30,11 +30,13 @@ class ConsecutiveDataModule(pl.LightningDataModule):
             self.test_set = PandasHomographyDataset(self.test_df, self.prefix, self.rho, self.crp_shape) # for final evaluation
 
     def transfer_batch_to_device(self, batch, device):
-        batch['img_seq'][0] = batch['img_seq'][0].to(device)
-        batch['img_seq'][1] = batch['img_seq'][1].to(device)
+        batch['img_seq_crp'][0] = batch['img_seq_crp'][0].to(device)
+        batch['img_seq_crp'][1] = batch['img_seq_crp'][1].to(device)
         batch['duv'] = batch['duv'].to(device)
         if self.unsupervised:
-            batch['img'] = batch-'img'.to(device)
+            batch['img_seq'][0] = batch['img_seq'][0].to(device)
+            batch['img_seq'][1] = batch['img_seq'][1].to(device)
+            batch['uv'] = batch['uv'].to(device)
         return batch
 
     def train_dataloader(self):
