@@ -48,7 +48,7 @@ if __name__ == '__main__':
     # load specific module
     shape = next(iter(dm.train_dataloader()))['img_seq'][0].shape
     kwargs = {
-        'shape': [2*shape[1], shape[2], shape[3]],
+        'shape': shape[-3:],
         'lr': configs['hparams']['lr'],
         'betas': configs['hparams']['betas']
     }
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     trainer = pl.Trainer(
         max_epochs=configs['trainer']['max_epochs'],
         logger=logger,
-        log_every_n_steps=configs['trainer']['log_every_n_steps']
+        log_every_n_steps=configs['trainer']['log_every_n_steps'],
         limit_train_batches=configs['trainer']['limit_train_batches'],
         limit_val_batches=configs['trainer']['limit_val_batches'],
         limit_test_batches=configs['trainer']['limit_test_batches'],

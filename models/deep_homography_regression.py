@@ -9,12 +9,12 @@ class DeepHomographyRegression(nn.Module):
     r"""Homography regression model from https://arxiv.org/pdf/1606.03798.pdf.
 
     Args:
-        shape (tuple of int): Input shape CxHxW.
+        shape (tuple of int): Input shape of single image, CxHxW.
     """
     def __init__(self, shape):
         super(DeepHomographyRegression, self).__init__()
         self.features = nn.Sequential(OrderedDict([
-                ('conv1', ConvBlock(shape[0], 64)),
+                ('conv1', ConvBlock(2*shape[0], 64)),
                 ('conv2', ConvBlock(64, 64)),
                 ('mp1', nn.MaxPool2d(kernel_size=2, stride=2)),
                 ('conv3', ConvBlock(64, 64)),
@@ -29,7 +29,7 @@ class DeepHomographyRegression(nn.Module):
                 ('faltten', nn.Flatten())
         ]))
 
-        n = self._numel([1,shape[0],shape[1],shape[2]])
+        n = self._numel([1,2*shape[0],shape[1],shape[2]])
 
         self.regression = nn.Sequential(OrderedDict([
             ('fc1', nn.Linear(n, 1024)),
