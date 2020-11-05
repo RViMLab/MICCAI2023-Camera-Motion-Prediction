@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import pytorch_lightning as pl
 from typing import List
+from kornia import tensor_to_image
 
 from models import DeepHomographyRegression
 from utils.viz import warp_figure
@@ -42,7 +43,7 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
         self.log('val_loss', loss)
 
         figure = warp_figure(
-            img=batch['img_seq'][0][0].squeeze().numpy(), 
+            img=tensor_to_image(batch['img_seq'][0][0]), 
             uv=batch['uv'][0].squeeze().numpy(), 
             duv=batch['duv'][0].squeeze().cpu().numpy(), 
             duv_pred=duv_pred[0].squeeze().cpu().numpy(), 
