@@ -39,7 +39,7 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
-        self.log('val_loss', loss, on_epoch=True)
+        self.log('val_loss', loss)
 
         figure = warp_figure(
             img=batch['img_seq'][0].squeeze().numpy(), 
