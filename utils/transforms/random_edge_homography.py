@@ -67,7 +67,7 @@ class RandomEdgeHomography(object):
 
             # Step 4: Apply inverse homography to image and crop
             wrp = cv2.warpPerspective(img, np.linalg.inv(H), (img.shape[1], img.shape[0])).reshape(shape)
-            wrp_crp = wrp[uv[0,0]:uv[2,0],uv[0,1]:uv[2,1]]
+            wrp_crp = self.crop(wrp, uv)
             
             # Additional step: Check if crop lies within warped image
             wrp_bdr = cv2.perspectiveTransform(boundary.reshape(-1,1,2)[:,:,::-1], np.linalg.inv(H))
