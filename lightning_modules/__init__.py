@@ -1,1 +1,2 @@
+from .content_aware_unsupervised_deep_homography_estimation_module import ContentAwareUnsupervisedDeepHomographyEstimationModule
 from .deep_image_homography_estimation_module import DeepImageHomographyEstimationModule
