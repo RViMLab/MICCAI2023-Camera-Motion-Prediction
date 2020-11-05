@@ -3,8 +3,8 @@
 # - torch: https://ngc.nvidia.com/catalog/containers/nvidia:pytorch has conda by default
 FROM pytorch/conda-cuda
 
-# OpenCV bug https://github.com/NVIDIA/nvidia-docker/issues/864
-CMD ["apt", "install", "-y", "libsm6", "libxext6", "libxrender-dev", "libgl1-mesa-glx"]
+# OpenCV bug https://github.com/NVIDIA/nvidia-docker/issues/864 
+RUN yum install -y libSM libXext libXrender
 
 ARG USER_ID
 ARG GROUP_ID
