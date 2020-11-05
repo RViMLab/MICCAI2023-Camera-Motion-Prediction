@@ -181,7 +181,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         self.log('val_loss', loss, on_epoch=True)
 
         wrp_figure = warp_figure(
-            img=tensor_to_image(batch['img_seq'][0][0].squeeze().cpu()), 
+            img=tensor_to_image(batch['img_seq'][0][0]), 
             uv=batch['uv'][0].squeeze().cpu().numpy(), 
             duv=batch['duv'][0].squeeze().cpu().numpy(), 
             duv_pred=dic['duv_01'][0].squeeze().cpu().numpy(), 
