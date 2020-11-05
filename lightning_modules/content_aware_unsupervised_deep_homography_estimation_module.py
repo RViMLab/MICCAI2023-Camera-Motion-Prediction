@@ -6,6 +6,7 @@ from collections import OrderedDict
 import pytorch_lightning as pl
 from typing import List
 from kornia.geometry.transform import get_perspective_transform, warp_perspective, crop_and_resize
+from kornia import tensor_to_image
 
 from models import DeepHomographyRegression
 from models import ConvBlock
@@ -180,7 +181,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         self.log('val_loss', loss, on_epoch=True)
 
         wrp_figure = warp_figure(
-            img=batch['img_seq'][0].squeeze().cpu().numpy(), 
+            img=tensor_to_image(batch['img_seq'][0][0].squeeze().cpu()), 
             uv=batch['uv'][0].squeeze().cpu().numpy(), 
             duv=batch['duv'][0].squeeze().cpu().numpy(), 
             duv_pred=dic['duv_01'][0].squeeze().cpu().numpy(), 
