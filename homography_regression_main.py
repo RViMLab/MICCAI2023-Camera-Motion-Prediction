@@ -46,7 +46,7 @@ if __name__ == '__main__':
     dm.setup()
 
     # load specific module
-    shape = next(iter(dm.train_dataloader()))['img_seq'][0].shape
+    shape = next(iter(dm.train_dataloader()))['img_seq_crp'][0].shape
     kwargs = {
         'shape': shape[-3:],
         'lr': configs['hparams']['lr'],
