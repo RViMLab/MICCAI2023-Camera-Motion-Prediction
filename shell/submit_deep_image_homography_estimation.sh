@@ -1,4 +1,4 @@
-runai submit hil-deep-image-homography-estimation \
+runai submit hil-supervised \
   -p mhuber \
   -i 10.202.67.201:32581/mhuber:hil_02 \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
