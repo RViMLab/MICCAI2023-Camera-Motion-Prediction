@@ -13,7 +13,7 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters('lr', 'betas')
         self.model = DeepHomographyRegression(shape)
-        self.loss = nn.PairwiseDistance()
+        self.distance_loss = nn.PairwiseDistance()
 
         self.lr = lr
         self.betas = betas
@@ -27,20 +27,20 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         duv_pred = self.model(batch['img_seq_crp'][0], batch['img_seq_crp'][1])
-        loss = self.loss(
+        distance_loss = self.distance_loss(
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
-        self.log('train_loss', loss) # logs all log_every_n_steps https://pytorch-lightning.readthedocs.io/en/latest/logging.html#control-logging-frequency
-        return loss     
+        self.log('train/distance', distanceloss) # logs all log_every_n_steps https://pytorch-lightning.readthedocs.io/en/latest/logging.html#control-logging-frequency
+        return distance_loss    
 
     def validation_step(self, batch, batch_idx):
         duv_pred = self.model(batch['img_seq_crp'][0], batch['img_seq_crp'][1])
-        loss = self.loss(
+        distance_loss = self.distance_loss(
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
-        self.log('val_loss', loss)
+        self.log('val/distance', distance_loss)
 
         figure = warp_figure(
             img=tensor_to_image(batch['img_seq'][0][0]), 
@@ -49,14 +49,14 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
             duv_pred=duv_pred[0].squeeze().cpu().numpy(), 
             H=batch['H'][0].squeeze().numpy()
         )
-        self.logger.experiment.add_figure('val_wrp', figure, self.current_epoch)
-        return loss
+        self.logger.experiment.add_figure('val/wrp', figure, self.current_epoch)
+        return distance_loss
 
     def test_step(self, batch, batch_idx):
         duv_pred = self.model(batch['img_seq_crp'][0], batch['img_seq_crp'][1])
-        loss = self.loss(
+        distance_loss = self.distance_loss(
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
-        self.log('test_loss', loss)
-        return loss
+        self.log('test/distance', distance_loss)
+        return distance_loss
