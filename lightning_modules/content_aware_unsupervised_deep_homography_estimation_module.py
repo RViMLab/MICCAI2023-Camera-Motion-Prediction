@@ -13,7 +13,7 @@ from utils.viz import warp_figure
 
 
 class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule):
-    def __init__(self, shape: List[int], lam: float=2.0, mu: float=0.01, pre_train_epochs: int=50, lr: float=1e-4, betas: List[float]=[0.9, 0.999]):
+    def __init__(self, shape: List[int], lam: float=2.0, mu: float=0.01, pre_train_epochs: int=5, lr: float=1e-4, betas: List[float]=[0.9, 0.999], log_n_steps: int=1000):
         r"""Content-aware unsupervised deep homography estimation model from https://arxiv.org/abs/1909.05983.
 
         Args:
@@ -21,7 +21,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         """
         super().__init__()
 
-        self.save_hyperparameters('lam', 'mu', 'lr', 'betas')
+        self.save_hyperparameters('pre_train_epochs', 'lam', 'mu', 'lr', 'betas')
 
         self.feature_extractor = nn.Sequential(OrderedDict([
             ('conv1', ConvBlock(shape[0], 4, padding=1)),  # preserve dimensions
@@ -56,6 +56,9 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         self.betas = betas
 
         self.distance_loss = nn.PairwiseDistance()
+        self.validation_step_ct = 0
+        self.log_n_steps = log_n_steps
+
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.homography_estimator.parameters(), lr=self.lr, betas=self.betas)
@@ -66,11 +69,11 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         f_0 = self.feature_extractor(img_0)
         f_1 = self.feature_extractor(img_1)
 
-        if masks:
-            # masks
-            m_0 = self.mask_predictor(img_0)
-            m_1 = self.mask_predictor(img_1)
+        # masks
+        m_0 = self.mask_predictor(img_0)
+        m_1 = self.mask_predictor(img_1)
 
+        if masks:
             # weighted feature maps
             g_0 = m_0.mul(f_0)
             g_1 = m_1.mul(f_1)
@@ -146,8 +149,6 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         return h_01
 
     def training_step(self, batch, batch_idx):
-        self.train()
-
         # forward ab and ba
         i_a = batch['img_seq_crp'][0]
         i_b = batch['img_seq_crp'][1] # warped and cropped
@@ -177,11 +178,11 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         loss = l_content_ab + l_content_ba - self.lam*l_reg + self.mu*l_consistency
 
         # track losses
-        distance = self.distance_loss(
+        distance_loss = self.distance_loss(
             ab_dic['duv_01'].view(-1, 2), 
             batch['duv'].to(ab_dic['duv_01'].dtype).view(-1, 2)
         ).mean()
-        self.log('train/distance', distance)
+        self.log('train/distance', distance_loss)
 
         self.log('train/content_loss_ab', l_content_ab)
         self.log('train/content_loss_ba', l_content_ba)
@@ -192,37 +193,38 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        self.eval()
+        self.validation_step_ct += 1
 
         dic = self(batch['img_seq_crp'][0], batch['img_seq_crp'][1])
         distance_loss = self.distance_loss(
             dic['duv_01'].view(-1, 2), 
             batch['duv'].to(dic['duv_01'].dtype).view(-1, 2)
         ).mean()
-        self.log('val/distance', loss)
+        self.log('val/distance', distance_loss)
 
-        wrp_figure = warp_figure(
-            img=tensor_to_image(batch['img_seq'][0][0]), 
-            uv=batch['uv'][0].squeeze().cpu().numpy(), 
-            duv=batch['duv'][0].squeeze().cpu().numpy(), 
-            duv_pred=dic['duv_01'][0].squeeze().cpu().numpy(), 
-            H=batch['H'][0].squeeze().numpy()
-        )
+        if self.validation_step_ct % self.log_n_steps == 0:
+            # log figures
+            wrp_figure = warp_figure(
+                img=tensor_to_image(batch['img_seq'][0][0]), 
+                uv=batch['uv'][0].squeeze().cpu().numpy(), 
+                duv=batch['duv'][0].squeeze().cpu().numpy(), 
+                duv_pred=dic['duv_01'][0].squeeze().cpu().numpy(), 
+                H=batch['H'][0].squeeze().numpy()
+            )
 
-        self.logger.experiment.add_figure('val/wrp', wrp_figure, self.current_epoch)
-        self.logger.experiment.add_images('val/img_seq_crp_0', batch['img_seq_crp'][0], self.current_epoch)
-        self.logger.experiment.add_images('val/img_seq_crp_1', batch['img_seq_crp'][1], self.current_epoch)
-        self.logger.experiment.add_images('val/mask_0', dic['m_0'], self.current_epoch)
-        self.logger.experiment.add_images('val/mask_1', dic['m_1'], self.current_epoch)
+            self.logger.experiment.add_figure('val/wrp', wrp_figure, self.validation_step_ct)
+            self.logger.experiment.add_images('val/img_seq_crp_0', batch['img_seq_crp'][0], self.validation_step_ct)
+            self.logger.experiment.add_images('val/img_seq_crp_1', batch['img_seq_crp'][1], self.validation_step_ct)
+            self.logger.experiment.add_images('val/mask_0', dic['m_0'], self.validation_step_ct)
+            self.logger.experiment.add_images('val/mask_1', dic['m_1'], self.validation_step_ct)
         return distance_loss
 
     def test_step(self, batch, batch_idx):
-        self.eval()
-
         duv_pred = self(batch['img_seq_crp'][0], batch['img_seq_crp'][1], masks=True)['duv_01']
         distance_loss = self.distance_loss(
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
         self.log('test/distance', distance_loss)
+
         return distance_loss
