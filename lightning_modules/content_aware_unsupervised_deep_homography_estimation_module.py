@@ -66,11 +66,11 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         f_0 = self.feature_extractor(img_0)
         f_1 = self.feature_extractor(img_1)
 
-        if masks:
-            # masks
-            m_0 = self.mask_predictor(img_0)
-            m_1 = self.mask_predictor(img_1)
+        # masks
+        m_0 = self.mask_predictor(img_0)
+        m_1 = self.mask_predictor(img_1)
 
+        if masks:
             # weighted feature maps
             g_0 = m_0.mul(f_0)
             g_1 = m_1.mul(f_1)
@@ -199,7 +199,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
             dic['duv_01'].view(-1, 2), 
             batch['duv'].to(dic['duv_01'].dtype).view(-1, 2)
         ).mean()
-        self.log('val/distance', loss)
+        self.log('val/distance', distance_loss)
 
         wrp_figure = warp_figure(
             img=tensor_to_image(batch['img_seq'][0][0]), 
