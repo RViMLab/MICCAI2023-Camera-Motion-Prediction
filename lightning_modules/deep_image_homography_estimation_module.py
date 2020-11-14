@@ -26,6 +26,7 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
         return optimizer
 
     def training_step(self, batch, batch_idx):
+        self.model.train()
         duv_pred = self.model(batch['img_seq_crp'][0], batch['img_seq_crp'][1])
         distance_loss = self.distance_loss(
             duv_pred.view(-1, 2), 
@@ -35,6 +36,7 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
         return distance_loss    
 
     def validation_step(self, batch, batch_idx):
+        self.model.eval()
         duv_pred = self.model(batch['img_seq_crp'][0], batch['img_seq_crp'][1])
         distance_loss = self.distance_loss(
             duv_pred.view(-1, 2), 
@@ -53,6 +55,7 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
         return distance_loss
 
     def test_step(self, batch, batch_idx):
+        self.model.eval()
         duv_pred = self.model(batch['img_seq_crp'][0], batch['img_seq_crp'][1])
         distance_loss = self.distance_loss(
             duv_pred.view(-1, 2), 
