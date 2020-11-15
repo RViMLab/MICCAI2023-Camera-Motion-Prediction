@@ -13,7 +13,7 @@ from utils.viz import warp_figure
 
 
 class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule):
-    def __init__(self, shape: List[int], lam: float=2.0, mu: float=0.01, pre_train_epochs: int=5, lr: float=1e-4, betas: List[float]=[0.9, 0.999], log_n_steps: int=1000):
+    def __init__(self, shape: List[int], lam: float=2.0, mu: float=0.01, pre_train_epochs: int=4, lr: float=1e-4, betas: List[float]=[0.9, 0.999], log_n_steps: int=1000):
         r"""Content-aware unsupervised deep homography estimation model from https://arxiv.org/abs/1909.05983.
 
         Args:
@@ -61,7 +61,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
 
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.homography_estimator.parameters(), lr=self.lr, betas=self.betas)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, betas=self.betas)
         return optimizer
 
     def forward(self, img_0, img_1, masks=True):
