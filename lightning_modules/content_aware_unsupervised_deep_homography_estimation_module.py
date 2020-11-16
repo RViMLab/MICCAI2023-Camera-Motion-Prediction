@@ -195,7 +195,11 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
     def validation_step(self, batch, batch_idx):
         self.validation_step_ct += 1
 
-        dic = self(batch['img_seq_crp'][0], batch['img_seq_crp'][1])
+        masks = True
+        if self.current_epoch < self.pre_train_epochs:
+            masks = False
+
+        dic = self(batch['img_seq_crp'][0], batch['img_seq_crp'][1], masks)
         distance_loss = self.distance_loss(
             dic['duv_01'].view(-1, 2), 
             batch['duv'].to(dic['duv_01'].dtype).view(-1, 2)
