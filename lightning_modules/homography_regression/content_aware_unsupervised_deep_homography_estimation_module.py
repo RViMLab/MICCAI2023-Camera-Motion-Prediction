@@ -36,6 +36,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
             ('conv5', ConvBlock(32, 1, padding=1, activation=torch.sigmoid)),
         ]))
         self.homography_estimator = resnet34(pretrained=False)
+
         # modify in and out layers
         self.homography_estimator.conv1 = nn.Conv2d(
             in_channels=2,
@@ -58,7 +59,6 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         self.distance_loss = nn.PairwiseDistance()
         self.validation_step_ct = 0
         self.log_n_steps = log_n_steps
-
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, betas=self.betas)

@@ -6,7 +6,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 import torch
 
 from utils.io import load_yaml
-import lightning_modules
+from lightning_modules import homography_regression
 import lightning_data_modules
 
 
@@ -53,7 +53,7 @@ if __name__ == '__main__':
         'betas': configs['hparams']['betas']
     }
 
-    module = getattr(lightning_modules, configs['lightning_module'])(**kwargs)
+    module = getattr(homography_regression, configs['lightning_module'])(**kwargs)
 
     logger = TensorBoardLogger(
         save_dir=server['logging']['location'],
