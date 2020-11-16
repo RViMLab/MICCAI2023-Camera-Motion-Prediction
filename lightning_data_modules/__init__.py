@@ -1,1 +1,1 @@
-from .consecutive_data_module import ConsecutiveDataModule
+from .pair_homography_data_module import PairHomographyDataModule

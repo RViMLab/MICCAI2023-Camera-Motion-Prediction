@@ -8,7 +8,7 @@ from typing import List
 from utils.transforms import RandomEdgeHomography, HOMOGRAPHY_RETURN
 
 
-class PandasHomographyDataset(Dataset):
+class PairHomographyDataset(Dataset):
     def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int] , transforms=None):
         self.df = df
         self.prefix = prefix

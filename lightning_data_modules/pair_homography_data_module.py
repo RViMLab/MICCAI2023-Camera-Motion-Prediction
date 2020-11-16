@@ -4,10 +4,10 @@ from torch.utils.data import DataLoader
 from torch.utils.data.dataset import random_split
 from typing import List
 
-from datasets import PandasHomographyDataset
+from datasets import PairHomographyDataset
 
 
-class ConsecutiveDataModule(pl.LightningDataModule):
+class PairHomographyDataModule(pl.LightningDataModule):
     def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, rho: int=32, crp_shape: List[int]=[480, 640], unsupervised: bool=False):
         super().__init__()
         self.train_df = df[df['test'] == False].reset_index()
@@ -22,12 +22,12 @@ class ConsecutiveDataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
-            full_dataset = PandasHomographyDataset(self.train_df, self.prefix, self.rho, self.crp_shape)
+            full_dataset = PairHomographyDataset(self.train_df, self.prefix, self.rho, self.crp_shape)
             train_len = int(self.train_split*len(full_dataset))
             val_len = len(full_dataset) - train_len
             self.train_set, self.val_set = random_split(full_dataset, [train_len, val_len]) # for training and validation
         if stage == 'test' or stage is None:
-            self.test_set = PandasHomographyDataset(self.test_df, self.prefix, self.rho, self.crp_shape) # for final evaluation
+            self.test_set = PairHomographyDataset(self.test_df, self.prefix, self.rho, self.crp_shape) # for final evaluation
 
     def transfer_batch_to_device(self, batch, device):
         batch['img_seq_crp'][0] = batch['img_seq_crp'][0].to(device)
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     pkl_name = 'log_without_camera_motion_seq_len_2.pkl'
     df = pd.read_pickle(os.path.join(prefix, pkl_name))
 
-    cdm = ConsecutiveDataModule(df, prefix, train_split=0.8, batch_size=16, num_workers=0, rho=32, crp_shape=[640, 480])
+    cdm = PairHomographyDataModule(df, prefix, train_split=0.8, batch_size=16, num_workers=0, rho=32, crp_shape=[640, 480])
     cdm.setup()
 
     for batch in cdm.train_dataloader():
