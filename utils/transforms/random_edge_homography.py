@@ -21,17 +21,20 @@ class RandomEdgeHomography(object):
         rho (int): uv are perturbed within [-rho, rho]
         crp_shape (tuple of int): Crop shape
         homography_return (IntEnum): Return different outputs on __call__()
+        seeds (list of np.int32): Seeds for deterministic output, list of randomly generated int
     """
-    def __init__(self, rho: int, crp_shape: List[int], homography_return: IntEnum=HOMOGRAPHY_RETURN.DEFAULT):
+    def __init__(self, rho: int, crp_shape: List[int], homography_return: IntEnum=HOMOGRAPHY_RETURN.DEFAULT, seeds: List[np.int32]=None):
         self.rho = rho
         self.crp_shape = crp_shape
         self.homography_return = homography_return
+        self.seeds = seeds
 
-    def __call__(self, img: np.array):
+    def __call__(self, img: np.array, idx: int):
         """Compute the random homographies.
 
         Args:
             img (np.array): Input image of shape HxWxC
+            idx (int): Index for self.seeds
 
         Return:
             img_crp (np.array): Cropped image of shape crp_shape x C
@@ -46,6 +49,10 @@ class RandomEdgeHomography(object):
                 wrp (np.array): Warped image
                 wrp_bdr (np.array): uv of warped image
         """
+        # retrieve seed from list of seeds
+        if self.seeds:
+            seed = self.seeds[idx]
+            np.random.seed(seed)
         img_crp, uv = self._random_crop(img=img, crp_shape=self.crp_shape, padding=self.rho)
 
         feasible = False
@@ -72,6 +79,8 @@ class RandomEdgeHomography(object):
         # Step 4: Apply inverse homography to image and crop
         wrp = cv2.warpPerspective(img, np.linalg.inv(H), (img.shape[1], img.shape[0])).reshape(shape)
         wrp_crp = self.crop(wrp, uv)
+
+        np.random.seed(None)
             
         if self.homography_return == HOMOGRAPHY_RETURN.DEFAULT:
             return img_crp, wrp_crp, duv

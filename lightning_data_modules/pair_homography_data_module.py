@@ -1,33 +1,43 @@
 import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
-from torch.utils.data.dataset import random_split
+from torch.utils.data.dataset import random_split, Subset
 from typing import List
 
 from datasets import PairHomographyDataset
 
 
 class PairHomographyDataModule(pl.LightningDataModule):
-    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, rho: int=32, crp_shape: List[int]=[480, 640], unsupervised: bool=False):
+    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, rho: int=32, crp_shape: List[int]=[480, 640], unsupervised: bool=False, random_state: int=42):
         super().__init__()
-        self.train_df = df[df['test'] == False].reset_index()
+        self.train_df, self.val_df = train_test_split(
+            df[df['test'] == False].reset_index(), 
+            train_size=train_split, 
+            random_state=random_state
+        )
+        self.train_df = self.train_df.reset_index()
+        self.val_df = self.val_df.reset_index()
         self.test_df = df[df['test'] == True].reset_index()
         self.prefix = prefix
-        self.train_split = train_split
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.rho = rho
         self.crp_shape = crp_shape
         self.unsupervised = unsupervised
 
+        self.train_transforms = None
+        self.val_transforms = None
+
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
-            full_dataset = PairHomographyDataset(self.train_df, self.prefix, self.rho, self.crp_shape)
-            train_len = int(self.train_split*len(full_dataset))
-            val_len = len(full_dataset) - train_len
-            self.train_set, self.val_set = random_split(full_dataset, [train_len, val_len]) # for training and validation
+            self.train_set = PairHomographyDataset(self.train_df, self.prefix, self.rho, self.crp_shape, transforms=self.train_transforms)
+            seeds = np.arange(0, len(self.val_df)) # assure validation set is seeded the same for all epochs
+            self.val_set = PairHomographyDataset(self.val_df, self.prefix, self.rho, self.crp_shape, transforms=self.val_transforms, seeds=seeds)
         if stage == 'test' or stage is None:
-            self.test_set = PairHomographyDataset(self.test_df, self.prefix, self.rho, self.crp_shape) # for final evaluation
+            seeds = np.arange(0, len(self.test_df)) # assure test set is seeded the same for all runs
+            self.test_set = PairHomographyDataset(self.test_df, self.prefix, self.rho, self.crp_shape, seeds=seeds) # for final evaluation
 
     def transfer_batch_to_device(self, batch, device):
         batch['img_seq_crp'][0] = batch['img_seq_crp'][0].to(device)

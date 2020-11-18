@@ -35,6 +35,7 @@ if __name__ == '__main__':
         'df': df, 
         'prefix': prefix, 
         'train_split': configs['data']['train_split'],
+        'random_state': configs['data']['random_state'],
         'batch_size': configs['data']['batch_size'],
         'num_workers': configs['data']['num_workers'],
         'rho': configs['data']['rho'],
