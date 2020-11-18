@@ -193,8 +193,6 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        self.validation_step_ct += 1
-
         masks = True
         if self.current_epoch < self.pre_train_epochs:
             masks = False
@@ -221,6 +219,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
             self.logger.experiment.add_images('val/img_seq_crp_1', batch['img_seq_crp'][1], self.validation_step_ct)
             self.logger.experiment.add_images('val/mask_0', dic['m_0'], self.validation_step_ct)
             self.logger.experiment.add_images('val/mask_1', dic['m_1'], self.validation_step_ct)
+        self.validation_step_ct += 1
         return distance_loss
 
     def test_step(self, batch, batch_idx):
@@ -229,6 +228,6 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
-        self.log('test/distance', distance_loss)
+        self.log('test/distance', distance_loss, batch_idx)
 
         return distance_loss
