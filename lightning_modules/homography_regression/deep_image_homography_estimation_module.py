@@ -33,7 +33,7 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
-        self.log('train/distance', distanceloss) # logs all log_every_n_steps https://pytorch-lightning.readthedocs.io/en/latest/logging.html#control-logging-frequency
+        self.log('train/distance', distance_loss) # logs all log_every_n_steps https://pytorch-lightning.readthedocs.io/en/latest/logging.html#control-logging-frequency
         return distance_loss    
 
     def validation_step(self, batch, batch_idx):
@@ -62,5 +62,5 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
-        self.log('test/distance', distance_loss, batch_idx)
+        self.log('test/distance', distance_loss, on_epoch=True)
         return distance_loss
