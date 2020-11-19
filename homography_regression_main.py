@@ -5,7 +5,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
 import torch
 
-from utils.io import load_yaml
+from utils.io import load_yaml, save_yaml, generate_path
 from lightning_modules import homography_regression
 import lightning_data_modules
 
@@ -58,6 +58,10 @@ if __name__ == '__main__':
         name=configs['experiment']
     )
 
+    # save configs
+    generate_path(logger.log_dir)
+    save_yaml(os.path.join(logger.log_dir, 'configs.yml'), configs)
+
     trainer = pl.Trainer(
         max_epochs=configs['trainer']['max_epochs'],
         logger=logger,
@@ -71,5 +75,5 @@ if __name__ == '__main__':
     # fit and validation
     trainer.fit(module, dm)
 
-    # # test
+    # test
     trainer.test()
