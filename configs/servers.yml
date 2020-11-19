@@ -7,4 +7,9 @@ dgx1-1:
     database: 
         location: '/nfs/home/mhuber/data/endoscopic_data'
     logging:
-        location: '/nfs/home/mhuber/logs'
+        location: '/nfs/home/mhuber/tresorit/homography_imitation_learning_logs'
+rvim_server:
+    database:
+        location: '/media/raid/martin/endoscopic_data'
+    logging:
+        location: '/media/raid/martin/tresorit/homography_imitation_learning_logs'
