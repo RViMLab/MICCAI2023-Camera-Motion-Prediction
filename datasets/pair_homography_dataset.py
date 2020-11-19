@@ -1,5 +1,6 @@
 import os
 import cv2
+import imgaug
 import pandas as pd
 import numpy as np
 from torch.utils.data import Dataset
@@ -30,8 +31,8 @@ class PairHomographyDataset(Dataset):
         if self.transforms:
             seed = np.random.randint(np.iinfo(np.int32).max) # set random seed for numpy
             for i in range(len(img_seq)):
-                np.random.seed(seed)
-                img_seq[i] = self.transforms(img_seq[i])
+                imgaug.seed(seed)
+                img_seq[i] = np.ascontiguousarray(self.transforms(img_seq[i]))
 
         # apply random edge homography
         reh = self.reh(img_seq[1], idx)
