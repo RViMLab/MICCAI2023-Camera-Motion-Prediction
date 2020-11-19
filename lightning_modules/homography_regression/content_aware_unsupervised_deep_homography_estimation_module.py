@@ -202,7 +202,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
             dic['duv_01'].view(-1, 2), 
             batch['duv'].to(dic['duv_01'].dtype).view(-1, 2)
         ).mean()
-        self.log('val/distance', distance_loss)
+        self.log('val/distance', distance_loss, on_epoch=True)
 
         if self.validation_step_ct % self.log_n_steps == 0:
             # log figures

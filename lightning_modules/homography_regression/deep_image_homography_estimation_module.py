@@ -42,7 +42,7 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
-        self.log('val/distance', distance_loss)
+        self.log('val/distance', distance_loss, on_epoch=True)
 
         if self.validation_step_ct % self.log_n_steps == 0:
             figure = warp_figure(
@@ -52,7 +52,7 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
                 duv_pred=duv_pred[0].squeeze().cpu().numpy(), 
                 H=batch['H'][0].squeeze().numpy()
             )
-            self.logger.experiment.add_figure('val/wrp', figure, self.current_epoch)
+            self.logger.experiment.add_figure('val/wrp', figure, self.validation_step_ct)
         self.validation_step_ct += 1
         return distance_loss
 
