@@ -73,5 +73,5 @@ class UnsupervisedDeepHomographyEstimationModule(pl.LightningModule):
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
-        self.log('test/distance', distance_loss, batch_idx)
+        self.log('test/distance', distance_loss, on_epoch=True)
         return distance_loss
