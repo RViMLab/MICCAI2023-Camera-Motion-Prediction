@@ -1,5 +1,5 @@
-experiment: 'deep_image_homography_estimation'
-lightning_module: 'DeepImageHomographyEstimationModule'
+experiment: 'unsupervised_deep_homography_estimation_backbone'
+lightning_module: 'UnsupervisedDeepHomographyEstimationModuleBackbone'
 lightning_data_module: 'PairHomographyDataModule'
 trainer:
     gpus: 1
@@ -14,10 +14,10 @@ data:
     train_split: 0.8
     random_state: 42
     batch_size: 16
-    num_workers: 4
+    num_workers: 2
     rho: 32
     crp_shape: [480, 640]
-    unsupervised: False
+    unsupervised: True
     train_transforms: 
         # - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',             'kwargs': {'size': {'height': 480, 'width': 640}}}
         - {'chance': 0.1, 'module': 'imgaug.augmenters',                'type': 'Grayscale',          'kwargs': {}}
@@ -34,3 +34,4 @@ model:
     lr: 1.e-4
     betas: [0.9, 0.999]
     log_n_steps: 1000
+    backbone: 'resnet34'

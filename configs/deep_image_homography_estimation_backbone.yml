@@ -1,5 +1,5 @@
-experiment: 'deep_image_homography_estimation'
-lightning_module: 'DeepImageHomographyEstimationModule'
+experiment: 'deep_image_homography_estimation_backbone'
+lightning_module: 'DeepImageHomographyEstimationModuleBackbone'
 lightning_data_module: 'PairHomographyDataModule'
 trainer:
     gpus: 1
@@ -34,3 +34,4 @@ model:
     lr: 1.e-4
     betas: [0.9, 0.999]
     log_n_steps: 1000
+    backbone: 'resnet34'
