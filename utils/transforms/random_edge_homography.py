@@ -50,7 +50,7 @@ class RandomEdgeHomography(object):
                 wrp_bdr (np.array): uv of warped image
         """
         # retrieve seed from list of seeds
-        if self.seeds.any():
+        if self.seeds:
             seed = self.seeds[idx]
             np.random.seed(seed)
         img_crp, uv = self._random_crop(img=img, crp_shape=self.crp_shape, padding=self.rho)
