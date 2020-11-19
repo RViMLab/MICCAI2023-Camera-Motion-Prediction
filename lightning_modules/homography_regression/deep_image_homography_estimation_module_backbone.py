@@ -36,7 +36,7 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
 
     def forward(self, img, wrp):
         cat = torch.cat((img, wrp), dim=1)
-        return self.model(cat)
+        return self.model(cat).view(-1,4,2)
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr, betas=self.betas)
