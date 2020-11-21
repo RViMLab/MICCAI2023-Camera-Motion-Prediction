@@ -1,5 +1,5 @@
 import os
-import cv2
+import imageio
 import imgaug
 import pandas as pd
 import numpy as np
@@ -24,8 +24,7 @@ class PairHomographyDataset(Dataset):
         img_seq_crp = []
 
         for file in file_seq:
-            img = cv2.imread(os.path.join(self.prefix, self.df['path'][idx], file))
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img = imageio.imread(os.path.join(self.prefix, self.df['path'][idx], file))
             img_seq.append(img)
 
         if self.transforms:
