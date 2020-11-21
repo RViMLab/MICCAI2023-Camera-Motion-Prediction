@@ -2,7 +2,7 @@ experiment: 'unsupervised_deep_homography_estimation_backbone'
 lightning_module: 'UnsupervisedDeepHomographyEstimationModuleBackbone'
 lightning_data_module: 'PairHomographyDataModule'
 trainer:
-    gpus: 1
+    gpus: [1]
     max_epochs: 20
     log_every_n_steps: 100
     limit_train_batches: 1.0
