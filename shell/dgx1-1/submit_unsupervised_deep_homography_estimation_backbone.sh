@@ -1,0 +1,11 @@
+runai submit hil-supervised \
+  -p mhuber \
+  -i 10.202.67.201:32581/mhuber:hil_02 \
+  -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
+  -v /nfs/home/mhuber/data:/nfs/home/mhuber/data \
+  -v /nfs/home/mhuber/logs:/nfs/home/mhuber/logs \
+  -g 1 \
+  --host-ipc \
+  --command /workspace/homography_imitation_learning/shell/dgx1-1/run_unsupervised_deep_homography_estimation_backbone.sh \
+  --working-dir /workspace/homography_imitation_learning/ \
+  --run-as-user # defaults to root -> logs will be safed as root too
