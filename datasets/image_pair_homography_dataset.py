@@ -10,7 +10,7 @@ from typing import List, Callable
 from utils.transforms import RandomEdgeHomography, HOMOGRAPHY_RETURN
 
 
-class PairHomographyDataset(Dataset):
+class ImagePairHomographyDataset(Dataset):
     r"""Takes two images, supposedly from two time steps, and warps the second. Returns crops of both. 
     Implements the method described by DeTone et al. in https://arxiv.org/pdf/1606.03798.pdf.
 
@@ -35,10 +35,10 @@ class PairHomographyDataset(Dataset):
     def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int] , transforms: Callable=None, seeds: List[np.int32]=None):
         if seeds:
             if (len(df) != len(seeds)):
-                raise Exception('In PairHomographyDataset: Length of dataframe must equal length of seeds.')
+                raise Exception('In ImagePairHomographyDataset: Length of dataframe must equal length of seeds.')
 
         if (len(df['file_seq'][0]) != 2):
-            raise Exception('In PairHomographyDataset: Length of file_seq in dataframe must equal 2.')
+            raise Exception('In ImagePairHomographyDataset: Length of file_seq in dataframe must equal 2.')
         
         self.df = df
         self.prefix = prefix   
