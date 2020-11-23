@@ -33,10 +33,11 @@ class PairHomographyDataset(Dataset):
         )
     """
     def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int] , transforms: Callable=None, seeds: List[np.int32]=None):
-        if (len(df) != len(seeds)):
-            raise Exception('In PairHomographyDataset: Length of dataframe must equal length of seeds.')
+        if seeds:
+            if (len(df) != len(seeds)):
+                raise Exception('In PairHomographyDataset: Length of dataframe must equal length of seeds.')
 
-        if (len(df['file_seq']) != 2):
+        if (len(df['file_seq'][0]) != 2):
             raise Exception('In PairHomographyDataset: Length of file_seq in dataframe must equal 2.')
         
         self.df = df
@@ -67,7 +68,9 @@ class PairHomographyDataset(Dataset):
 
         for i in range(len(img_pair)):
             img_pair[i] = self.tt(img_pair[i])
-            img_wrp_pair[i] = self.tt(img_wrp_pair[i])
+
+        img_crp = self.tt(img_crp)
+        wrp_crp = self.tt(wrp_crp)
 
         return {
             'img_pair': img_pair,

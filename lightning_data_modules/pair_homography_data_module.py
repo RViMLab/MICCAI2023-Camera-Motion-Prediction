@@ -42,7 +42,7 @@ class PairHomographyDataModule(pl.LightningDataModule):
 
     def transfer_batch_to_device(self, batch, device):
         batch['img_crp'] = batch['img_crp'].to(device)
-        batch['wrp_crp'] = batch['wrp_crp'][1].to(device)
+        batch['wrp_crp'] = batch['wrp_crp'].to(device)
         batch['duv'] = batch['duv'].to(device)
         if self.unsupervised:
             batch['img_pair'][0] = batch['img_pair'][0].to(device)
