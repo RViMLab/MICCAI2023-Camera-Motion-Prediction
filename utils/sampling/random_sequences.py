@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from typing import List, Callable
 
 
 class RandomSequences():
@@ -13,7 +14,7 @@ class RandomSequences():
         transforms (list of callables): Transforming videos
         verbose (bool): Return verbose output if true
     """
-    def __init__(self, max_seq, paths, seq_len=1, strides=[1], transforms=None, verbose=False):
+    def __init__(self, max_seq: int, paths: List[str], seq_len: int=1, strides: List[int]=[1], transforms: Callable=None, verbose: bool=False):
         self.video_captures = []
         self.prob_vid = []
         self.seq = 0
@@ -74,7 +75,7 @@ class RandomSequences():
     def __len__(self):
         return self.max_seq
 
-    def _sample(self, capture, frame, stride=1, transforms=None):
+    def _sample(self, capture: cv2.VideoCapture, frame: int, stride:=1, transforms: Callable=None):
         r"""Return a sequence of images from a videos capture.
 
         Args:
