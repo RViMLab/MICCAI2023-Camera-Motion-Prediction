@@ -75,7 +75,7 @@ class RandomSequences():
     def __len__(self):
         return self.max_seq
 
-    def _sample(self, capture: cv2.VideoCapture, frame: int, stride:=1, transforms: Callable=None):
+    def _sample(self, capture: cv2.VideoCapture, frame: int, stride: int=1, transforms: Callable=None):
         r"""Return a sequence of images from a videos capture.
 
         Args:
