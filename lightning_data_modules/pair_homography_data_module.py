@@ -41,12 +41,12 @@ class PairHomographyDataModule(pl.LightningDataModule):
             self.test_set = PairHomographyDataset(self.test_df, self.prefix, self.rho, self.crp_shape, seeds=seeds) # for final evaluation
 
     def transfer_batch_to_device(self, batch, device):
-        batch['img_seq_crp'][0] = batch['img_seq_crp'][0].to(device)
-        batch['img_seq_crp'][1] = batch['img_seq_crp'][1].to(device)
+        batch['img_crp'] = batch['img_crp'].to(device)
+        batch['wrp_crp'] = batch['wrp_crp'][1].to(device)
         batch['duv'] = batch['duv'].to(device)
         if self.unsupervised:
-            batch['img_seq'][0] = batch['img_seq'][0].to(device)
-            batch['img_seq'][1] = batch['img_seq'][1].to(device)
+            batch['img_pair'][0] = batch['img_pair'][0].to(device)
+            batch['img_pair'][1] = batch['img_pair'][1].to(device)
             batch['uv'] = batch['uv'].to(device)
         return batch
 
@@ -72,4 +72,4 @@ if __name__ == '__main__':
 
     for batch in cdm.train_dataloader():
         print(len(batch))
-        print(batch['img_seq'][0].shape)
+        print(batch['img_pair'][0].shape)
