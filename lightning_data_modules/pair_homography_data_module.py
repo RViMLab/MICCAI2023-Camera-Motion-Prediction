@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data.dataset import random_split, Subset
 from typing import List, Callable
 
-from datasets import PairHomographyDataset
+from datasets import ImagePairHomographyDataset
 from utils.transforms import dict_list_to_augment_image
 
 
@@ -33,12 +33,12 @@ class PairHomographyDataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
-            self.train_set = PairHomographyDataset(self.train_df, self.prefix, self.rho, self.crp_shape, transforms=self.train_transforms)
+            self.train_set = ImagePairHomographyDataset(self.train_df, self.prefix, self.rho, self.crp_shape, transforms=self.train_transforms)
             seeds = np.arange(0, len(self.val_df)).tolist() # assure validation set is seeded the same for all epochs
-            self.val_set = PairHomographyDataset(self.val_df, self.prefix, self.rho, self.crp_shape, transforms=self.val_transforms, seeds=seeds)
+            self.val_set = ImagePairHomographyDataset(self.val_df, self.prefix, self.rho, self.crp_shape, transforms=self.val_transforms, seeds=seeds)
         if stage == 'test' or stage is None:
             seeds = np.arange(0, len(self.test_df)).tolist() # assure test set is seeded the same for all runs
-            self.test_set = PairHomographyDataset(self.test_df, self.prefix, self.rho, self.crp_shape, seeds=seeds) # for final evaluation
+            self.test_set = ImagePairHomographyDataset(self.test_df, self.prefix, self.rho, self.crp_shape, seeds=seeds) # for final evaluation
 
     def transfer_batch_to_device(self, batch, device):
         batch['img_crp'] = batch['img_crp'].to(device)
