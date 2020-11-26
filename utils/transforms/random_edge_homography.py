@@ -28,13 +28,21 @@ class RandomEdgeHomography(object):
         self.crp_shape = crp_shape
         self.homography_return = homography_return
         self.seeds = seeds
+        self.idx = 0
 
-    def __call__(self, img: np.array, idx: int):
-        """Compute the random homographies.
+    def set_seed_idx(self, idx: int):
+        r"""Set the seed index.
+
+        Args:
+            idx (int): Index for self.seeds
+        """
+        self.idx = idx
+
+    def __call__(self, img: np.array):
+        r"""Compute the random homographies.
 
         Args:
             img (np.array): Input image of shape HxWxC
-            idx (int): Index for self.seeds
 
         Return:
             img_crp (np.array): Cropped image of shape crp_shape x C
@@ -51,7 +59,7 @@ class RandomEdgeHomography(object):
         """
         # retrieve seed from list of seeds
         if self.seeds:
-            seed = self.seeds[idx]
+            seed = self.seeds[self.idx]
             np.random.seed(seed)
         img_crp, uv = self._random_crop(img=img, crp_shape=self.crp_shape, padding=self.rho)
 

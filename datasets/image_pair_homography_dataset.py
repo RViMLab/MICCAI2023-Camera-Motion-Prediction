@@ -61,7 +61,8 @@ class ImagePairHomographyDataset(Dataset):
                 img_pair[i] = np.ascontiguousarray(self.transforms(img_pair[i]))
 
         # apply random edge homography
-        reh = self.reh(img_pair[1], idx)
+        self.reh.set_seed_idx(idx)
+        reh = self.reh(img_pair[1])
 
         img_crp = self.reh.crop(img_pair[0], reh['uv'])
         wrp_crp = reh['wrp_crp']
