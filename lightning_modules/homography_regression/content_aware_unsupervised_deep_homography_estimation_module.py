@@ -150,8 +150,8 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
 
     def training_step(self, batch, batch_idx):
         # forward ab and ba
-        i_a = batch['img_seq_crp'][0]
-        i_b = batch['img_seq_crp'][1] # warped and cropped
+        i_a = batch['img_crp']
+        i_b = batch['img_wrp'] # warped and cropped
 
         masks = True
         if self.current_epoch < self.pre_train_epochs:
@@ -197,7 +197,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         if self.current_epoch < self.pre_train_epochs:
             masks = False
 
-        dic = self(batch['img_seq_crp'][0], batch['img_seq_crp'][1], masks)
+        dic = self(batch['img_crp'], batch['wrp_crp'], masks)
         distance_loss = self.distance_loss(
             dic['duv_01'].view(-1, 2), 
             batch['duv'].to(dic['duv_01'].dtype).view(-1, 2)
@@ -207,7 +207,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         if self.validation_step_ct % self.log_n_steps == 0:
             # log figures
             wrp_figure = warp_figure(
-                img=tensor_to_image(batch['img_seq'][0][0]), 
+                img=tensor_to_image(batch['img_pair'][0][0]), 
                 uv=batch['uv'][0].squeeze().cpu().numpy(), 
                 duv=batch['duv'][0].squeeze().cpu().numpy(), 
                 duv_pred=dic['duv_01'][0].squeeze().cpu().numpy(), 
@@ -215,15 +215,15 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
             )
 
             self.logger.experiment.add_figure('val/wrp', wrp_figure, self.validation_step_ct)
-            self.logger.experiment.add_images('val/img_seq_crp_0', batch['img_seq_crp'][0], self.validation_step_ct)
-            self.logger.experiment.add_images('val/img_seq_crp_1', batch['img_seq_crp'][1], self.validation_step_ct)
+            self.logger.experiment.add_images('val/img_crp', batch['img_crp'], self.validation_step_ct)
+            self.logger.experiment.add_images('val/wrp_crp', batch['wrp_crp'], self.validation_step_ct)
             self.logger.experiment.add_images('val/mask_0', dic['m_0'], self.validation_step_ct)
             self.logger.experiment.add_images('val/mask_1', dic['m_1'], self.validation_step_ct)
         self.validation_step_ct += 1
         return distance_loss
 
     def test_step(self, batch, batch_idx):
-        duv_pred = self(batch['img_seq_crp'][0], batch['img_seq_crp'][1], masks=True)['duv_01']
+        duv_pred = self(batch['img_crp'], batch['wrp_crp'], masks=True)['duv_01']
         distance_loss = self.distance_loss(
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)

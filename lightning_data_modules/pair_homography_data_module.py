@@ -4,14 +4,14 @@ from sklearn.model_selection import train_test_split
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import random_split, Subset
-from typing import List
+from typing import List, Callable
 
-from datasets import PairHomographyDataset
+from datasets import ImagePairHomographyDataset
 from utils.transforms import dict_list_to_augment_image
 
 
 class PairHomographyDataModule(pl.LightningDataModule):
-    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, rho: int=32, crp_shape: List[int]=[480, 640], unsupervised: bool=False, random_state: int=42, train_transforms=None, val_transforms=None):
+    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, rho: int=32, crp_shape: List[int]=[480, 640], unsupervised: bool=False, random_state: int=42, train_transforms: Callable=None, val_transforms: Callable=None):
         super().__init__()
         self.train_df, self.val_df = train_test_split(
             df[df['test'] == False].reset_index(), 
@@ -33,20 +33,20 @@ class PairHomographyDataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
-            self.train_set = PairHomographyDataset(self.train_df, self.prefix, self.rho, self.crp_shape, transforms=self.train_transforms)
+            self.train_set = ImagePairHomographyDataset(self.train_df, self.prefix, self.rho, self.crp_shape, transforms=self.train_transforms)
             seeds = np.arange(0, len(self.val_df)).tolist() # assure validation set is seeded the same for all epochs
-            self.val_set = PairHomographyDataset(self.val_df, self.prefix, self.rho, self.crp_shape, transforms=self.val_transforms, seeds=seeds)
+            self.val_set = ImagePairHomographyDataset(self.val_df, self.prefix, self.rho, self.crp_shape, transforms=self.val_transforms, seeds=seeds)
         if stage == 'test' or stage is None:
             seeds = np.arange(0, len(self.test_df)).tolist() # assure test set is seeded the same for all runs
-            self.test_set = PairHomographyDataset(self.test_df, self.prefix, self.rho, self.crp_shape, seeds=seeds) # for final evaluation
+            self.test_set = ImagePairHomographyDataset(self.test_df, self.prefix, self.rho, self.crp_shape, seeds=seeds) # for final evaluation
 
     def transfer_batch_to_device(self, batch, device):
-        batch['img_seq_crp'][0] = batch['img_seq_crp'][0].to(device)
-        batch['img_seq_crp'][1] = batch['img_seq_crp'][1].to(device)
+        batch['img_crp'] = batch['img_crp'].to(device)
+        batch['wrp_crp'] = batch['wrp_crp'].to(device)
         batch['duv'] = batch['duv'].to(device)
         if self.unsupervised:
-            batch['img_seq'][0] = batch['img_seq'][0].to(device)
-            batch['img_seq'][1] = batch['img_seq'][1].to(device)
+            batch['img_pair'][0] = batch['img_pair'][0].to(device)
+            batch['img_pair'][1] = batch['img_pair'][1].to(device)
             batch['uv'] = batch['uv'].to(device)
         return batch
 
@@ -72,4 +72,4 @@ if __name__ == '__main__':
 
     for batch in cdm.train_dataloader():
         print(len(batch))
-        print(batch['img_seq'][0].shape)
+        print(batch['img_pair'][0].shape)

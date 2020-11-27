@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from typing import List, Callable
 
 
 class ConsecutiveSequences():
@@ -14,7 +15,7 @@ class ConsecutiveSequences():
         transforms (list of callables): Transforming videos
         verbose (bool): Return verbose output if true
     """
-    def __init__(self, paths, stride=1, max_seq=None, seq_len=1, seq_stride=None, transforms=None, verbose=False):
+    def __init__(self, paths: List[str], stride: int=1, max_seq: int=None, seq_len: int=1, seq_stride: int=None, transforms: Callable=None, verbose: bool=False):
         self.video_captures = []
         self.seq = 0
         self.max_seq = max_seq
@@ -84,7 +85,7 @@ class ConsecutiveSequences():
         else:
             return self.max_seq
 
-    def _sample(self, capture, frame, stride, transforms=None):
+    def _sample(self, capture: cv2.VideoCapture, frame: int, stride: int, transforms: Callable=None):
         r"""Return a sequence of images from a videos capture.
 
         Args:
