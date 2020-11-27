@@ -13,10 +13,10 @@ databases:
         - 164
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -33,10 +33,10 @@ databases:
         - 29
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -317,10 +317,10 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -340,10 +340,10 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -365,10 +365,10 @@ databases:
         - 204
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -383,10 +383,10 @@ databases:
         - 260
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -405,10 +405,10 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -430,10 +430,10 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -806,10 +806,10 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -824,10 +824,10 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -844,10 +844,10 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -924,10 +924,10 @@ databases:
         - 204
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -942,10 +942,10 @@ databases:
         - 204
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -961,10 +961,10 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -1102,10 +1102,10 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -1191,10 +1191,10 @@ databases:
         - 9
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
@@ -1232,10 +1232,10 @@ databases:
         - 9
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
     - RandomEdgeHomography:
-        rho: 32
+        rho: 64
         crp_shape:
         - 480
         - 640
