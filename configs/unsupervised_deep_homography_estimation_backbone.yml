@@ -15,11 +15,11 @@ data:
     random_state: 42
     batch_size: 64
     num_workers: 4
-    rho: 32
+    rho: 64
     crp_shape: [480, 640]
     unsupervised: True
     train_transforms: # augmentations from imgaug https://imgaug.readthedocs.io/en/latest/source/overview_of_augmenters.html
-        - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',             'kwargs': {'size': {'height': 555, 'width': 740}}}
+        - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',             'kwargs': {'size': {'height': 612, 'width': 816}}}
         - {'chance': 0.1, 'module': 'imgaug.augmenters',                'type': 'Grayscale',          'kwargs': {}}
         - {'chance': 0.5, 'module': 'imgaug.augmenters',                'type': 'HorizontalFlip',     'kwargs': {}}
         - {'chance': 0.5, 'module': 'imgaug.augmenters',                'type': 'VerticalFlip',       'kwargs': {}}
