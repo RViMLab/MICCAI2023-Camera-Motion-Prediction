@@ -1,1 +1,1 @@
-from .pair_homography_data_module import PairHomographyDataModule
+from .image_pair_homography_data_module import ImagePairHomographyDataModule

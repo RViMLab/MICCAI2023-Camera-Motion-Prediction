@@ -10,7 +10,7 @@ from datasets import ImagePairHomographyDataset
 from utils.transforms import dict_list_to_augment_image
 
 
-class PairHomographyDataModule(pl.LightningDataModule):
+class ImagePairHomographyDataModule(pl.LightningDataModule):
     def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, rho: int=32, crp_shape: List[int]=[480, 640], unsupervised: bool=False, random_state: int=42, train_transforms: Callable=None, val_transforms: Callable=None):
         super().__init__()
         self.train_df, self.val_df = train_test_split(
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     pkl_name = 'log_without_camera_motion_seq_len_2.pkl'
     df = pd.read_pickle(os.path.join(prefix, pkl_name))
 
-    cdm = PairHomographyDataModule(df, prefix, train_split=0.8, batch_size=16, num_workers=0, rho=32, crp_shape=[640, 480])
+    cdm = ImagePairHomographyDataModule(df, prefix, train_split=0.8, batch_size=16, num_workers=0, rho=32, crp_shape=[640, 480])
     cdm.setup()
 
     for batch in cdm.train_dataloader():

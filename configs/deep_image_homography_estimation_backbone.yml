@@ -1,6 +1,6 @@
 experiment: 'deep_image_homography_estimation_backbone'
 lightning_module: 'DeepImageHomographyEstimationModuleBackbone'
-lightning_data_module: 'PairHomographyDataModule'
+lightning_data_module: 'ImagePairHomographyDataModule'
 trainer:
     gpus: 1
     max_epochs: 20

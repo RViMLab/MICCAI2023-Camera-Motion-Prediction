@@ -1,6 +1,6 @@
 experiment: 'content_aware_unsupervised_deep_homography_estimation'
 lightning_module: 'ContentAwareUnsupervisedDeepHomographyEstimationModule'
-lightning_data_module: 'PairHomographyDataModule'
+lightning_data_module: 'ImagePairHomographyDataModule'
 trainer:
     gpus: 1
     max_epochs: 20
