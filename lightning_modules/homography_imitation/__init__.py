@@ -1,1 +1,1 @@
-from .feature_lstm import FeatureLSTM
+from .feature_lstm_module import FeatureLSTMModule

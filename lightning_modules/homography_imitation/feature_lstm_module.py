@@ -1,9 +1,11 @@
 import pytorch_lightning as pl
 
+import lightning_modules
 
-class FeatureLSTM(pl.LightningModule):
+
+class FeatureLSTMModule(pl.LightningModule):
     def __init__(self):
-        # self.homography_regression
+        # self.homography_regression = getattr(lightning_modules, ).load_from_checkpoint(kwargs)
         pass
 
     def forward(self):
