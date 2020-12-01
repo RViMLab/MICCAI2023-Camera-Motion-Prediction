@@ -18,7 +18,7 @@ from datasets import ImageSequenceDataset
 # use sequence_dataframe.ipynb to generate sequence dataframe, also include tool and phase annotation 
 # train model on full dataset
 # 
-class SequenceDataModule(pl.LightningDataModule):
+class ImageSequenceDataModule(pl.LightningDataModule):
     def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, train_trainsforms: Callable=None, val_transforms: Callable=None):
         self.df = df
         self.prefix = prefix

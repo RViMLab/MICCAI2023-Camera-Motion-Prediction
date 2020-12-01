@@ -1,1 +1,2 @@
 from .image_pair_homography_data_module import ImagePairHomographyDataModule
+from .image_sequence_data_module import ImageSequenceDataModule
