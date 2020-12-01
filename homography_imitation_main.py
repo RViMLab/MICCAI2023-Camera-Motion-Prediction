@@ -54,12 +54,12 @@ if __name__ == '__main__':
         'val_transforms': configs['data']['val_transforms']
     }
 
-    dm = getattr(lightning_data_modules, configs['lightning_data_module'])
+    dm = getattr(lightning_data_modules, configs['lightning_data_module'])(**kwargs)
 
     # load specific module
     kwargs = configs['model']
 
-    module = getattr(lightning_modules, configs['lightning_module'])
+    module = getattr(lightning_modules, configs['lightning_module'])(**kwargs, backbone_prefix=server['logging']['location'])
 
     logger = TensorBoardLogger(
         save_dir=server['logging']['location'],
