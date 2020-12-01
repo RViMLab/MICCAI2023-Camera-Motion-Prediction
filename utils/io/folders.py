@@ -32,6 +32,6 @@ def natural_keys(text):
         https://stackoverflow.com/questions/5967500/how-to-correctly-sort-a-string-with-a-number-inside
     
     Example:
-        sorted_list = list.sort(key=natural_keys)
+        sorted_list = sorted(list, key=natural_keys)
     """
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
