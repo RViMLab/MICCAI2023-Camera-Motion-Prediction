@@ -19,13 +19,13 @@ from datasets import ImageSequenceDataset
 # train model on full dataset
 # 
 class ImageSequenceDataModule(pl.LightningDataModule):
-    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, train_trainsforms: Callable=None, val_transforms: Callable=None):
+    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, random_state: int=42, train_transforms: Callable=None, val_transforms: Callable=None):
         self.df = df
         self.prefix = prefix
         self.batch_size = batch_size
         self.num_workers = num_workers
 
-        self.train_transforms = train_trainsforms
+        self.train_transforms = train_transforms
 
     def setup(self, stage):
         if stage == 'fit':
