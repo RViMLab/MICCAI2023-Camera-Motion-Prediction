@@ -185,6 +185,9 @@ class RandomEdgeHomography(object):
         Args:
             pts (np.array): Points of shape [A, 2 or 3]
             polygon (np.array): Points of shape [B, 2 or 3]
+
+        Note:
+            Possibly use cv2.pointPolygonTest.
         """
         inside = True
         n_pts = polygon.shape[0]
