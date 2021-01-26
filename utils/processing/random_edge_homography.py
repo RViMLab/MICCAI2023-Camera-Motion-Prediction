@@ -28,7 +28,7 @@ class RandomEdgeHomography():
             wrp_crp (np.array): Cropped warp of shape crp_shape x C
             duv (np.array): Edge displacement of shape 4x2
 
-            if return_dic == True:
+            if verbose == True:
                 H (np.array): Homography of shape 3x3
                 uv (np.array): uv coordinates of shape 4x2
                 wrp_uv (np.array): Warped uv coordinates of shape 4x2
