@@ -74,7 +74,7 @@ class EndoscopyBoundingCircleDetector():
 
                 # Step 5, sample
                 idcs = np.random.choice(np.arange(edges[0].size), size=n_pts,replace=False)
-                pts = np.stack((edges[0][idcs], edges[1][idcs]), axis=1)
+                pts = np.stack((edges[0][idcs], edges[1][idcs]), axis=1) + 0.5
 
                 # Step 5, remove outliers, prior to fit
                 if self.last_center.size is not 0 and self.last_radius:
