@@ -27,7 +27,7 @@ class EndoscopyBoundingCircleDetector():
         self.last_center = np.array([])
         self.last_radius = None
 
-    def findBoundingCircle(self, img: np.array, th1: float=5. , th2: float=200., th3: float=10., n_pts: int=100, n_iter: int=3, verbose: bool=False) -> Tuple[np.array, float]:
+    def findBoundingCircle(self, img: np.array, th1: int=5. , th2: int=200., th3: float=10., decay: float=2., n_pts: int=100, n_iter: int=3) -> Tuple[np.array, float]:
         """Finds bounding circle in an endoscopic image via the following method
 
             Algorithm: 
@@ -40,20 +40,17 @@ class EndoscopyBoundingCircleDetector():
                            6. Minimize linear circle equation
 
         Args:
-            img (np.array): BGR image of shape CxHxW
-            th1 (float): Whiten threshold, see algorithm step 1
-            th2 (float): Moving avergage blacken threshold, see algorithm step 2
+            img (np.array): Image of shape CxHxW
+            th1 (int): Whiten threshold, see algorithm step 1
+            th2 (int): Moving avergage blacken threshold, see algorithm step 2
             th3 (float): Distance to circle discard threshold, see algorithm step 5
+            decay (flaot): Divides th3 by decay at each iteration
             n_pts (int): Points to sample in edge image, see algorithm step 5
             n_iter (int): Number of iterations to improve on found circle, see algorithm step 4
-            verbose (bool): Return verbose output, default False
 
         Return:
             center (np.array): Circle's center
             radius (float): Circles radius
-
-            if verbose == True:
-
         """
         # Step 1, grayscale
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -79,11 +76,12 @@ class EndoscopyBoundingCircleDetector():
                 idcs = np.random.choice(np.arange(edges[0].size), size=n_pts,replace=False)
                 pts = np.stack((edges[0][idcs], edges[1][idcs]), axis=1)
 
-                # Step 5, remove outliers
+                # Step 5, remove outliers, prior to fit
                 if self.last_center.size is not 0 and self.last_radius:
                     distance_to_center = np.linalg.norm(self.last_center - pts, axis=1)
                     del_idx = np.where(np.abs(self.last_radius - distance_to_center) > th3)
                     pts = np.delete(pts, del_idx, axis=0).reshape(-1, 2)
+                    th3 = th3/decay
 
                 # Step 6, fit
                 A, b = self._buildLinearSystem(pts)
@@ -154,11 +152,8 @@ def threePointCircle(p1: np.array, p2: np.array, p3: np.array) -> Tuple[np.array
 if __name__ == '__main__':
     import os
 
-    # prefix = os.getcwd()
-    # prefix = '/home/martin/Documents/code_snippets/homography_imitation_learning/utils/processing'
-    # file = 'sample.mp4'
-    prefix = '/media/martin/Samsung_T5/data/endoscopic_data/cholec80/videos'
-    file = 'video01.mp4'
+    prefix = os.getcwd()
+    file = 'sample.mp4'
 
     vr = cv2.VideoCapture(os.path.join(prefix, file))
 
@@ -166,16 +161,16 @@ if __name__ == '__main__':
  
     while vr.isOpened():
 
-        _, bgr = vr.read()
-        if bgr is None:
+        _, img = vr.read()
+        if img is None:
             break
-        bgr = cv2.resize(bgr, (640, 360))
+        img = cv2.resize(img, (640, 360))
 
-        center, radius = ebcd.findBoundingCircle(bgr, th1=5, th2=200, th3=10, n_pts=100, n_iter=3)
+        center, radius = ebcd.findBoundingCircle(img, th1=5, th2=200, th3=10, decay=2., n_pts=100, n_iter=4)
         center, radius = center.astype(np.int), int(radius)
 
-        cv2.circle(bgr, (center[1], center[0]), radius, (0,255,255))
-        cv2.circle(bgr, (center[1], center[0]), 2, (255,0,255), 4)
+        cv2.circle(img, (center[1], center[0]), radius, (0,255,255))
+        cv2.circle(img, (center[1], center[0]), 2, (255,0,255), 4)
 
-        cv2.imshow('bgr', bgr)
+        cv2.imshow('img', img)
         cv2.waitKey()
