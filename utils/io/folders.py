@@ -12,12 +12,12 @@ def generate_path(prefix):
 
 def scan2df(folder, postfix='.jpg'):
     # scan folder for images and return dataframe
-    df = pd.DataFrame(columns={'folder', 'files'})
+    df = pd.DataFrame(columns={'folder', 'file'})
 
     for file in glob.glob(os.path.join(folder, '*{}'.format(postfix))):
         dic = {
             'folder': folder,
-            'files': os.path.basename(file)
+            'file': os.path.basename(file)
         }
 
         df = df.append(dic, ignore_index=True)
