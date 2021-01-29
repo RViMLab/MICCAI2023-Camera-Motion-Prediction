@@ -73,7 +73,7 @@ if __name__ == '__main__':
             generate_path(prefix)
 
             path = os.path.join(prefix, file_name)
-            cv2.imwrite(path, cs[0])
+            cv2.imwrite(path, cs[0]) # note: currenlty only safes first image of sequence
 
             df = df.append({
                 'file': file_name, 
