@@ -14,8 +14,12 @@ if __name__ == '__main__':
 
     # scan through data
     folder = os.path.join(prefix, 'cholec80/videos')
+    print('Scanning: ', folder)
 
     df = scan2df(folder, postfix='.mp4')
+
+    print('Found:\n')
+    print(df)
 
     # create object to save found transforms
     database =  {
