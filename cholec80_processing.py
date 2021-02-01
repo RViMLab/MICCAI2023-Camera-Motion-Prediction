@@ -3,12 +3,17 @@ import cv2
 import numpy as np
 import yaml
 
-from utils.io import scan2df, save_yaml
+from utils.io import scan2df, save_yaml, load_yaml
 from utils import endoscopy
 
 if __name__ == '__main__':
+    servers = load_yaml('configs/servers.yml')
+    server = 'rvim_server'
+
+    prefix = servers[server]['database']['location']
+
     # scan through data
-    folder = '/media/martin/Samsung_T5/data/endoscopic_data/cholec80/videos'
+    folder = os.path.join(prefix, 'cholec80/videos')
 
     df = scan2df(folder, postfix='.mp4')
 
