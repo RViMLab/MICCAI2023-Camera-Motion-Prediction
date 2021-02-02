@@ -210,7 +210,7 @@ if __name__ == '__main__':
     rho = 64
 
     img = np.load(file_path)
-    reh = RandomEdgeHomography(rho, crp_shape, True)
+    reh = RandomEdgeHomography(rho, crp_shape, homography_return=HOMOGRAPHY_RETURN.VISUAL)
 
     for i in range(100):
         dic = reh(img)
