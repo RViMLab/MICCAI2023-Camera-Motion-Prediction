@@ -16,7 +16,7 @@ class RandomEdgeHomography():
         self.img = img
 
     def compute(self, rho, crp_shape, verbose=False):
-        """Compute the random homographies.
+        r"""Compute the random homographies.
 
         Args:
             rho (int): uv are perturbed within [-rho, rho]

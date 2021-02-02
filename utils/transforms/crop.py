@@ -1,13 +1,14 @@
 import numpy as np
+from typing import Tuple
 
 
 class Crop(object):
-    def __init__(self, top_left_corner: list, shape: list):
+    def __init__(self, top_left_corner: np.array, shape: Tuple[int]):
         r"""Callable crop operation.
 
         Args:
-            top_left_corner (list of int): top_left_corner of crop
-            shape (list of int): Shape of crop, HxW
+            top_left_corner (np.array): top_left_corner of crop
+            shape (tuple of int): Shape of crop, HxW
         """
         self.top_left_corner = top_left_corner
         self.shape = shape

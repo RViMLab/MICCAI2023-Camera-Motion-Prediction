@@ -4,13 +4,14 @@ from torch.utils.data import Dataset
 import imageio
 from typing import Callable
 
+
 class ImageSequenceDataset(Dataset):
     r"""Reads an images sequence from a image database.
 
     Args:
         df (pd.DataFrame): Pandas dataframe, must contain {'file_seq': [frame0.png, frame1.png], 'path': 'path/to/frames'}
         prefix (str): Path to database e.g. </path/to/database>/path/to/frames/frame.png
-        transforms (callable): Transforms to be applied before homography generation
+        transforms (callable): Transforms to be applied
 
     Returns:
         img_seq (list of Torch.tensor): Sequence of images of shape CxHxW
