@@ -3,6 +3,36 @@ from typing import List
 
 
 class EndoscopyCircle(object):
+    def movingCenterPipeline(self, img: np.array, wrp: np.array, c_off_scale: float=0.125, dc_scale: float=0.1, c_update_chance: float=0.1, r_min_scale: float=0.25, r_amp_scale: float=0.5,  seed: np.int32=None):
+        r"""Builds a pipeline that simulates a moving camera on the endoscope. Adds noise
+        around endoscopic view.
+
+        Args:
+            img (np.array): Image
+            wrp (np.array): Warped image
+            c_off_scale (float): Center offset scale of image shape. Perturbes endoscopic view around image center
+            dc_scale (float): Center update scale, center is perturbed by img.shape*dc_scale
+            c_update_chance (float): Chance by which center is updated
+            r_min_scale (float): Minimum radius, scale of minimum image size
+            r_amp_scale (float): Radius amplitude, scale of maximum image size
+            seed (np.int32): Seed for deterministic output
+
+        Return:
+            img (np.array): Initial image with random endoscopic circle and noise surrounding
+            wrp (np.array): Initial warp with endoscopic view as for img, but possibly disturbed center
+
+        """
+        center = EndoscopyCircle.randomCenter(shape=img.shape, c_off_scale=c_off_scale, seed=seed)
+        radius = EndoscopyCircle.randomRadius(shape=img.shape, r_min_scale=r_min_scale, r_amp_scale=r_amp_scale, seed=seed)  # assure same radius
+
+        img = self(img, center=center, radius=radius)
+
+        # update center by chance
+        center = EndoscopyCircle.randomCenterUpdate(img.shape, center=center, scale=dc_scale, chance=c_update_chance, seed=seed)
+        wrp = self(wrp, center=center, radius=radius)
+
+        return img, wrp
+
     @staticmethod
     def randomCenter(shape: tuple, c_off_scale: float=0.125, seed: np.int32=None) -> tuple:
         r"""Helper function to generate random center.

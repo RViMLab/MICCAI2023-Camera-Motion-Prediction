@@ -82,24 +82,21 @@ class ImagePairHomographyDataset(Dataset):
         # apply endoscopy circle with moving center
         if self._seeds:  # test and validation
             seed = self._seeds[idx]
-            center = EndoscopyCircle.randomCenter(shape=img_crp.shape, c_off_scale=self._c_off_scale, seed=seed)
-            radius = EndoscopyCircle.randomRadius(shape=img_crp.shape, r_min_scale=self._r_min_scale, r_amp_scale=self._r_amp_scale, seed=seed)  # assure same radius
+            img_crp, wrp_crp = self._ec.movingCenterPipeline(
+                img=img_crp, wrp=wrp_crp, 
+                c_off_scale=self._c_off_scale, dc_scale=self._dc_scale, c_update_chance=self._c_update_chance,
+                r_min_scale=self._r_min_scale, r_amp_scale=self._r_amp_scale, 
+                seed=seed
+            )
 
-            img_crp = self._ec(img_crp, center=center, radius=radius)
-
-            # update center by chance
-            center = EndoscopyCircle.randomCenterUpdate(img_crp.shape, center=center, scale=self._dc_scale, chance=self._c_update_chance, seed=seed)
-            wrp_crp = self._ec(wrp_crp, center=center, radius=radius)
         else:  # train
             seed = np.random.randint(np.iinfo(np.int32).max) # random seed via sampling
-            center = EndoscopyCircle.randomCenter(shape=img_crp.shape, c_off_scale=self._c_off_scale, seed=seed)
-            radius = EndoscopyCircle.randomRadius(shape=img_crp.shape, r_min_scale=self._r_min_scale, r_amp_scale=self._r_amp_scale, seed=seed)  # assure same radius
-
-            img_crp = self._ec(img_crp, center=center, seed=seed)
-
-            # update center by chance
-            center = EndoscopyCircle.randomCenterUpdate(img_crp.shape, center=center, scale=self._dc_scale, chance=self._c_update_chance, seed=seed)
-            wrp_crp = self._ec(wrp_crp, center=center, seed=seed)
+            img_crp, wrp_crp = self._ec.movingCenterPipeline(
+                img=img_crp, wrp=wrp_crp, 
+                c_off_scale=self._c_off_scale, dc_scale=self._dc_scale, c_update_chance=self._c_update_chance,
+                r_min_scale=self._r_min_scale, r_amp_scale=self._r_amp_scale, 
+                seed=seed
+            )
 
         for i in range(len(img_pair)):
             img_pair[i] = self._tt(img_pair[i])
