@@ -19,9 +19,11 @@ class ImagePairHomographyDataset(Dataset):
         prefix (str): Path to database e.g. </path/to/database>/path/to/frames/frame.png
         rho (int): Image edges are randomly perturbed within [-rho, rho]
         crp_shape (list of int): Shape of cropped image
-        c_off (float): Center offset scale of image shape. Perturbes endoscopic view around image center
-        r_min (float): Minimum radius, scale of minimum image size
-        r_amp (float): Radius amplitude, scale of maximum image size
+        c_off_scale (float): Center offset scale of image shape. Perturbes endoscopic view around image center
+        dc_scale (float): Center update scale
+        c_update_chance (float): Chance by which center is updated
+        r_min_scale (float): Minimum radius, scale of minimum image size
+        r_amp_scale (float): Radius amplitude, scale of maximum image size
         transforms (callable): Transforms to be applied before homography generation
         seeds (list of np.int32): Seeds for deterministic output, e.g. for test set
 
@@ -35,7 +37,7 @@ class ImagePairHomographyDataset(Dataset):
             'H' (torch.Tensor): Homography matrix of shape 3x3
         )
     """
-    def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int], c_off:float=0.125, r_min: float=0.25, r_max: float=0.5, transforms: Callable=None, seeds: List[np.int32]=None):
+    def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int], c_off_scale: float=0.125, dc_scale: float=0.1, c_update_chance: float=0.1, r_min_scale: float=0.25, r_max: float=0.5, transforms: Callable=None, seeds: List[np.int32]=None):
         if seeds:
             if (len(df) != len(seeds)):
                 raise Exception('In ImagePairHomographyDataset: Length of dataframe must equal length of seeds.')
@@ -46,7 +48,12 @@ class ImagePairHomographyDataset(Dataset):
         self._df = df
         self._prefix = prefix   
         self._reh = RandomEdgeHomography(rho=rho, crp_shape=crp_shape, homography_return=HOMOGRAPHY_RETURN.DATASET, seeds=seeds)
-        self._ec = EndoscopyCircle(c_off=c_off, r_min=r_min, r_amp=r_amp)
+        self._ec = EndoscopyCircle()
+        self._c_off_scale = c_off_scale
+        self._dc_scale = dc_scale
+        self._c_update_chance = c_update_chance
+        self._r_min_scale = r_min_scale
+        self._r_amp_scale = r_amp_scale
         self._transforms = transforms
         self._seeds = seeds
         self._tt = ToTensor()
@@ -75,25 +82,24 @@ class ImagePairHomographyDataset(Dataset):
         # apply endoscopy circle with moving center
         if self._seeds:  # test and validation
             seed = self._seeds[idx]
-            np.random.seed(seed)
-            offset = (np.random.rand(2)*2 - 1)*img_crp.shape[:-1]*self._c_off
-            center = (img_crp.shape[1]/2 + offset[1], img_crp.shape[0]/2 + offset[0])
+            center = EndoscopyCircle.randomCenter(shape=img_crp.shape, c_off_scale=self._c_off_scale, seed=seed)
+            radius = EndoscopyCircle.randomRadius(shape=img_crp.shape, r_min_scale=self._r_min_scale, r_amp_scale=self._r_amp_scale, seed=seed)  # assure same radius
 
+            img_crp = self._ec(img_crp, center=center, radius=radius)
 
-            np.random.seed(None)
-
-            img_crp = self._ec(img_crp, center=center, seed=seed)
-
-            # center 
-            wrp_crp = self._ec(wrp_crp, center=center, seed=seed) # assure same radius as above, but random in training case
+            # update center by chance
+            center = EndoscopyCircle.randomCenterUpdate(img_crp.shape, center=center, scale=self._dc_scale, chance=self._c_update_chance, seed=seed)
+            wrp_crp = self._ec(wrp_crp, center=center, radius=radius)
         else:  # train
-            seed = np.random.randint(np.iinfo(np.int32).max) # set random seed for numpy
-
+            seed = np.random.randint(np.iinfo(np.int32).max) # random seed via sampling
+            center = EndoscopyCircle.randomCenter(shape=img_crp.shape, c_off_scale=self._c_off_scale, seed=seed)
+            radius = EndoscopyCircle.randomRadius(shape=img_crp.shape, r_min_scale=self._r_min_scale, r_amp_scale=self._r_amp_scale, seed=seed)  # assure same radius
 
             img_crp = self._ec(img_crp, center=center, seed=seed)
 
-            # center 
-            wrp_crp = self._ec(wrp_crp, center=center, seed=seed) # assure same radius as above, but random in training case
+            # update center by chance
+            center = EndoscopyCircle.randomCenterUpdate(img_crp.shape, center=center, scale=self._dc_scale, chance=self._c_update_chance, seed=seed)
+            wrp_crp = self._ec(wrp_crp, center=center, seed=seed)
 
         for i in range(len(img_pair)):
             img_pair[i] = self._tt(img_pair[i])
