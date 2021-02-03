@@ -10,7 +10,7 @@ from typing import List, Callable
 from utils.transforms import RandomEdgeHomography, HOMOGRAPHY_RETURN, EndoscopyCircle
 
 
-class ImagePairHomographyDataset(Dataset):
+class ImagePairHomographyEndoscopyViewDataset(Dataset):
     r"""Takes two images, supposedly from two time steps, and warps the second. Returns crops of both. 
     Implements the method described by DeTone et al. in https://arxiv.org/pdf/1606.03798.pdf.
 
@@ -19,6 +19,11 @@ class ImagePairHomographyDataset(Dataset):
         prefix (str): Path to database e.g. </path/to/database>/path/to/frames/frame.png
         rho (int): Image edges are randomly perturbed within [-rho, rho]
         crp_shape (list of int): Shape of cropped image
+        c_off_scale (float): Center offset scale of image shape. Perturbes endoscopic view around image center
+        dc_scale (float): Center update scale
+        c_update_chance (float): Chance by which center is updated
+        r_min_scale (float): Minimum radius, scale of minimum image size
+        r_amp_scale (float): Radius amplitude, scale of maximum image size
         transforms (callable): Transforms to be applied before homography generation
         seeds (list of np.int32): Seeds for deterministic output, e.g. for test set
 
@@ -32,7 +37,7 @@ class ImagePairHomographyDataset(Dataset):
             'H' (torch.Tensor): Homography matrix of shape 3x3
         )
     """
-    def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int], transforms: Callable=None, seeds: List[np.int32]=None):
+    def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int], c_off_scale: float=0.125, dc_scale: float=0.1, c_update_chance: float=0.1, r_min_scale: float=0.25, r_amp_scale: float=0.5, transforms: Callable=None, seeds: List[np.int32]=None):
         if seeds:
             if (len(df) != len(seeds)):
                 raise Exception('In ImagePairHomographyDataset: Length of dataframe must equal length of seeds.')
@@ -43,6 +48,12 @@ class ImagePairHomographyDataset(Dataset):
         self._df = df
         self._prefix = prefix   
         self._reh = RandomEdgeHomography(rho=rho, crp_shape=crp_shape, homography_return=HOMOGRAPHY_RETURN.DATASET, seeds=seeds)
+        self._ec = EndoscopyCircle()
+        self._c_off_scale = c_off_scale
+        self._dc_scale = dc_scale
+        self._c_update_chance = c_update_chance
+        self._r_min_scale = r_min_scale
+        self._r_amp_scale = r_amp_scale
         self._transforms = transforms
         self._seeds = seeds
         self._tt = ToTensor()
@@ -67,6 +78,25 @@ class ImagePairHomographyDataset(Dataset):
 
         img_crp = self._reh.crop(img_pair[0], reh['uv'])
         wrp_crp = reh['wrp_crp']
+
+        # apply endoscopy circle with moving center
+        if self._seeds:  # test and validation
+            seed = self._seeds[idx]
+            img_crp, wrp_crp = self._ec.movingCenterPipeline(
+                img=img_crp, wrp=wrp_crp, 
+                c_off_scale=self._c_off_scale, dc_scale=self._dc_scale, c_update_chance=self._c_update_chance,
+                r_min_scale=self._r_min_scale, r_amp_scale=self._r_amp_scale, 
+                seed=seed
+            )
+
+        else:  # train
+            seed = np.random.randint(np.iinfo(np.int32).max) # random seed via sampling
+            img_crp, wrp_crp = self._ec.movingCenterPipeline(
+                img=img_crp, wrp=wrp_crp, 
+                c_off_scale=self._c_off_scale, dc_scale=self._dc_scale, c_update_chance=self._c_update_chance,
+                r_min_scale=self._r_min_scale, r_amp_scale=self._r_amp_scale, 
+                seed=seed
+            )
 
         for i in range(len(img_pair)):
             img_pair[i] = self._tt(img_pair[i])
