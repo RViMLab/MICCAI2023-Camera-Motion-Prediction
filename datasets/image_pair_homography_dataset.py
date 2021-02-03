@@ -37,7 +37,7 @@ class ImagePairHomographyDataset(Dataset):
             'H' (torch.Tensor): Homography matrix of shape 3x3
         )
     """
-    def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int], c_off_scale: float=0.125, dc_scale: float=0.1, c_update_chance: float=0.1, r_min_scale: float=0.25, r_max: float=0.5, transforms: Callable=None, seeds: List[np.int32]=None):
+    def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int], c_off_scale: float=0.125, dc_scale: float=0.1, c_update_chance: float=0.1, r_min_scale: float=0.25, r_amp_scale: float=0.5, transforms: Callable=None, seeds: List[np.int32]=None):
         if seeds:
             if (len(df) != len(seeds)):
                 raise Exception('In ImagePairHomographyDataset: Length of dataframe must equal length of seeds.')

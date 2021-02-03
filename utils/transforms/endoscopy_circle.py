@@ -63,8 +63,8 @@ class EndoscopyCircle(object):
             radius (float): Radius of endoscopic view
         """
         np.random.seed(seed)
-        r_min_pix = r_min_scale*min(img.shape[:-1])
-        r_amp_pix = r_amp_scale*max(img.shape[:-1])
+        r_min_pix = r_min_scale*min(shape[:-1])
+        r_amp_pix = r_amp_scale*max(shape[:-1])
         radius = r_min_pix + np.random.rand(1)*r_amp_pix
         np.random.seed(None)
 
