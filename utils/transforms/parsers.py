@@ -3,7 +3,26 @@ from torchvision.transforms import Compose
 from typing import List
 
 
-def dict_list_to_compose(transforms: List[dict]=None, module: object=None):
+def recursiveMethodCallFromDictList(x: object, transforms: List[dict]=None, module: object=None):
+    r"""Performs a recursive call on x.
+
+    Args:
+        x (object): Object to forward through the transform
+        transforms (list of dict): List of transforms
+        module (object): Python module to load transforms from
+
+    Return:
+        x (object): Forwarded object
+    """
+    if not module:
+        raise AttributeError('Module has to be parsed')
+    for t in transforms:
+        (k, kwargs), = t.items()
+        x = getattr(module, k)(x, **kwargs)
+    return x
+
+
+def dictListToCompose(transforms: List[dict]=None, module: object=None):
     r"""Turns list of dictionaries into a Compose.
 
     Args:
@@ -14,7 +33,7 @@ def dict_list_to_compose(transforms: List[dict]=None, module: object=None):
         import utils
 
         transforms = [{'Crop': ['top_left_corner': [0, 0], 'shape': [480, 640]]}]
-        compose = dict_list_to_compose(transforms, utils.transforms)
+        compose = dictListToCompose(transforms, utils.transforms)
     """
     if not module:
         raise AttributeError('Module has to be parsed')
@@ -27,7 +46,7 @@ def dict_list_to_compose(transforms: List[dict]=None, module: object=None):
     return Compose(compose)
 
 
-def dict_list_to_augment_image(transforms: List[dict]=None):
+def dictListToAugment(transforms: List[dict]=None):
     r"""Turns list of dictionaries into imgaug augment image, 
     which is a callable.
 
@@ -36,7 +55,7 @@ def dict_list_to_augment_image(transforms: List[dict]=None):
 
     Example:
         transforms = [{'chance': 0.5, 'type': , 'kwargs': {}}]
-        augment_image = dict_list_to_augment_image(transforms)
+        augment_image = dictListToAugment(transforms)
         img = augment_image(img)
     """
     if not transforms:
