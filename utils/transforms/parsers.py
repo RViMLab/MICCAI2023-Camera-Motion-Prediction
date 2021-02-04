@@ -1,25 +1,29 @@
 import imgaug
-import utils
-from utils.transforms import Compose
+from torchvision.transforms import Compose
 from typing import List
 
 
-def dict_list_to_compose(transforms: List[dict]=None):
+def dict_list_to_compose(transforms: List[dict]=None, module: object=None):
     r"""Turns list of dictionaries into a Compose.
 
     Args:
         transforms (list of dict): List of transforms
+        module (object): Python module to load transforms from
 
     Example:
+        import utils
+
         transforms = [{'Crop': ['top_left_corner': [0, 0], 'shape': [480, 640]]}]
-        compose = dict_list_to_compose(transforms)
+        compose = dict_list_to_compose(transforms, utils.transforms)
     """
+    if not module:
+        raise AttributeError('Module has to be parsed')
     if not transforms:
         return None
     compose = []
     for t in transforms:
         (k, kwargs), = t.items()
-        compose.append(getattr(utils.transforms, k)(**kwargs))
+        compose.append(getattr(module, k)(**kwargs))
     return Compose(compose)
 
 
