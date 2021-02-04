@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 import utils
 from utils.io import load_yaml, generate_path
-from utils.transforms import Compose, dict_list_to_compose
+from utils.transforms import Compose, dictListToCompose
 from utils.sampling import ConsecutiveSequences
 from utils.processing import RandomEdgeHomography
 
@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
         composes = []
         for dict_list in database['transforms']:
-            composes.append(dict_list_to_compose(dict_list, utils.transforms)) # generate compose transform from dict
+            composes.append(dictListToCompose(dict_list, utils.transforms)) # generate compose transform from dict
         consecutive_sequences = ConsecutiveSequences(
             paths=paths, 
             stride=args.stride, 

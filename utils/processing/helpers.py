@@ -36,4 +36,4 @@ def image_edges(img: torch.Tensor):
             [shape[0],        0]
         ], device=img.device, dtype=img.dtype
     )
-    return uv.unsqueeze(0)
+    return uv.unsqueeze(0).repeat(img.shape[0], 1, 1)
