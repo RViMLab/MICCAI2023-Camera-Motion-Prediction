@@ -7,7 +7,7 @@ from torch.utils.data.dataset import random_split, Subset
 from typing import List, Callable
 
 from datasets import ImagePairHomographyDataset
-from utils.transforms import dict_list_to_augment_image
+from utils.transforms import dictListToAugment
 
 
 class ImagePairHomographyDataModule(pl.LightningDataModule):
@@ -28,8 +28,8 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
         self.crp_shape = crp_shape
         self.unsupervised = unsupervised
 
-        self.train_transforms = dict_list_to_augment_image(train_transforms)
-        self.val_transforms = dict_list_to_augment_image(val_transforms)
+        self.train_transforms = dictListToAugment(train_transforms)
+        self.val_transforms = dictListToAugment(val_transforms)
 
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
