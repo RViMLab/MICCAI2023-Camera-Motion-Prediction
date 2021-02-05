@@ -15,7 +15,7 @@ def recursiveMethodCallFromDictList(x: object, transforms: List[dict]=None, modu
         x (object): Forwarded object
     """
     if not module:
-        raise AttributeError('Module has to be parsed')
+        raise ValueError('Module has to be parsed')
     for t in transforms:
         (k, kwargs), = t.items()
         x = getattr(module, k)(x, **kwargs)
@@ -36,7 +36,7 @@ def dictListToCompose(transforms: List[dict]=None, module: object=None):
         compose = dictListToCompose(transforms, utils.transforms)
     """
     if not module:
-        raise AttributeError('Module has to be parsed')
+        raise ValueError('Module has to be parsed')
     if not transforms:
         return None
     compose = []
@@ -54,7 +54,7 @@ def dictListToAugment(transforms: List[dict]=None):
         transforms (list of dict): List of transforms
 
     Example:
-        transforms = [{'chance': 0.5, 'type': , 'kwargs': {}}]
+        transforms = [{'chance': 0.5, 'type': , 'kwargs': {}, 'module': imgaug.augmenters}]
         augment_image = dictListToAugment(transforms)
         img = augment_image(img)
     """
