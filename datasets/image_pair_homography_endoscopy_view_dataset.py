@@ -41,9 +41,6 @@ class ImagePairHomographyEndoscopyViewDataset(Dataset):
         if seeds:
             if (len(df) != len(seeds)):
                 raise Exception('In ImagePairHomographyDataset: Length of dataframe must equal length of seeds.')
-
-        if (len(df['file_seq'][0]) != 2):
-            raise Exception('In ImagePairHomographyDataset: Length of file_seq in dataframe must equal 2.')
         
         self._df = df
         self._prefix = prefix   
@@ -62,12 +59,21 @@ class ImagePairHomographyEndoscopyViewDataset(Dataset):
         file_seq = self._df['file_seq'][idx]
         img_pair = []
 
-        for file in file_seq:
+        if self._seeds:
+            seed = self._seeds[idx]
+        else:
+            seed = np.random.randint(np.iinfo(np.int32).max)  # set random seed for numpy
+
+        # randomly sample image pair
+        np.random.seed(seed)
+        file_pair = np.random.choice(file_seq, 2)
+        np.random.seed(None)
+
+        for file in file_pair:
             img = imageio.imread(os.path.join(self._prefix, self._df['path'][idx], file))
             img_pair.append(img)
 
         if self._transforms:
-            seed = np.random.randint(np.iinfo(np.int32).max) # set random seed for numpy
             for i in range(len(img_pair)):
                 imgaug.seed(seed)
                 img_pair[i] = np.ascontiguousarray(self._transforms(img_pair[i]))
