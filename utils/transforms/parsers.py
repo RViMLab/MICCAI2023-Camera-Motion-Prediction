@@ -1,9 +1,11 @@
+import numpy as np
+import importlib
 import imgaug
 from torchvision.transforms import Compose
 from typing import List
 
 
-def recursiveMethodCallFromDictList(x: object, transforms: List[dict]=None, module: object=None):
+def recursiveMethodCallFromDictList(x: object, transforms: List[dict]=None, module: object=None) -> object:
     r"""Performs a recursive call on x.
 
     Args:
@@ -22,7 +24,7 @@ def recursiveMethodCallFromDictList(x: object, transforms: List[dict]=None, modu
     return x
 
 
-def dictListToCompose(transforms: List[dict]=None, module: object=None):
+def dictListToCompose(transforms: List[dict]=None, module: object=None) -> Compose:
     r"""Turns list of dictionaries into a Compose.
 
     Args:
@@ -45,8 +47,27 @@ def dictListToCompose(transforms: List[dict]=None, module: object=None):
         compose.append(getattr(module, k)(**kwargs))
     return Compose(compose)
 
+def anyDictListToCompose(transforms: List[dict]=None) -> Compose:
+    r"""Turns list of dictionaries into a Compose.
 
-def dictListToAugment(transforms: List[dict]=None):
+    Args:
+        transforms (List[dict]): List of transforms, e.g. [{'module': 'some.module', 'type': 'callable', 'kwargs': {'key': val}}]
+    Return:
+        compose (torchvision.transform.Compose): Callable compose
+    """
+    if not transforms:
+        return None
+    compose = []
+    for t in transforms:
+        try:
+            module = importlib.import_module(t['module'])
+        except:
+            raise ValueError('Parsed module could not be found.')
+        compose.append(getattr(module, t['type'])(**t['kwargs']))
+    return Compose(compose)
+
+
+def dictListToAugment(transforms: List[dict]=None) -> np.array:
     r"""Turns list of dictionaries into imgaug augment image, 
     which is a callable.
 
