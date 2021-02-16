@@ -1,8 +1,9 @@
 import torch
+from typing import Tuple
 from kornia import get_perspective_transform
 
 
-def fourPtToMatrixHomographyRepresentation(uv_img: torch.Tensor, duv: torch.Tensor):
+def fourPtToMatrixHomographyRepresentation(uv_img: torch.Tensor, duv: torch.Tensor) -> torch.Tensor:
     r"""Transforms homography from four point representation of shape 4x2 to matrix representation of shape 3x3.
 
     Args:
@@ -18,7 +19,7 @@ def fourPtToMatrixHomographyRepresentation(uv_img: torch.Tensor, duv: torch.Tens
     return h
 
 
-def imageEdges(img: torch.Tensor):
+def imageEdges(img: torch.Tensor) -> torch.Tensor:
     r"""Returns edges of image (uv) in OpenCV convention.
 
     Args:
@@ -37,3 +38,20 @@ def imageEdges(img: torch.Tensor):
         ], device=img.device, dtype=img.dtype
     )
     return uv.unsqueeze(0).repeat(img.shape[0], 1, 1)
+
+
+def framePairs(video: torch.Tensor, step: int=1) -> Tuple[torch.Tensor, torch.Tensor]:
+    r"""Helper function to return frame pairs at an offset.
+
+    Args:
+        video (torch.Tensor): Video clip of shape NxCxHxW
+        step (int): Number of frames in between image pairs
+
+    Return:
+        frames_i (torch.Tensor): Frames starting at time step i with stride step
+        frames_ips (torch.Tensor): Frames starting at time step i+step with stride step
+    """
+    frames_i   = video[:-step:step]
+    frames_ips = video[step::step]
+    return frames_i, frames_ips
+
