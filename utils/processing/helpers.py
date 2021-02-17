@@ -44,14 +44,14 @@ def framePairs(video: torch.Tensor, step: int=1) -> Tuple[torch.Tensor, torch.Te
     r"""Helper function to return frame pairs at an offset.
 
     Args:
-        video (torch.Tensor): Video clip of shape NxCxHxW
+        video (torch.Tensor): Video clip of shape BxNxCxHxW
         step (int): Number of frames in between image pairs
 
     Return:
         frames_i (torch.Tensor): Frames starting at time step i with stride step
         frames_ips (torch.Tensor): Frames starting at time step i+step with stride step
     """
-    frames_i   = video[:-step:step]
-    frames_ips = video[step::step]
+    frames_i   = video[:,:-step:step]
+    frames_ips = video[:,step::step]
     return frames_i, frames_ips
 

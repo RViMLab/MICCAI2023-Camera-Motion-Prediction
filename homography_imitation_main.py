@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     dm = getattr(lightning_data_modules, configs['lightning_data_module'])(**kwargs)
     dm.prepare_data()
-    dm.setup()
+    train_md, val_md, test_md = dm.setup()
 
     # dm.setup('fit')
     # dl = dm.train_dataloader()

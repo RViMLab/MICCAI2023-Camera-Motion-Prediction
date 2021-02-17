@@ -10,7 +10,7 @@ from utils.transforms import anyDictListToCompose
 
 
 class VideoDataModule(pl.LightningDataModule):
-    def __init__(self, meta_df: pd.DataFrame, prefix: str, clip_length_in_frames: int=25, frames_between_clips: int=1, train_split: float=0.8, batch_size: int=32, num_workers: int=2, random_state: int=42) -> None:
+    def __init__(self, meta_df: pd.DataFrame, prefix: str, clip_length_in_frames: int=25, frames_between_clips: int=1, train_split: float=0.8, batch_size: int=32, num_workers: int=2, random_state: int=42, train_set_metadata: pd.DataFrame=None, val_set_metadata: pd.DataFrame=None, test_set_metadata: pd.DataFrame=None) -> None:
         r"""Pytorch Lightning datamodule for videos.
         
         Args:
@@ -20,7 +20,7 @@ class VideoDataModule(pl.LightningDataModule):
             frames_between_clips (int): Offset frames between starting point of clips
             train_slit (float): Relative size of train split
             batch_size (int): Batch size for the dataloader
-            num_workers (int): Number of workers for the video dataset
+            num_workers (int): Number of workers for the VideoClip init and for the Dataloader
             random_state (int): Initial random state for the train/validation split
         """
         self._meta_df = meta_df
@@ -53,6 +53,11 @@ class VideoDataModule(pl.LightningDataModule):
         self._val_transforms = [anyDictListToCompose(row.transforms) for _, row in self._val_meta_df.iterrows()]
         self._test_transforms = [anyDictListToCompose(row.transforms) for _, row in self._test_meta_df.iterrows()]
 
+        # store metadata
+        self._train_set_metadata = train_set_metadata
+        self._val_set_metadata = val_set_metadata
+        self._test_set_metadata = test_set_metadata
+
 
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
@@ -82,15 +87,16 @@ class VideoDataModule(pl.LightningDataModule):
                 transforms=self._test_transforms,
                 seeds=True
             )
+        return self._train_set.metadata, self._val_set.metadata, self._test_set.metadata
 
     def train_dataloader(self):
-        return DataLoader(self._train_set, self._batch_size)
+        return DataLoader(self._train_set, self._batch_size, num_workers=self._num_workers)
 
     def val_dataloader(self):
-        return DataLoader(self._val_set, self._batch_size)
+        return DataLoader(self._val_set, self._batch_size, num_workers=self._num_workers)
 
     def test_dataloader(self):
-        return DataLoader(self._test_set, self._batch_size)
+        return DataLoader(self._test_set, self._batch_size, num_workers=self._num_workers)
 
 if __name__ == '__main__':
     import cv2
