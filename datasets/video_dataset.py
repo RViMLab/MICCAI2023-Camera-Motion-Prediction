@@ -24,7 +24,6 @@ class VideoDataset(Dataset):
             clip_length_in_frames=clip_length_in_frames,
             frames_between_clips=frames_between_clips
         )
-        ckuos = self._video_clips.num_clips()
         self._transforms = transforms
         self._seeds = seeds
 
