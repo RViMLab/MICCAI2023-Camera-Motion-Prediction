@@ -6,13 +6,14 @@ from torchvision.datasets.video_utils import VideoClips
 
 
 class VideoDataset(Dataset):
-    def __init__(self, video_paths: List[str], clip_length_in_frames: int=25, frames_between_clips: int=1, transforms: List[Callable]=None, seeds: bool=False) -> None:
+    def __init__(self, video_paths: List[str], clip_length_in_frames: int=25, frames_between_clips: int=1, num_workers: int=0, transforms: List[Callable]=None, seeds: bool=False) -> None:
         r"""Dataset to load video clips with homographies
 
         Args:
             video_paths (List[str]): List of paths to video files
             clip_length_in_frames (int): Preview horizon, frames per returned clip
             frames_between_clips (int): Offset frames between starting point of clips
+            num_worker (int): Number of subprocesses for loading images from video
             transforms (List[Callable]): List of callable tranforms (video specific transforms)
             seeds (bool): Seeds for deterministic output, e.g. for test set
         """
@@ -22,7 +23,8 @@ class VideoDataset(Dataset):
         self._video_clips = VideoClips(
             video_paths=video_paths,
             clip_length_in_frames=clip_length_in_frames,
-            frames_between_clips=frames_between_clips
+            frames_between_clips=frames_between_clips,
+            num_workers=num_workers
         )
         self._transforms = transforms
         self._seeds = seeds

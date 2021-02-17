@@ -20,7 +20,7 @@ class VideoDataModule(pl.LightningDataModule):
             frames_between_clips (int): Offset frames between starting point of clips
             train_slit (float): Relative size of train split
             batch_size (int): Batch size for the dataloader
-            num_workers (int): Number of workers for the dataloader
+            num_workers (int): Number of workers for the video dataset
             random_state (int): Initial random state for the train/validation split
         """
         self._meta_df = meta_df
@@ -54,12 +54,13 @@ class VideoDataModule(pl.LightningDataModule):
         self._test_transforms = [anyDictListToCompose(row.transforms) for _, row in self._test_meta_df.iterrows()]
 
 
-    def setup(self, stage=None) -> None:
+    def setup(self, stage=None):
         if stage == 'fit' or stage is None:
             self._train_set = VideoDataset(
                 video_paths=self._train_video_paths,
                 clip_length_in_frames=self._clip_length_in_frames,
                 frames_between_clips=self._frames_between_clips,
+                num_workers=self._num_workers,
                 transforms=self._train_transforms
             )
 
@@ -67,6 +68,7 @@ class VideoDataModule(pl.LightningDataModule):
                 video_paths=self._val_video_paths,
                 clip_length_in_frames=self._clip_length_in_frames,
                 frames_between_clips=self._frames_between_clips,
+                num_workers=self._num_workers,
                 transforms=self._val_transforms,
                 seeds=True
             )
@@ -76,22 +78,23 @@ class VideoDataModule(pl.LightningDataModule):
                 video_paths=self._test_video_paths,
                 clip_length_in_frames=self._clip_length_in_frames,
                 frames_between_clips=self._frames_between_clips,
+                num_workers=self._num_workers,
                 transforms=self._test_transforms,
                 seeds=True
             )
 
     def train_dataloader(self):
-        return DataLoader(self._train_set, self._batch_size, num_workers=self._num_workers)
+        return DataLoader(self._train_set, self._batch_size)
 
     def val_dataloader(self):
-        return DataLoader(self._val_set, self._batch_size, num_workers=self._num_workers)
+        return DataLoader(self._val_set, self._batch_size)
 
     def test_dataloader(self):
-        return DataLoader(self._test_set, self._batch_size, num_workers=self._num_workers)
+        return DataLoader(self._test_set, self._batch_size)
 
 if __name__ == '__main__':
-    import os
     import cv2
+    import time
     from kornia import tensor_to_image
  
     prefix = os.getcwd()
@@ -122,9 +125,12 @@ if __name__ == '__main__':
     # get a sample dataloader
     dl = dm.train_dataloader()
 
+    start = time.time_ns()
+
     for idx, batch in enumerate(dl):
-        print('\rBatch {}/{}, Batch shape: {}'.format(idx + 1, len(dl),batch.shape), end='')
+        print('\rBatch {}/{}, Batch shape: {}, Loading time: {}'.format(idx + 1, len(dl), batch.shape, (time.time_ns() - start)/1.e9), end='')
         img = batch[0,0]
         img = tensor_to_image(img)
         cv2.imshow('img', img)
         cv2.waitKey()
+    cv2.destroyAllWindows()

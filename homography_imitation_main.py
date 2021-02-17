@@ -29,7 +29,7 @@ if __name__ == '__main__':
     backbone_configs = load_yaml(os.path.join(server['logging']['location'], args.backbone_path, 'configs.yml'))
     df = scan2df(os.path.join(server['logging']['location'], args.backbone_path, 'checkpoints'), '.ckpt')
     ckpts = sorted(list(df['file']), key=natural_keys)
-    configs['model']['backbone'] = {
+    configs['model']['homography_regression'] = {
         'lightning_module': backbone_configs['lightning_module'],
         'model': backbone_configs['model'],
         'path': args.backbone_path,
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # prepare data
     prefix = os.path.join(server['database']['location'])
     meta_df = pd.read_pickle(os.path.join(config_path, configs['data']['meta_df']))
-    
+
     # load specific data module
     kwargs = {
         'meta_df': meta_df,
@@ -54,11 +54,31 @@ if __name__ == '__main__':
     }
 
     dm = getattr(lightning_data_modules, configs['lightning_data_module'])(**kwargs)
+    dm.prepare_data()
+    dm.setup()
+
+    # dm.setup('fit')
+    # dl = dm.train_dataloader()
+
+    # import cv2
+    # import time
+    # from kornia import tensor_to_image
+
+    # start = time.time_ns()
+
+    # for idx, batch in enumerate(dl):
+    #     print('\rBatch {}/{}, Batch shape: {}, Loading time: {}'.format(idx + 1, len(dl), batch.shape, (time.time_ns() - start)/1.e9), end='')
+    #     for seq in batch:
+    #         for img in seq:
+    #             img = tensor_to_image(img)
+    #             cv2.imshow('img', img)
+    #             cv2.waitKey()
+    #     start = time.time_ns()
 
     # load specific module
     kwargs = configs['model']
 
-    module = getattr(lightning_modules, configs['lightning_module'])(**kwargs, backbone_prefix=server['logging']['location'])
+    module = getattr(lightning_modules, configs['lightning_module'])(**kwargs, homography_regression_prefix=server['logging']['location'])
 
     logger = TensorBoardLogger(
         save_dir=server['logging']['location'],
@@ -68,6 +88,7 @@ if __name__ == '__main__':
     # save configs
     generate_path(logger.log_dir)
     save_yaml(os.path.join(logger.log_dir, 'configs.yml'), configs)
+    meta_df.to_pickle(os.path.join(logger.log_dir, configs['data']['meta_df']))
 
     trainer = pl.Trainer(
         max_epochs=configs['trainer']['max_epochs'],
