@@ -86,8 +86,8 @@ class VideoDataModule(pl.LightningDataModule):
     def val_dataloader(self):
         return DataLoader(self._val_set, self._batch_size, num_workers=self._num_workers)
 
-    # def test_dataloader(self):
-    #     return DataLoader(self._test_set, self._batch_size, num_workers=self._num_workers)
+    def test_dataloader(self):
+        return DataLoader(self._test_set, self._batch_size, num_workers=self._num_workers)
 
 if __name__ == '__main__':
     import os
