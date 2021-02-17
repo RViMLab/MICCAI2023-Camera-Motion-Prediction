@@ -14,7 +14,7 @@ class VideoDataset(Dataset):
             clip_length_in_frames (int): Preview horizon, frames per returned clip
             frames_between_clips (int): Offset frames between starting point of clips
             transforms (List[Callable]): List of callable tranforms (video specific transforms)
-            seeds (list of np.int32): Seeds for deterministic output, e.g. for test set
+            seeds (bool): Seeds for deterministic output, e.g. for test set
         """
         if transforms is not None and len(video_paths) != len(transforms): 
             raise ValueError("Length of provided videos paths must equal length of provided transforms.")

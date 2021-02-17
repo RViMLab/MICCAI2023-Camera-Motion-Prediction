@@ -21,12 +21,14 @@ if __name__ == '__main__':
     servers = load_yaml(args.servers_file)
     server = servers[args.server]
 
+    config_path = server['configs']['location']
+
     configs = load_yaml(args.configs)
 
     # append configs by backbone
     backbone_configs = load_yaml(os.path.join(server['logging']['location'], args.backbone_path, 'configs.yml'))
     df = scan2df(os.path.join(server['logging']['location'], args.backbone_path, 'checkpoints'), '.ckpt')
-    ckpts = sorted(list(df['files']), key=natural_keys)
+    ckpts = sorted(list(df['file']), key=natural_keys)
     configs['model']['backbone'] = {
         'lightning_module': backbone_configs['lightning_module'],
         'model': backbone_configs['model'],
@@ -36,22 +38,19 @@ if __name__ == '__main__':
     }
 
     # prepare data
-    prefix = os.path.join(server['database']['location'], configs['data']['pkl_path'])
-    df = pd.read_pickle(os.path.join(
-            prefix,
-            configs['data']['pkl_name']
-    ))
-
+    prefix = os.path.join(server['database']['location'])
+    meta_df = pd.read_pickle(os.path.join(config_path, configs['data']['meta_df']))
+    
     # load specific data module
     kwargs = {
-        'df': df,
+        'meta_df': meta_df,
         'prefix': prefix,
+        'clip_length_in_frames': configs['data']['clip_length_in_frames'],
+        'frames_between_clips': configs['data']['frames_between_clips'],
         'train_split': configs['data']['train_split'],
-        'random_state': configs['data']['random_state'],
         'batch_size': configs['data']['batch_size'],
         'num_workers': configs['data']['num_workers'],
-        'train_transforms': configs['data']['train_transforms'],
-        'val_transforms': configs['data']['val_transforms']
+        'random_state': configs['data']['random_state']
     }
 
     dm = getattr(lightning_data_modules, configs['lightning_data_module'])(**kwargs)
