@@ -3,7 +3,7 @@ from typing import Tuple
 from kornia import get_perspective_transform
 
 
-def fourPtToMatrixHomographyRepresentation(uv_img: torch.Tensor, duv: torch.Tensor) -> torch.Tensor:
+def four_point_homography_to_matrix(uv_img: torch.Tensor, duv: torch.Tensor) -> torch.Tensor:
     r"""Transforms homography from four point representation of shape 4x2 to matrix representation of shape 3x3.
 
     Args:
@@ -12,14 +12,14 @@ def fourPtToMatrixHomographyRepresentation(uv_img: torch.Tensor, duv: torch.Tens
 
     Example:
 
-        h = fourPtToMatrixHomographyRepresentation(uv_img, duv)
+        h = four_point_homography_to_matrix(uv_img, duv)
     """
     uv_wrp = uv_img + duv
     h = get_perspective_transform(uv_img.flip(-1), uv_wrp.flip(-1))
     return h
 
 
-def imageEdges(img: torch.Tensor) -> torch.Tensor:
+def image_edges(img: torch.Tensor) -> torch.Tensor:
     r"""Returns edges of image (uv) in OpenCV convention.
 
     Args:

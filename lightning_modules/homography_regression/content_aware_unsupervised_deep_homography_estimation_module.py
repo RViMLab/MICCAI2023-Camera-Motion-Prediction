@@ -137,7 +137,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         loss = F.mse_loss(h_01.matmul(h_21), identity)
         return loss
 
-    def fourPtToMatrixHomographyRepresentation(self, uv_0: torch.Tensor, duv_01: torch.Tensor):
+    def four_point_homography_to_matrix(self, uv_0: torch.Tensor, duv_01: torch.Tensor):
         r"""Transforms homography from four point representation of shape 4x2 to matrix representation of shape 3x3.
 
         Args:
@@ -161,8 +161,8 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         ba_dic = self(i_b, i_a, masks)
 
         # warp images and masks
-        h_ab = self.fourPtToMatrixHomographyRepresentation(batch['uv'].to(ab_dic['duv_01'].dtype), ab_dic['duv_01'])
-        h_ba = self.fourPtToMatrixHomographyRepresentation(batch['uv'].to(ba_dic['duv_01'].dtype), ba_dic['duv_01'])
+        h_ab = self.four_point_homography_to_matrix(batch['uv'].to(ab_dic['duv_01'].dtype), ab_dic['duv_01'])
+        h_ba = self.four_point_homography_to_matrix(batch['uv'].to(ba_dic['duv_01'].dtype), ba_dic['duv_01'])
 
         i_a_prime = warp_perspective(i_a, torch.inverse(h_ab), i_a.shape[-2:])
         i_b_prime = warp_perspective(i_b, torch.inverse(h_ba), i_b.shape[-2:])

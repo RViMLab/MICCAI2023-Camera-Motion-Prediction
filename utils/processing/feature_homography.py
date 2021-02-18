@@ -34,7 +34,7 @@ class FeatureHomographyEstimation(object):
             H (np.array): Estimated homography of shape 3x3
             duv (np.array): Deformation of image edges uv under estimated homography 4x2
         """
-        uv = self._imageEdges(img)
+        uv = self._image_edges(img)
 
         img, wrp = self._grayscale(img, wrp)
         kp_img, des_img = self.fd.detectAndCompute(img, None)
@@ -72,7 +72,7 @@ class FeatureHomographyEstimation(object):
 
         return good_matches
 
-    def _imageEdges(self, img: np.array):
+    def _image_edges(self, img: np.array):
         r"""Returns edges of image (uv) in OpenCV convention.
 
         Args:
