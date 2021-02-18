@@ -40,7 +40,7 @@ def image_edges(img: torch.Tensor) -> torch.Tensor:
     return uv.unsqueeze(0).repeat(img.shape[0], 1, 1)
 
 
-def framePairs(video: torch.Tensor, step: int=1) -> Tuple[torch.Tensor, torch.Tensor]:
+def frame_pairs(video: torch.Tensor, step: int=1) -> Tuple[torch.Tensor, torch.Tensor]:
     r"""Helper function to return frame pairs at an offset.
 
     Args:
