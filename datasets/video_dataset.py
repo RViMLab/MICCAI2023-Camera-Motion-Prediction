@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from typing import List, Tuple, Callable
 import torch
 from torch.utils.data import Dataset
@@ -7,14 +6,14 @@ from torchvision.datasets.video_utils import VideoClips
 
 
 class VideoDataset(Dataset):
-    def __init__(self, video_paths: List[str], clip_length_in_frames: int=25, frames_between_clips: int=1, precomputed_metadata: pd.DataFrame=None, num_workers: int=0, transforms: List[Callable]=None, seeds: bool=False) -> None:
+    def __init__(self, video_paths: List[str], clip_length_in_frames: int=25, frames_between_clips: int=1, precomputed_metadata: dict=None, num_workers: int=0, transforms: List[Callable]=None, seeds: bool=False) -> None:
         r"""Dataset to load video clips with homographies
 
         Args:
             video_paths (List[str]): List of paths to video files
             clip_length_in_frames (int): Preview horizon, frames per returned clip
             frames_between_clips (int): Offset frames between starting point of clips
-            precomputed_metadata (pd.DataFrame): Metadata
+            precomputed_metadata (dict): Metadata
             num_worker (int): Number of subprocesses for loading images from video
             transforms (List[Callable]): List of callable tranforms (video specific transforms)
             seeds (bool): Seeds for deterministic output, e.g. for test set
