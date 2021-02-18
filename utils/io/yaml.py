@@ -2,20 +2,20 @@ import yaml
 from typing import Union
 
 
-def load_yaml(path: str) -> Union[dict, bool]:
+def load_yaml(path: str) -> Union[dict, None]:
     r"""Load YAML file into dictionary.
 
     Args:
         path (str): Path to load YAML file from
     Return:
-        yml (dict): Dictionary representation of YAML file, False if failure
+        yml (dict): Dictionary representation of YAML file
     """
     try:
         with open(path, 'r') as f:
             yml = yaml.load(f, Loader=yaml.FullLoader)
         return yml
     except:
-        return False
+        return None
 
 
 def save_yaml(path: str, dic: dict) -> None:

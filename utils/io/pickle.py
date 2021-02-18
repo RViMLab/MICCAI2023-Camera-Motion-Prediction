@@ -2,19 +2,19 @@ import pickle
 from typing import Union
 
 
-def load_pickle(path: str) -> Union[dict, bool]:
+def load_pickle(path: str) -> Union[dict, None]:
     r"""Loads a binary file into a dictionary.
 
     Args:
         path (str): Path to load binary file from
     Return:
-        dic (dict): Dictionary object or false if failed
+        dic (dict): Dictionary object
     """
     try:
         with open(path, 'rb') as f:
             return pickle.load(f)
     except:
-        return False
+        return None
 
 
 def save_pickle(path: str, dic: dict) -> None:
