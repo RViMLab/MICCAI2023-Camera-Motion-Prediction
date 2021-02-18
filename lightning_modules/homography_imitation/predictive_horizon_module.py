@@ -4,9 +4,11 @@ import torch.nn as nn
 import torchvision.models as models
 import pytorch_lightning as pl
 from typing import List
+from kornia import warp_perspective
 
 import lightning_modules
-from utils.processing import framePairs
+from utils.processing import frame_pairs, image_edges, four_point_homography_to_matrix
+from utils.viz import yt_alpha_blend
 
 
 class PredictiveHorizonModule(pl.LightningModule):
@@ -40,58 +42,89 @@ class PredictiveHorizonModule(pl.LightningModule):
         self._preview_horizon = preview_horizon
         self._frame_stride = frame_stride
 
+    def on_train_start(self):
+        self._homography_regression.eval()
+
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self._model.parameters(), lr=self._lr, betas=self._betas)
 
     def forward(self, img):
+        r"""Forward first images, alternatively, forward frames_i to predict duvs to frames_ips
+        """
         return self._model(img).view(-1, self._preview_horizon, 4, 2)
 
     def training_step(self, batch, batch_idx):
-        frame_i, frame_ips = framePairs(batch, self._frame_stride)   # re-sort images
-        frame_i   = frame_i.reshape((-1,) + frame_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxHxW
-        frame_ips = frame_ips.reshape((-1,) + frame_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
-        with torch.no_grad():
-            duv_gt = self._homography_regression(frame_i, frame_ips)
+        batch = batch.float()/255.
+        frames_i, frames_ips = frame_pairs(batch, self._frame_stride)   # re-sort images
+        frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxHxW
+        frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
 
-        duv_gt = duv_gt.view(batch.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
-        duv = self(batch[:,0].squeeze())  # forward batch of first images
-        mse_loss = self._mse_loss(duv, duv_gt)
+        torch.set_grad_enabled(False)
+        duvs_reg = self._homography_regression(frames_i, frames_ips)
+        
+        duvs_reg = duvs_reg.view(batch.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
 
-        return mse_loss
+        # VIZ
+        if self.global_step % self._log_n_steps == 0:
+            frames_i   = frames_i.view(batch.shape[0], -1, 3, batch.shape[-2], batch.shape[-1])
+            frames_ips = frames_ips.view(batch.shape[0], -1, 3, batch.shape[-2], batch.shape[-1])
+
+            # visualize zeroth batch
+            blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
+
+            self.logger.experiment.add_images('verify/blend_train', blends, self.global_step)
+        # VIZ   
+
+        torch.set_grad_enabled(True)
+
+
+
+  
+        # duvs_reg = duvs_reg.view(batch.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
+        # duv = self(batch[:,0].squeeze())                # forward batch of first images
+        # mse_loss = self._mse_loss(duv, duvs_reg)
+
+        # self.log('train/mse', mse_loss)
+        # return 0
 
     def validation_step(self, batch, batch_idx):
-        frame_i, frame_ips = framePairs(batch, self._frame_stride)   # re-sort images
-        frame_i   = frame_i.reshape((-1,) + frame_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxHxW
-        frame_ips = frame_ips.reshape((-1,) + frame_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
-        with torch.no_grad():
-            duv_gt = self._homography_regression(frame_i, frame_ips)
+        # by default without grad (torch.set_grad_enabled(False))
+        batch = batch.float()/255.
+        frames_i, frames_ips = frame_pairs(batch, self._frame_stride)   # re-sort images
+        frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxHxW
+        frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
 
-            duv_gt = duv_gt.view(batch.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
-            duv = self(batch[:,0].squeeze())  # forward batch of first images
-            mse_loss = self._mse_loss(duv, duv_gt)
+        duvs_reg = self._homography_regression(frames_i, frames_ips)
+        duvs_reg = duvs_reg.view(batch.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
+        # duv = self(batch[:,0].squeeze())                # forward batch of first images
+        # mse_loss = self._mse_loss(duv, duvs_reg)
 
-            # # test forwarding after reshape op
-            # import cv2
-            # from kornia import warp_perspective, tensor_to_image
-            # from utils.processing import imageEdges, fourPtToMatrixHomographyRepresentation
-            # from utils.viz import yt_alpha_blend
-            
-            # frame_i   = frame_i.view(batch.shape[0], -1, 3, batch.shape[-2], batch.shape[-1])
-            # frame_ips = frame_ips.view(batch.shape[0], -1, 3, batch.shape[-2], batch.shape[-1])
+        # # VIZ
+        # frames_i   = frames_i.view(batch.shape[0], -1, 3, batch.shape[-2], batch.shape[-1])
+        # frames_ips = frames_ips.view(batch.shape[0], -1, 3, batch.shape[-2], batch.shape[-1])
 
-            # for i in range(duv_gt.shape[1]):
-            #     uv = imageEdges(frame_i[0])
-            #     H = fourPtToMatrixHomographyRepresentation(uv, duv_gt[0])
-            #     wrps = warp_perspective(frame_i[0], torch.inverse(H), frame_i[0].shape[-2:])
-            #     for j in range(H.shape[0]):
-            #         img, wrp = tensor_to_image(frame_ips[0,j]), tensor_to_image(wrps[j])
-            #         blend = yt_alpha_blend(img, wrp)
-            #         cv2.imshow('blend', blend)
-            #         cv2.waitKey()
-
-        return mse_loss
+        # # visualize zeroth batch
+        # blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
+        # self.logger.experiment.add_images('verify/blend_val', blends)
+        # return mse_loss
         
-
     def test_step(self, batch, batch_idx):
         # skip test step until hand labeled homography implemented
         pass
+
+    def _create_blend_from_homography_regression(self, frames_i: torch.Tensor, frames_ips: torch.Tensor, duvs: torch.Tensor):
+        r"""Helper function that creates blend figure, given four point homgraphy representation.
+
+        Args:
+            frames_i (torch.Tensor): Frames i of shape NxCxHxW
+            frames_ips (torch.Tensor): Frames i+step of shape NxCxHxW
+            duvs (torch.Tensor): Edge delta from frames i+step to frames i of shape Nx4x2
+
+        Return:
+            blends (torch.Tensor): Blends of warp(frames_i) and frames_ips
+        """
+        uvs = image_edges(frames_i)         
+        Hs = four_point_homography_to_matrix(uvs, duvs)
+        wrps = warp_perspective(frames_i, torch.inverse(Hs), frames_i.shape[-2:])
+        blends = yt_alpha_blend(frames_ips, wrps)
+        return blends
