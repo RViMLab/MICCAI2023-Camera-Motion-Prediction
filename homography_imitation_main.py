@@ -4,7 +4,7 @@ import pandas as pd
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
 
-from utils.io import load_yaml, save_yaml, generate_path, scan2df, natural_keys
+from utils.io import load_yaml, save_yaml, load_pickle, save_pickle, generate_path, scan2df, natural_keys
 import lightning_data_modules
 import lightning_modules
 
@@ -41,6 +41,11 @@ if __name__ == '__main__':
     prefix = os.path.join(server['database']['location'])
     meta_df = pd.read_pickle(os.path.join(config_path, configs['data']['meta_df']))
 
+    # load video meta data if existing, returns None if none existent
+    train_md = load_pickle(os.path.join(server['configs']['location'], configs['data']['train_metadata']))
+    val_md = load_pickle(os.path.join(server['configs']['location'], configs['data']['val_metadata']))
+    test_md = load_pickle(os.path.join(server['configs']['location'], configs['data']['test_metadata']))
+
     # load specific data module
     kwargs = {
         'meta_df': meta_df,
@@ -50,30 +55,20 @@ if __name__ == '__main__':
         'train_split': configs['data']['train_split'],
         'batch_size': configs['data']['batch_size'],
         'num_workers': configs['data']['num_workers'],
-        'random_state': configs['data']['random_state']
+        'random_state': configs['data']['random_state'],
+        'train_metadata': train_md,
+        'val_metadata': val_md,
+        'test_metadata': test_md
     }
 
     dm = getattr(lightning_data_modules, configs['lightning_data_module'])(**kwargs)
     dm.prepare_data()
+
     train_md, val_md, test_md = dm.setup()
 
-    # dm.setup('fit')
-    # dl = dm.train_dataloader()
-
-    # import cv2
-    # import time
-    # from kornia import tensor_to_image
-
-    # start = time.time_ns()
-
-    # for idx, batch in enumerate(dl):
-    #     print('\rBatch {}/{}, Batch shape: {}, Loading time: {}'.format(idx + 1, len(dl), batch.shape, (time.time_ns() - start)/1.e9), end='')
-    #     for seq in batch:
-    #         for img in seq:
-    #             img = tensor_to_image(img)
-    #             cv2.imshow('img', img)
-    #             cv2.waitKey()
-    #     start = time.time_ns()
+    save_pickle(os.path.join(server['configs']['location'], configs['data']['train_metadata']), train_md)
+    save_pickle(os.path.join(server['configs']['location'], configs['data']['val_metadata']), val_md)
+    save_pickle(os.path.join(server['configs']['location'], configs['data']['test_metadata']), test_md)
 
     # load specific module
     kwargs = configs['model']
