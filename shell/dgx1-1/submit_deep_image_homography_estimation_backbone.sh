@@ -8,4 +8,4 @@ runai submit hil-supervised-backbone \
   --host-ipc \
   --command /workspace/homography_imitation_learning/shell/dgx1-1/run_deep_image_homography_estimation_backbone.sh \
   --working-dir /workspace/homography_imitation_learning/ \
-  --run-as-user # defaults to root -> logs will be safed as root too
+  --run-as-user # defaults to root -> logs will be saved as root too

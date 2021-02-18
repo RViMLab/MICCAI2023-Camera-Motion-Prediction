@@ -61,7 +61,7 @@ if __name__ == '__main__':
         ) # generate iterator
         
         for cs, vid_idx, frame_idx in tqdm(consecutive_sequences):
-            # only safe first image of sequence
+            # only save first image of sequence
             if database['test'] == True:
                 relative_prefix = 'test'
             else:
@@ -74,7 +74,7 @@ if __name__ == '__main__':
             generate_path(prefix)
 
             path = os.path.join(prefix, file_name)
-            cv2.imwrite(path, cs[0]) # note: currenlty only safes first image of sequence
+            cv2.imwrite(path, cs[0]) # note: currenlty only saves first image of sequence
 
             df = df.append({
                 'file': file_name, 
