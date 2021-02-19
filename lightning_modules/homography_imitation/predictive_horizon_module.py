@@ -12,16 +12,11 @@ from utils.viz import yt_alpha_blend
 
 
 class PredictiveHorizonModule(pl.LightningModule):
-    def __init__(self, shape: List[int], homography_regression: dict, homography_regression_prefix: str, lr: float=1e-4, betas: List[float]=[0.9, 0.999], log_n_steps: int=1000, backbone: str='resnet34', preview_horizon: int=4, frame_stride: int=5):
+    def __init__(self, shape: List[int], lr: float=1e-4, betas: List[float]=[0.9, 0.999], log_n_steps: int=1000, backbone: str='resnet34', preview_horizon: int=4, frame_stride: int=1):
         super().__init__()
         self.save_hyperparameters('lr', 'betas', 'backbone')
 
-        # load trained homography regression model
-        self._homography_regression = getattr(lightning_modules, homography_regression['lightning_module']).load_from_checkpoint(
-            checkpoint_path=os.path.join(homography_regression_prefix, homography_regression['path'], homography_regression['checkpoint']),
-            **homography_regression['model']
-        )
-        self._homography_regression.eval()
+        self._homography_regression = None
 
         # load model
         self._model = getattr(models, backbone)(**{'pretrained': False})
@@ -42,7 +37,15 @@ class PredictiveHorizonModule(pl.LightningModule):
         self._preview_horizon = preview_horizon
         self._frame_stride = frame_stride
 
-    def on_train_start(self):
+    def inject_homography_regression(self, homography_regression: dict, homography_regression_prefix: str):
+        # load trained homography regression model
+        self._homography_regression = getattr(lightning_modules, homography_regression['lightning_module']).load_from_checkpoint(
+            checkpoint_path=os.path.join(homography_regression_prefix, homography_regression['path'], homography_regression['checkpoint']),
+            **homography_regression['model']
+        )
+        self._homography_regression.eval()
+
+    def on_train_epoch_start(self):
         self._homography_regression.eval()
 
     def configure_optimizers(self):
@@ -54,20 +57,22 @@ class PredictiveHorizonModule(pl.LightningModule):
         return self._model(img).view(-1, self._preview_horizon, 4, 2)
 
     def training_step(self, batch, batch_idx):
-        batch = batch.float()/255.
-        frames_i, frames_ips = frame_pairs(batch, self._frame_stride)   # re-sort images
+        if self._homography_regression is None:
+            raise ValueError('Homography regression model required in training step.')
+        videos, transformed_videos = batch
+        frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
         frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxHxW
         frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
 
         torch.set_grad_enabled(False)
         duvs_reg = self._homography_regression(frames_i, frames_ips)
         
-        duvs_reg = duvs_reg.view(batch.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
+        duvs_reg = duvs_reg.view(videos.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
 
         # VIZ
         if self.global_step % self._log_n_steps == 0:
-            frames_i   = frames_i.view(batch.shape[0], -1, 3, batch.shape[-2], batch.shape[-1])
-            frames_ips = frames_ips.view(batch.shape[0], -1, 3, batch.shape[-2], batch.shape[-1])
+            frames_i   = frames_i.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])
+            frames_ips = frames_ips.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])
 
             # visualize zeroth batch
             blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
@@ -80,7 +85,7 @@ class PredictiveHorizonModule(pl.LightningModule):
 
 
   
-        # duvs_reg = duvs_reg.view(batch.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
+        # duvs_reg = duvs_reg.view(videos.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
         # duv = self(batch[:,0].squeeze())                # forward batch of first images
         # mse_loss = self._mse_loss(duv, duvs_reg)
 
@@ -88,20 +93,22 @@ class PredictiveHorizonModule(pl.LightningModule):
         # return 0
 
     def validation_step(self, batch, batch_idx):
+        if self._homography_regression is None:
+            raise ValueError('Homography regression model required in validation step.')
         # by default without grad (torch.set_grad_enabled(False))
-        batch = batch.float()/255.
-        frames_i, frames_ips = frame_pairs(batch, self._frame_stride)   # re-sort images
+        videos, transformed_videos = batch
+        frames_i, frames_ips = frame_pairs(videos, self._frame_stride)   # re-sort images
         frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxHxW
         frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
 
         duvs_reg = self._homography_regression(frames_i, frames_ips)
-        duvs_reg = duvs_reg.view(batch.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
+        duvs_reg = duvs_reg.view(videos.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
         # duv = self(batch[:,0].squeeze())                # forward batch of first images
         # mse_loss = self._mse_loss(duv, duvs_reg)
 
         # # VIZ
-        # frames_i   = frames_i.view(batch.shape[0], -1, 3, batch.shape[-2], batch.shape[-1])
-        # frames_ips = frames_ips.view(batch.shape[0], -1, 3, batch.shape[-2], batch.shape[-1])
+        # frames_i   = frames_i.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])
+        # frames_ips = frames_ips.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])
 
         # # visualize zeroth batch
         # blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])

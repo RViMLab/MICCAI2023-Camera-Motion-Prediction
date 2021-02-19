@@ -72,9 +72,12 @@ if __name__ == '__main__':
     save_pickle(os.path.join(server['configs']['location'], configs['data']['test_metadata']), test_md)
 
     # load specific module
-    kwargs = configs['model']
+    kwargs = {k: v for k, v in configs['model'].items() if k not in 'homography_regression'}  # exclude homography regression from kwargs
 
-    module = getattr(lightning_modules, configs['lightning_module'])(**kwargs, homography_regression_prefix=server['logging']['location'])
+    module = getattr(lightning_modules, configs['lightning_module'])(**kwargs)
+
+    # inject homography regression into module
+    module.inject_homography_regression(homography_regression=configs['model']['homography_regression'], homography_regression_prefix=server['logging']['location'])
 
     logger = TensorBoardLogger(
         save_dir=server['logging']['location'],
