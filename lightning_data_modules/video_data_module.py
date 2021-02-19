@@ -10,15 +10,15 @@ from utils.transforms import anyDictListToCompose
 
 
 class VideoDataModule(pl.LightningDataModule):
-    def __init__(self, meta_df: pd.DataFrame, prefix: str, clip_length_in_frames: int=25, frames_between_clips: int=5, frame_stride: int=1, train_split: float=0.8, batch_size: int=32, num_workers: int=2, random_state: int=42, train_metadata: dict=None, val_metadata: dict=None, test_metadata: dict=None) -> None:
+    def __init__(self, meta_df: pd.DataFrame, prefix: str, clip_length_in_frames: int=25, frames_between_clips: int=1, frame_rate: int=1, train_split: float=0.8, batch_size: int=32, num_workers: int=2, random_state: int=42, train_metadata: dict=None, val_metadata: dict=None, test_metadata: dict=None) -> None:
         r"""Pytorch Lightning datamodule for videos.
         
         Args:
-            meta_df (pd.DataFrame): Meta dataframe containing {'database':, 'train':, 'file': {'name':, 'path':}, 'transforms': [], 'auxiliary':}
+            meta_df (pd.DataFrame): Meta dataframe containing {'database':, 'train':, 'file': {'name':, 'path':}, 'pre_transforms': [], 'aug_transforms': [], 'auxiliary':}
             prefix (str): Path to the database from meta_df
             clip_length_in_frames (int): Preview horizon, frames per returned clip
             frames_between_clips (int): Offset frames between starting point of clips
-            frame_stride (int): Stride in between consecutive frames
+            frame_rate (int): Resampling frame rate
             train_slit (float): Relative size of train split
             batch_size (int): Batch size for the dataloader
             num_workers (int): Number of workers for the VideoClip init and for the Dataloader
@@ -29,7 +29,7 @@ class VideoDataModule(pl.LightningDataModule):
 
         self._clip_length_in_frames = clip_length_in_frames
         self._frames_between_clips = frames_between_clips
-        self._frame_stride = frame_stride
+        self._frame_rate = frame_rate
 
         self._train_split = train_split
         self._batch_size = batch_size
@@ -66,23 +66,27 @@ class VideoDataModule(pl.LightningDataModule):
 
 
     def setup(self, stage=None):
+        metadata = {'train': None, 'val': None, 'test': None}
+
         if stage == 'fit' or stage is None:
             self._train_set = VideoDataset(
                 video_paths=self._train_video_paths,
                 clip_length_in_frames=self._clip_length_in_frames,
                 frames_between_clips=self._frames_between_clips,
-                frame_stride=self._frame_stride,
+                frame_rate=self._frame_rate,
                 precomputed_metadata=self._train_metadata,
                 num_workers=self._num_workers,
                 pre_transforms=self._train_pre_transforms,
                 aug_transforms=self._train_aug_transforms
             )
 
+            metadata['train'] = self._train_set.metadata
+
             self._val_set = VideoDataset(
                 video_paths=self._val_video_paths,
                 clip_length_in_frames=self._clip_length_in_frames,
                 frames_between_clips=self._frames_between_clips,
-                frame_stride=self._frame_stride,
+                frame_rate=self._frame_rate,
                 precomputed_metadata=self._val_metadata,
                 num_workers=self._num_workers,
                 pre_transforms=self._val_pre_transforms,
@@ -90,18 +94,23 @@ class VideoDataModule(pl.LightningDataModule):
                 seeds=True
             )
 
+            metadata['val'] = self._val_set.metadata
+
         if stage == 'test' or stage is None:
             self._test_set = VideoDataset(
                 video_paths=self._test_video_paths,
                 clip_length_in_frames=self._clip_length_in_frames,
                 frames_between_clips=self._frames_between_clips,
-                frame_stride=self._frame_stride,
+                frame_rate=self._frame_rate,
                 precomputed_metadata=self._test_metadata,
                 num_workers=self._num_workers,
                 pre_transforms=self._test_pre_transforms,
                 seeds=True
             )
-        return self._train_set.metadata, self._val_set.metadata, self._test_set.metadata
+
+            metadata['test'] = self._test_set.metadata
+ 
+        return (metadata['train'], metadata['val'], metadata['test'])
 
     def train_dataloader(self):
         return DataLoader(self._train_set, self._batch_size, num_workers=self._num_workers)
@@ -116,19 +125,30 @@ if __name__ == '__main__':
     import cv2
     import time
     from kornia import tensor_to_image
+    
+    from utils.io import save_pickle
  
     prefix = os.getcwd()
     paths = ['sample.mp4', 'sample.mp4', 'sample.mp4']
     
-    meta_df = pd.DataFrame(columns=['database', 'file', 'transforms'])
-    transforms = [{'module': 'torchvision.transforms', 'type': 'Resize', 'kwargs': {'size': [270, 480]}}, {'module': 'kornia.augmentation', 'type': 'RandomGrayscale', 'kwargs': {'p': 0.5}}]
+    meta_df = pd.DataFrame(columns=['database', 'train', 'file', 'pre_transforms', 'aug_transforms', 'auxiliary'])
+
+    pre_transforms = [
+        {'module': 'torchvision.transforms', 'type': 'Resize', 'kwargs': {'size': [270, 480]}}
+        # {'module': 'kornia.augmentation', 'type': 'RandomGrayscale', 'kwargs': {'p': 0.5}}
+    ]
+
+    aug_transforms = [
+        {'module': 'torchvision.transforms', 'type': 'RandomGrayscale', 'kwargs': {'p': 0.5}}
+    ]
 
     for path in paths:
         row = {
             'database': '', # empty cause sample
             'train': True,
             'file': {'name': path, 'path': 'lightning_data_modules'},
-            'transforms': transforms,
+            'pre_transforms': pre_transforms,
+            'aug_transforms': aug_transforms,
             'auxiliary': {}
         }
         meta_df = meta_df.append(row, ignore_index=True)
@@ -137,10 +157,14 @@ if __name__ == '__main__':
     dm = VideoDataModule(
         meta_df=meta_df,
         prefix=prefix,
+        clip_length_in_frames=20,
+        frames_between_clips=1,
+        frame_rate=8,
         batch_size=4
     )
 
-    dm.setup()
+    metadata = dm.setup('fit')
+    # save_pickle('path.pkl', metadata)  # save and load metadata
 
     # get a sample dataloader
     dl = dm.train_dataloader()
@@ -148,9 +172,11 @@ if __name__ == '__main__':
     start = time.time_ns()
 
     for idx, batch in enumerate(dl):
-        print('\rBatch {}/{}, Batch shape: {}, Loading time: {}'.format(idx + 1, len(dl), batch.shape, (time.time_ns() - start)/1.e9), end='')
-        img = batch[0,0]
-        img = tensor_to_image(img)
+        print('\rBatch {}/{}, img shape: {}, aug shape: {}, Loading time: {}'.format(idx + 1, len(dl), batch[0].shape, batch[1].shape, (time.time_ns() - start)/1.e9), end='')
+        img, aug = batch
+        img = tensor_to_image(img[0, 0])
+        aug = tensor_to_image(aug[0, 0])
         cv2.imshow('img', img)
+        cv2.imshow('aug', aug)
         cv2.waitKey()
     cv2.destroyAllWindows()

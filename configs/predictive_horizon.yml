@@ -13,9 +13,9 @@ data:
     train_metadata: 'train_metadata.pkl'
     val_metadata: 'val_metadata.pkl'
     test_metadata: 'test_metadata.pkl'
-    clip_length_in_frames: 25
+    clip_length_in_frames: 5
     frames_between_clips: 1
-    frame_stride: 5
+    frame_rate: 5
     train_split: 0.8
     batch_size: 2
     num_workers: 8

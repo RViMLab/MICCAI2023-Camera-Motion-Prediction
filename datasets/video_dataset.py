@@ -7,15 +7,15 @@ from torchvision.datasets.video_utils import VideoClips
 
 
 class VideoDataset(Dataset):
-    def __init__(self, video_paths: List[str], clip_length_in_frames: int=25, frames_between_clips: int=1, precomputed_metadata: dict=None, frame_stride: int=1, num_workers: int=0, pre_transforms: List[Callable]=None, aug_transforms: List[Callable]=None, seeds: bool=False) -> None:
+    def __init__(self, video_paths: List[str], clip_length_in_frames: int=25, frames_between_clips: int=1, frame_rate: int=1, precomputed_metadata: dict=None, num_workers: int=0, pre_transforms: List[Callable]=None, aug_transforms: List[Callable]=None, seeds: bool=False) -> None:
         r"""Dataset to load video clips with homographies
 
         Args:
             video_paths (List[str]): List of paths to video files
             clip_length_in_frames (int): Preview horizon, frames per returned clip
             frames_between_clips (int): Offset frames between starting point of clips
+            frame_rate (int): Resampling frame rate
             precomputed_metadata (dict): Metadata
-            frame_stride (int): Stride in between consecutive frames
             num_worker (int): Number of subprocesses for loading images from video
             pre_transforms (List[Callable]): List of callable tranforms for cropping an resizing (video specific transforms)
             aug_transforms (List[Callable]): List of callable tranforms for augmentation (video specific transforms)
@@ -28,10 +28,10 @@ class VideoDataset(Dataset):
             video_paths=video_paths,
             clip_length_in_frames=clip_length_in_frames,
             frames_between_clips=frames_between_clips,
+            frame_rate=frame_rate,
             _precomputed_metadata=precomputed_metadata,
             num_workers=num_workers
         )
-        self._frame_stride = frame_stride
         self._pre_transforms = pre_transforms
         self._aug_transforms = aug_transforms
         self._seeds = seeds
@@ -45,10 +45,9 @@ class VideoDataset(Dataset):
         video, audio, info, video_idx = self._video_clips.get_clip(idx)
 
         video = video.permute(0, 3, 1, 2).contiguous()  # NxHxWxC -> NxCxHxW
-        video = video[::self._frame_stride]  # resample video
 
         # crop and resize video
-        if self._pre_transforms:
+        if self._pre_transforms[video_idx]:
             video = self._pre_transforms[video_idx](video)
 
         augmented_video = video.clone()
@@ -71,7 +70,7 @@ class VideoDataset(Dataset):
         else:
             seed = np.random.randint(np.iinfo(np.int32).max)  # set random seed for numpy
 
-        if self._aug_transforms:
+        if self._aug_transforms[video_idx]:
             torch.manual_seed(seed)
             augmented_video = self._aug_transforms[video_idx](augmented_video)
 
