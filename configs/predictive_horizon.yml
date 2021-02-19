@@ -15,8 +15,9 @@ data:
     test_metadata: 'test_metadata.pkl'
     clip_length_in_frames: 25
     frames_between_clips: 1
+    frame_stride: 5
     train_split: 0.8
-    batch_size: 8
+    batch_size: 2
     num_workers: 8
     random_state: 42
 model:

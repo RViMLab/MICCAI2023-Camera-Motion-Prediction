@@ -52,6 +52,7 @@ if __name__ == '__main__':
         'prefix': prefix,
         'clip_length_in_frames': configs['data']['clip_length_in_frames'],
         'frames_between_clips': configs['data']['frames_between_clips'],
+        'frame_stride': configs['data']['frame_stride'],
         'train_split': configs['data']['train_split'],
         'batch_size': configs['data']['batch_size'],
         'num_workers': configs['data']['num_workers'],

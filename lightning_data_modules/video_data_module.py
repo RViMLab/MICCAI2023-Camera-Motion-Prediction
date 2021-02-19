@@ -10,7 +10,7 @@ from utils.transforms import anyDictListToCompose
 
 
 class VideoDataModule(pl.LightningDataModule):
-    def __init__(self, meta_df: pd.DataFrame, prefix: str, clip_length_in_frames: int=25, frames_between_clips: int=1, train_split: float=0.8, batch_size: int=32, num_workers: int=2, random_state: int=42, train_metadata: dict=None, val_metadata: dict=None, test_metadata: dict=None) -> None:
+    def __init__(self, meta_df: pd.DataFrame, prefix: str, clip_length_in_frames: int=25, frames_between_clips: int=5, frame_stride: int=1, train_split: float=0.8, batch_size: int=32, num_workers: int=2, random_state: int=42, train_metadata: dict=None, val_metadata: dict=None, test_metadata: dict=None) -> None:
         r"""Pytorch Lightning datamodule for videos.
         
         Args:
@@ -18,6 +18,7 @@ class VideoDataModule(pl.LightningDataModule):
             prefix (str): Path to the database from meta_df
             clip_length_in_frames (int): Preview horizon, frames per returned clip
             frames_between_clips (int): Offset frames between starting point of clips
+            frame_stride (int): Stride in between consecutive frames
             train_slit (float): Relative size of train split
             batch_size (int): Batch size for the dataloader
             num_workers (int): Number of workers for the VideoClip init and for the Dataloader
@@ -28,6 +29,7 @@ class VideoDataModule(pl.LightningDataModule):
 
         self._clip_length_in_frames = clip_length_in_frames
         self._frames_between_clips = frames_between_clips
+        self._frame_stride = frame_stride
 
         self._train_split = train_split
         self._batch_size = batch_size
@@ -49,9 +51,13 @@ class VideoDataModule(pl.LightningDataModule):
         self._test_video_paths = [os.path.join(self._prefix, row.database, row.file['path'], row.file['name']) for _, row in self._test_meta_df.iterrows()]
 
         # transforms for each video individually
-        self._train_transforms = [anyDictListToCompose(row.transforms) for _, row in self._train_meta_df.iterrows()]
-        self._val_transforms = [anyDictListToCompose(row.transforms) for _, row in self._val_meta_df.iterrows()]
-        self._test_transforms = [anyDictListToCompose(row.transforms) for _, row in self._test_meta_df.iterrows()]
+        self._train_pre_transforms = [anyDictListToCompose(row.pre_transforms) for _, row in self._train_meta_df.iterrows()]
+        self._val_pre_transforms = [anyDictListToCompose(row.pre_transforms) for _, row in self._val_meta_df.iterrows()]
+        self._test_pre_transforms = [anyDictListToCompose(row.pre_transforms) for _, row in self._test_meta_df.iterrows()]
+
+        self._train_aug_transforms = [anyDictListToCompose(row.aug_transforms) for _, row in self._train_meta_df.iterrows()]
+        self._val_aug_transforms = [anyDictListToCompose(row.aug_transforms) for _, row in self._val_meta_df.iterrows()]
+        self._test_aug_transforms = [anyDictListToCompose(row.aug_transforms) for _, row in self._test_meta_df.iterrows()]
 
         # store metadata
         self._train_metadata = train_metadata
@@ -65,18 +71,22 @@ class VideoDataModule(pl.LightningDataModule):
                 video_paths=self._train_video_paths,
                 clip_length_in_frames=self._clip_length_in_frames,
                 frames_between_clips=self._frames_between_clips,
+                frame_stride=self._frame_stride,
                 precomputed_metadata=self._train_metadata,
                 num_workers=self._num_workers,
-                transforms=self._train_transforms
+                pre_transforms=self._train_pre_transforms,
+                aug_transforms=self._train_aug_transforms
             )
 
             self._val_set = VideoDataset(
                 video_paths=self._val_video_paths,
                 clip_length_in_frames=self._clip_length_in_frames,
                 frames_between_clips=self._frames_between_clips,
+                frame_stride=self._frame_stride,
                 precomputed_metadata=self._val_metadata,
                 num_workers=self._num_workers,
-                transforms=self._val_transforms,
+                pre_transforms=self._val_pre_transforms,
+                aug_transforms=self._val_aug_transforms,
                 seeds=True
             )
 
@@ -85,9 +95,10 @@ class VideoDataModule(pl.LightningDataModule):
                 video_paths=self._test_video_paths,
                 clip_length_in_frames=self._clip_length_in_frames,
                 frames_between_clips=self._frames_between_clips,
+                frame_stride=self._frame_stride,
                 precomputed_metadata=self._test_metadata,
                 num_workers=self._num_workers,
-                transforms=self._test_transforms,
+                pre_transforms=self._test_pre_transforms,
                 seeds=True
             )
         return self._train_set.metadata, self._val_set.metadata, self._test_set.metadata
