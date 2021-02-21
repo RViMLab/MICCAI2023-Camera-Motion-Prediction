@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     # prepare data
     prefix = os.path.join(server['database']['location'])
-    meta_df = pd.read_pickle(os.path.join(config_path, configs['data']['meta_df']))
+    meta_df = pd.read_pickle(os.path.join(config_path, configs['data']['meta_df']))[:configs['data']['subset_length']]
 
     # load video meta data if existing, returns None if none existent
     train_md = load_pickle(os.path.join(server['configs']['location'], configs['data']['train_metadata']))
