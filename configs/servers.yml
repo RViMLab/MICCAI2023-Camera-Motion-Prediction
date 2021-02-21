@@ -7,7 +7,7 @@ local:
         location: '/media/martin/Samsung_T5/logs'
 dgx1-1:
     configs:
-        location: '/nfs/home/mhuber/proj/homography_imitation_learning/configs'
+        location: '/workspace/homography_imitation_learning/configs'
     database: 
         location: '/nfs/home/mhuber/data/endoscopic_data'
     logging:
