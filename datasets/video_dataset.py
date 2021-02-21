@@ -56,7 +56,7 @@ class VideoDataset(Dataset):
         # hence:
         #  - implement aug, unaug stream                     (to do, however shared memory issue)
         #  - test augmentation                               (works)
-        #  - if not -> replace by image seq ds               (still slow, replace ds, multiprocessd img to vid)
+        #  - if not -> replace by image seq ds               (change sampling rate via frame rate)
         #  - else train subset on server         <- today
         #  - if time annotate data
         # methods:
@@ -78,7 +78,7 @@ class VideoDataset(Dataset):
         video = self._dtype_trafo(video)
         augmented_video = self._dtype_trafo(augmented_video)
 
-        return video, augmented_video
+        return video, augmented_video, self._video_clips.frame_rate, self._video_clips.video_fps, video_idx
 
     def __len__(self):
         return self._video_clips.num_clips()

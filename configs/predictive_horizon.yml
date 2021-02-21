@@ -13,7 +13,7 @@ data:
     train_metadata: 'train_metadata.pkl'
     val_metadata: 'val_metadata.pkl'
     test_metadata: 'test_metadata.pkl'
-    clip_length_in_frames: 5
+    clip_length_in_frames: 20
     frames_between_clips: 1
     frame_rate: 5
     train_split: 0.8
@@ -25,3 +25,5 @@ model:
     lr: 1.e-4
     betas: [0.9, 0.999]
     log_n_steps: 100
+    backbone: 'resnet34'
+    preview_horizon: 19  # = clip_length_in_frames - 1

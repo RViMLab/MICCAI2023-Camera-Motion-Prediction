@@ -113,13 +113,13 @@ class VideoDataModule(pl.LightningDataModule):
         return (metadata['train'], metadata['val'], metadata['test'])
 
     def train_dataloader(self):
-        return DataLoader(self._train_set, self._batch_size, num_workers=self._num_workers)
+        return DataLoader(self._train_set, self._batch_size, num_workers=self._num_workers, drop_last=True)
 
     def val_dataloader(self):
-        return DataLoader(self._val_set, self._batch_size, num_workers=self._num_workers)
+        return DataLoader(self._val_set, self._batch_size, num_workers=self._num_workers, drop_last=True)
 
     def test_dataloader(self):
-        return DataLoader(self._test_set, self._batch_size, num_workers=self._num_workers)
+        return DataLoader(self._test_set, self._batch_size, num_workers=self._num_workers, drop_last=True)
 
 if __name__ == '__main__':
     import cv2
@@ -172,8 +172,9 @@ if __name__ == '__main__':
     start = time.time_ns()
 
     for idx, batch in enumerate(dl):
-        print('\rBatch {}/{}, img shape: {}, aug shape: {}, Loading time: {}'.format(idx + 1, len(dl), batch[0].shape, batch[1].shape, (time.time_ns() - start)/1.e9), end='')
-        img, aug = batch
+        img, aug, fr, vid_fps, vid_idx = batch
+
+        print('\rBatch {}/{}, img shape: {}, aug shape: {}, frame_rate: {}, video_fps: {}, Loading time: {}'.format(idx + 1, len(dl), img.shape, aug.shape, fr[0].item(), vid_fps[vid_idx[0]][0].item(), (time.time_ns() - start)/1.e9), end='')
         img = tensor_to_image(img[0, 0])
         aug = tensor_to_image(aug[0, 0])
         cv2.imshow('img', img)
