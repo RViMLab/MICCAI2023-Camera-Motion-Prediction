@@ -113,7 +113,7 @@ class VideoDataModule(pl.LightningDataModule):
         return (metadata['train'], metadata['val'], metadata['test'])
 
     def train_dataloader(self):
-        return DataLoader(self._train_set, self._batch_size, num_workers=self._num_workers, drop_last=True)
+        return DataLoader(self._train_set, self._batch_size, shuffle=True, num_workers=self._num_workers, drop_last=True)  # shuffle train loader
 
     def val_dataloader(self):
         return DataLoader(self._val_set, self._batch_size, num_workers=self._num_workers, drop_last=True)
