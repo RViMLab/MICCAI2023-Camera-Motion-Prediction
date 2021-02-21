@@ -89,6 +89,11 @@ if __name__ == '__main__':
     save_yaml(os.path.join(logger.log_dir, 'configs.yml'), configs)
     meta_df.to_pickle(os.path.join(logger.log_dir, configs['data']['meta_df']))
 
+    # save backup
+    save_pickle(os.path.join(logger.log_dir, configs['data']['train_metadata']), train_md)
+    save_pickle(os.path.join(logger.log_dir, configs['data']['val_metadata']), val_md)
+    save_pickle(os.path.join(logger.log_dir, configs['data']['test_metadata']), test_md)
+
     trainer = pl.Trainer(
         max_epochs=configs['trainer']['max_epochs'],
         logger=logger,
