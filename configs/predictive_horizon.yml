@@ -10,6 +10,7 @@ trainer:
     limit_test_batches: 1.0
 data:
     meta_df: 'cholec80_dummy_transforms.pkl'
+    subset_length: 10  # number of videos to take from meta_df, set to null to use full df
     train_metadata: 'train_metadata.pkl'
     val_metadata: 'val_metadata.pkl'
     test_metadata: 'test_metadata.pkl'
