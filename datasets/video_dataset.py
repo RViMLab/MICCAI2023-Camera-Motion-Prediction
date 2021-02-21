@@ -51,13 +51,7 @@ class VideoDataset(Dataset):
             video = self._pre_transforms[video_idx](video)
 
         augmented_video = video.clone()
-        # video = video.float()/255. # uint8 [0, 255] -> float [0., 1.] <- times out
-        # dataset to return augmented and unaugmented video: TODO, unaug for h est and aug for h pred
-        # hence:
-        #  - implement aug, unaug stream                     (to do, however shared memory issue)
-        #  - test augmentation                               (works)
-        #  - if not -> replace by image seq ds               (change sampling rate via frame rate)
-        #  - else train subset on server         <- today
+        #  - else train subset on server
         #  - if time annotate data
         # methods:
         #  - hs for next image
