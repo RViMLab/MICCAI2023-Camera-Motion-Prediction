@@ -1,0 +1,758 @@
+databases:
+- name: cholec80
+  prefix: cholec80
+  test: false
+  transforms:
+  - - crop:
+        height: 416
+        left: 142
+        top: 58
+        width: 554
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 430
+        left: 139
+        top: 34
+        width: 573
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 417
+        left: 161
+        top: 57
+        width: 556
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 365
+        left: 186
+        top: 65
+        width: 487
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 417
+        left: 154
+        top: 57
+        width: 556
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 439
+        left: 137
+        top: 19
+        width: 586
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 373
+        left: 198
+        top: 45
+        width: 497
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 377
+        left: 176
+        top: 56
+        width: 503
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 431
+        left: 167
+        top: 43
+        width: 574
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 455
+        left: 157
+        top: 5
+        width: 606
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 357
+        left: 177
+        top: 63
+        width: 476
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 447
+        left: 149
+        top: 5
+        width: 596
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 433
+        left: 121
+        top: 22
+        width: 577
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 367
+        left: 191
+        top: 47
+        width: 489
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 449
+        left: 132
+        top: 25
+        width: 598
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 347
+        left: 200
+        top: 74
+        width: 462
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 348
+        left: 196
+        top: 80
+        width: 464
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 421
+        left: 114
+        top: 45
+        width: 562
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 459
+        left: 144
+        top: 5
+        width: 612
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 348
+        left: 204
+        top: 64
+        width: 464
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 463
+        left: 132
+        top: 5
+        width: 618
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 1027
+        left: 312
+        top: 47
+        width: 1369
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 952
+        left: 340
+        top: 103
+        width: 1270
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 404
+        left: 157
+        top: 38
+        width: 539
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 432
+        left: 153
+        top: 40
+        width: 577
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 462
+        left: 128
+        top: 12
+        width: 616
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 439
+        left: 146
+        top: 5
+        width: 585
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 428
+        left: 151
+        top: 46
+        width: 571
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 437
+        left: 113
+        top: 37
+        width: 583
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 429
+        left: 165
+        top: 45
+        width: 572
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 407
+        left: 146
+        top: 67
+        width: 543
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 428
+        left: 162
+        top: 46
+        width: 571
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 408
+        left: 131
+        top: 36
+        width: 545
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 438
+        left: 121
+        top: 15
+        width: 584
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 435
+        left: 171
+        top: 23
+        width: 580
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 407
+        left: 165
+        top: 35
+        width: 543
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 461
+        left: 99
+        top: 13
+        width: 615
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 345
+        left: 198
+        top: 78
+        width: 460
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 398
+        left: 151
+        top: 53
+        width: 531
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 362
+        left: 194
+        top: 79
+        width: 483
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 354
+        left: 196
+        top: 70
+        width: 472
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 354
+        left: 194
+        top: 85
+        width: 473
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 442
+        left: 101
+        top: 32
+        width: 589
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 414
+        left: 154
+        top: 60
+        width: 552
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 411
+        left: 164
+        top: 57
+        width: 549
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 374
+        left: 183
+        top: 35
+        width: 499
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 419
+        left: 162
+        top: 44
+        width: 559
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 345
+        left: 211
+        top: 73
+        width: 461
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 421
+        left: 160
+        top: 7
+        width: 562
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 374
+        left: 199
+        top: 37
+        width: 499
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 353
+        left: 204
+        top: 62
+        width: 470
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 379
+        left: 180
+        top: 59
+        width: 505
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 395
+        left: 146
+        top: 46
+        width: 526
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 433
+        left: 147
+        top: 39
+        width: 578
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 465
+        left: 85
+        top: 5
+        width: 620
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 455
+        left: 146
+        top: 7
+        width: 607
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 424
+        left: 142
+        top: 5
+        width: 566
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 441
+        left: 152
+        top: 33
+        width: 588
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 464
+        left: 146
+        top: 10
+        width: 619
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 355
+        left: 202
+        top: 66
+        width: 474
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 447
+        left: 166
+        top: 5
+        width: 596
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 419
+        left: 124
+        top: 55
+        width: 559
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 450
+        left: 143
+        top: 7
+        width: 600
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 443
+        left: 152
+        top: 5
+        width: 591
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 409
+        left: 164
+        top: 65
+        width: 545
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 455
+        left: 119
+        top: 5
+        width: 607
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 374
+        left: 180
+        top: 66
+        width: 499
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 382
+        left: 172
+        top: 62
+        width: 509
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 445
+        left: 151
+        top: 29
+        width: 594
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 444
+        left: 158
+        top: 26
+        width: 592
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 432
+        left: 152
+        top: 38
+        width: 576
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 465
+        left: 99
+        top: 5
+        width: 621
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 354
+        left: 201
+        top: 78
+        width: 473
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 461
+        left: 85
+        top: 13
+        width: 615
+    - resize:
+        size:
+        - 480
+        - 640
+  - - crop:
+        height: 452
+        left: 155
+        top: 22
+        width: 603
+    - resize:
+        size:
+        - 480
+        - 640
+  videos:
+    files:
+    - video01.mp4
+    - video02.mp4
+    - video03.mp4
+    - video04.mp4
+    - video05.mp4
+    - video06.mp4
+    - video07.mp4
+    - video08.mp4
+    - video64.mp4
+    - video66.mp4
+    - video67.mp4
+    - video68.mp4
+    - video69.mp4
+    - video70.mp4
+    - video71.mp4
+    - video72.mp4
+    - video73.mp4
+    - video74.mp4
+    - video75.mp4
+    - video76.mp4
+    - video77.mp4
+    - video78.mp4
+    - video79.mp4
+    - video55.mp4
+    - video56.mp4
+    - video57.mp4
+    - video58.mp4
+    - video59.mp4
+    - video60.mp4
+    - video61.mp4
+    - video62.mp4
+    - video38.mp4
+    - video39.mp4
+    - video41.mp4
+    - video42.mp4
+    - video43.mp4
+    - video44.mp4
+    - video45.mp4
+    - video46.mp4
+    - video47.mp4
+    - video48.mp4
+    - video49.mp4
+    - video50.mp4
+    - video51.mp4
+    - video52.mp4
+    - video53.mp4
+    - video54.mp4
+    - video37.mp4
+    - video63.mp4
+    - video23.mp4
+    - video24.mp4
+    - video25.mp4
+    - video26.mp4
+    - video27.mp4
+    - video28.mp4
+    - video29.mp4
+    - video30.mp4
+    - video31.mp4
+    - video32.mp4
+    - video33.mp4
+    - video34.mp4
+    - video35.mp4
+    - video36.mp4
+    - video09.mp4
+    - video10.mp4
+    - video11.mp4
+    - video12.mp4
+    - video13.mp4
+    - video15.mp4
+    - video16.mp4
+    - video17.mp4
+    - video18.mp4
+    - video19.mp4
+    - video20.mp4
+    - video22.mp4
+    prefix: videos

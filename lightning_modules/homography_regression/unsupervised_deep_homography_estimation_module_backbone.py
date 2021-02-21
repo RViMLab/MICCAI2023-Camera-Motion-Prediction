@@ -9,7 +9,7 @@ from utils.viz import warp_figure
 
 class UnsupervisedDeepHomographyEstimationModuleBackbone(pl.LightningModule):
     
-    def __init__(self, shape, lr: float=1e-4, betas: List[float]=[0.9, 0.999], log_n_steps: int=1000, backbone: str='resnet34'):
+    def __init__(self, shape: List[int], lr: float=1e-4, betas: List[float]=[0.9, 0.999], log_n_steps: int=1000, backbone: str='resnet34'):
         super().__init__()
         self.save_hyperparameters('lr', 'betas', 'backbone')
         self.model = getattr(models, backbone)(**{'pretrained': False})

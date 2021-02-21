@@ -1,1 +1,1 @@
-from .feature_lstm import FeatureLSTM
+from .predictive_horizon_module import PredictiveHorizonModule

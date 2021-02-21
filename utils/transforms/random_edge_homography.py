@@ -24,19 +24,19 @@ class RandomEdgeHomography(object):
         seeds (list of np.int32): Seeds for deterministic output, list of randomly generated int
     """
     def __init__(self, rho: int, crp_shape: List[int], homography_return: IntEnum=HOMOGRAPHY_RETURN.DEFAULT, seeds: List[np.int32]=None):
-        self.rho = rho
-        self.crp_shape = crp_shape
-        self.homography_return = homography_return
-        self.seeds = seeds
-        self.idx = 0
+        self._rho = rho
+        self._crp_shape = crp_shape
+        self._homography_return = homography_return
+        self._seeds = seeds
+        self._seed_idx = 0
 
-    def set_seed_idx(self, idx: int):
-        r"""Set the seed index.
+    @property
+    def seed_idx(self):
+        return self._seed_idx
 
-        Args:
-            idx (int): Index for self.seeds
-        """
-        self.idx = idx
+    @seed_idx.setter
+    def seed_idx(self, seed_idx: int):
+        self._seed_idx = seed_idx
 
     def __call__(self, img: np.array):
         r"""Compute the random homographies.
@@ -58,8 +58,8 @@ class RandomEdgeHomography(object):
                 wrp_bdr (np.array): uv of warped image
         """
         # retrieve seed from list of seeds
-        if self.seeds:
-            seed = self.seeds[self.idx]
+        if self._seeds:
+            seed = self._seeds[self._seed_idx]
             np.random.seed(seed)
 
         feasible = False
@@ -68,11 +68,11 @@ class RandomEdgeHomography(object):
 
         while not feasible:
             # Step 2: Randomly perturb uv
-            duv = np.random.randint(-self.rho, self.rho, [4,2])
+            duv = np.random.randint(-self._rho, self._rho, [4,2])
 
             # Randomly find top left corner that fits crop
-            top_left = self._random_top_left(inner_shape=self.crp_shape, outer_shape=outer_shape[:2])
-            inner_uv = self._shape_to_uv(self.crp_shape, top_left)
+            top_left = self._random_top_left(inner_shape=self._crp_shape, outer_shape=outer_shape[:2])
+            inner_uv = self._shape_to_uv(self._crp_shape, top_left)
             wrp_inner_uv = inner_uv + duv
 
             # Step 3: Compute homography
@@ -89,9 +89,9 @@ class RandomEdgeHomography(object):
 
         np.random.seed(None)
             
-        if self.homography_return == HOMOGRAPHY_RETURN.DEFAULT:
+        if self._homography_return == HOMOGRAPHY_RETURN.DEFAULT:
             return img_crp, wrp_crp, duv
-        if self.homography_return == HOMOGRAPHY_RETURN.VISUAL:
+        if self._homography_return == HOMOGRAPHY_RETURN.VISUAL:
             return {
                 'img_crp': img_crp, 
                 'wrp_crp': wrp_crp, 
@@ -103,7 +103,7 @@ class RandomEdgeHomography(object):
                 'wrp': wrp, 
                 'wrp_bdr': wrp_outer_uv
             }
-        if self.homography_return == HOMOGRAPHY_RETURN.DATASET:
+        if self._homography_return == HOMOGRAPHY_RETURN.DATASET:
             return {
                 'img': img.copy(),
                 'img_crp': img_crp, 
@@ -185,6 +185,9 @@ class RandomEdgeHomography(object):
         Args:
             pts (np.array): Points of shape [A, 2 or 3]
             polygon (np.array): Points of shape [B, 2 or 3]
+
+        Note:
+            Possibly use cv2.pointPolygonTest.
         """
         inside = True
         n_pts = polygon.shape[0]
@@ -207,7 +210,7 @@ if __name__ == '__main__':
     rho = 64
 
     img = np.load(file_path)
-    reh = RandomEdgeHomography(rho, crp_shape, True)
+    reh = RandomEdgeHomography(rho, crp_shape, homography_return=HOMOGRAPHY_RETURN.VISUAL)
 
     for i in range(100):
         dic = reh(img)

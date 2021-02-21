@@ -1,6 +1,7 @@
 import pathlib
 import os
 import glob
+import re
 
 import pandas as pd
 
@@ -22,3 +23,15 @@ def scan2df(folder, postfix='.jpg'):
         df = df.append(dic, ignore_index=True)
 
     return df
+
+def atoi(text):
+    return int(text) if text.isdigit() else text
+
+def natural_keys(text):
+    r"""Sorts in human order, see
+        https://stackoverflow.com/questions/5967500/how-to-correctly-sort-a-string-with-a-number-inside
+    
+    Example:
+        sorted_list = sorted(list, key=natural_keys)
+    """
+    return [ atoi(c) for c in re.split(r'(\d+)', text) ]
