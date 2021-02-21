@@ -2,179 +2,759 @@ databases:
 - name: cholec80
   prefix: cholec80
   test: false
-  transforms: [
-    ['Crop': {'top_left_corner': [65, 110], 'shape': [386, 624]}, 'Resize': {'dsize': [740, 555]}]
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}],
-  #   ['Crop': {'top_left_corner': [], 'shape': []}, 'Resize': {'dsize': [720, 540]}]
-  ]
-  videos: 
-    files: [
-      'video01.mp4'
-      # 'video02.mp4',
-      # 'video03.mp4',
-      # 'video04.mp4',
-      # 'video05.mp4',
-      # 'video06.mp4',
-      # 'video07.mp4',
-      # 'video08.mp4',
-      # 'video09.mp4',
-      # 'video10.mp4',
-      # 'video11.mp4',
-      # 'video12.mp4',
-      # 'video13.mp4',
-      # 'video14.mp4',
-      # 'video15.mp4',
-      # 'video16.mp4',
-      # 'video17.mp4',
-      # 'video18.mp4',
-      # 'video19.mp4',
-      # 'video20.mp4',
-      # 'video21.mp4',
-      # 'video22.mp4',
-      # 'video23.mp4',
-      # 'video24.mp4',
-      # 'video25.mp4',
-      # 'video26.mp4',
-      # 'video27.mp4',
-      # 'video28.mp4',
-      # 'video29.mp4',
-      # 'video30.mp4',
-      # 'video31.mp4',
-      # 'video32.mp4',
-      # 'video33.mp4',
-      # 'video34.mp4',
-      # 'video35.mp4',
-      # 'video36.mp4',
-      # 'video37.mp4',
-      # 'video38.mp4',
-      # 'video39.mp4',
-      # 'video40.mp4',
-      # 'video41.mp4',
-      # 'video42.mp4',
-      # 'video43.mp4',
-      # 'video44.mp4',
-      # 'video45.mp4',
-      # 'video46.mp4',
-      # 'video47.mp4',
-      # 'video48.mp4',
-      # 'video49.mp4',
-      # 'video50.mp4',
-      # 'video51.mp4',
-      # 'video52.mp4',
-      # 'video53.mp4',
-      # 'video54.mp4',
-      # 'video55.mp4',
-      # 'video56.mp4',
-      # 'video57.mp4',
-      # 'video58.mp4',
-      # 'video59.mp4',
-      # 'video60.mp4',
-      # 'video61.mp4',
-      # 'video62.mp4',
-      # 'video63.mp4',
-      # 'video64.mp4',
-      # 'video65.mp4',
-      # 'video66.mp4',
-      # 'video67.mp4',
-      # 'video68.mp4',
-      # 'video69.mp4',
-      # 'video70.mp4',
-      # 'video71.mp4',
-      # 'video72.mp4',
-      # 'video73.mp4',
-      # 'video74.mp4',
-      # 'video75.mp4',
-      # 'video76.mp4',
-      # 'video77.mp4',
-      # 'video78.mp4',
-      # 'video79.mp4',
-      # 'video80.mp4'
-    ]
+  transforms:
+  - - Crop:
+        shape:
+        - 416
+        - 554
+        top_left_corner:
+        - 58
+        - 142
+    - Resize:
+        dsize: &id001
+        - 640
+        - 480
+  - - Crop:
+        shape:
+        - 430
+        - 573
+        top_left_corner:
+        - 34
+        - 139
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 417
+        - 556
+        top_left_corner:
+        - 57
+        - 161
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 365
+        - 487
+        top_left_corner:
+        - 65
+        - 186
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 417
+        - 556
+        top_left_corner:
+        - 57
+        - 154
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 439
+        - 586
+        top_left_corner:
+        - 19
+        - 137
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 373
+        - 497
+        top_left_corner:
+        - 45
+        - 198
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 377
+        - 503
+        top_left_corner:
+        - 56
+        - 176
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 431
+        - 574
+        top_left_corner:
+        - 43
+        - 167
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 455
+        - 606
+        top_left_corner:
+        - 5
+        - 157
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 357
+        - 476
+        top_left_corner:
+        - 63
+        - 177
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 447
+        - 596
+        top_left_corner:
+        - 5
+        - 149
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 433
+        - 577
+        top_left_corner:
+        - 22
+        - 121
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 367
+        - 489
+        top_left_corner:
+        - 47
+        - 191
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 449
+        - 598
+        top_left_corner:
+        - 25
+        - 132
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 347
+        - 462
+        top_left_corner:
+        - 74
+        - 200
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 348
+        - 464
+        top_left_corner:
+        - 80
+        - 196
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 421
+        - 562
+        top_left_corner:
+        - 45
+        - 114
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 459
+        - 612
+        top_left_corner:
+        - 5
+        - 144
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 348
+        - 464
+        top_left_corner:
+        - 64
+        - 204
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 463
+        - 618
+        top_left_corner:
+        - 5
+        - 132
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 1027
+        - 1369
+        top_left_corner:
+        - 47
+        - 312
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 952
+        - 1270
+        top_left_corner:
+        - 103
+        - 340
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 404
+        - 539
+        top_left_corner:
+        - 38
+        - 157
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 432
+        - 577
+        top_left_corner:
+        - 40
+        - 153
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 462
+        - 616
+        top_left_corner:
+        - 12
+        - 128
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 439
+        - 585
+        top_left_corner:
+        - 5
+        - 146
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 428
+        - 571
+        top_left_corner:
+        - 46
+        - 151
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 437
+        - 583
+        top_left_corner:
+        - 37
+        - 113
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 429
+        - 572
+        top_left_corner:
+        - 45
+        - 165
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 407
+        - 543
+        top_left_corner:
+        - 67
+        - 146
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 428
+        - 571
+        top_left_corner:
+        - 46
+        - 162
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 408
+        - 545
+        top_left_corner:
+        - 36
+        - 131
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 438
+        - 584
+        top_left_corner:
+        - 15
+        - 121
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 435
+        - 580
+        top_left_corner:
+        - 23
+        - 171
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 407
+        - 543
+        top_left_corner:
+        - 35
+        - 165
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 461
+        - 615
+        top_left_corner:
+        - 13
+        - 99
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 345
+        - 460
+        top_left_corner:
+        - 78
+        - 198
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 398
+        - 531
+        top_left_corner:
+        - 53
+        - 151
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 362
+        - 483
+        top_left_corner:
+        - 79
+        - 194
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 354
+        - 472
+        top_left_corner:
+        - 70
+        - 196
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 354
+        - 473
+        top_left_corner:
+        - 85
+        - 194
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 442
+        - 589
+        top_left_corner:
+        - 32
+        - 101
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 414
+        - 552
+        top_left_corner:
+        - 60
+        - 154
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 411
+        - 549
+        top_left_corner:
+        - 57
+        - 164
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 374
+        - 499
+        top_left_corner:
+        - 35
+        - 183
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 419
+        - 559
+        top_left_corner:
+        - 44
+        - 162
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 345
+        - 461
+        top_left_corner:
+        - 73
+        - 211
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 421
+        - 562
+        top_left_corner:
+        - 7
+        - 160
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 374
+        - 499
+        top_left_corner:
+        - 37
+        - 199
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 353
+        - 470
+        top_left_corner:
+        - 62
+        - 204
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 379
+        - 505
+        top_left_corner:
+        - 59
+        - 180
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 395
+        - 526
+        top_left_corner:
+        - 46
+        - 146
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 433
+        - 578
+        top_left_corner:
+        - 39
+        - 147
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 465
+        - 620
+        top_left_corner:
+        - 5
+        - 85
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 455
+        - 607
+        top_left_corner:
+        - 7
+        - 146
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 424
+        - 566
+        top_left_corner:
+        - 5
+        - 142
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 441
+        - 588
+        top_left_corner:
+        - 33
+        - 152
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 464
+        - 619
+        top_left_corner:
+        - 10
+        - 146
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 355
+        - 474
+        top_left_corner:
+        - 66
+        - 202
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 447
+        - 596
+        top_left_corner:
+        - 5
+        - 166
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 419
+        - 559
+        top_left_corner:
+        - 55
+        - 124
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 450
+        - 600
+        top_left_corner:
+        - 7
+        - 143
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 443
+        - 591
+        top_left_corner:
+        - 5
+        - 152
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 409
+        - 545
+        top_left_corner:
+        - 65
+        - 164
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 455
+        - 607
+        top_left_corner:
+        - 5
+        - 119
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 374
+        - 499
+        top_left_corner:
+        - 66
+        - 180
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 382
+        - 509
+        top_left_corner:
+        - 62
+        - 172
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 445
+        - 594
+        top_left_corner:
+        - 29
+        - 151
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 444
+        - 592
+        top_left_corner:
+        - 26
+        - 158
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 432
+        - 576
+        top_left_corner:
+        - 38
+        - 152
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 465
+        - 621
+        top_left_corner:
+        - 5
+        - 99
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 354
+        - 473
+        top_left_corner:
+        - 78
+        - 201
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 461
+        - 615
+        top_left_corner:
+        - 13
+        - 85
+    - Resize:
+        dsize: *id001
+  - - Crop:
+        shape:
+        - 452
+        - 603
+        top_left_corner:
+        - 22
+        - 155
+    - Resize:
+        dsize: *id001
+  videos:
+    files:
+    - video01.mp4
+    - video02.mp4
+    - video03.mp4
+    - video04.mp4
+    - video05.mp4
+    - video06.mp4
+    - video07.mp4
+    - video08.mp4
+    - video64.mp4
+    - video66.mp4
+    - video67.mp4
+    - video68.mp4
+    - video69.mp4
+    - video70.mp4
+    - video71.mp4
+    - video72.mp4
+    - video73.mp4
+    - video74.mp4
+    - video75.mp4
+    - video76.mp4
+    - video77.mp4
+    - video78.mp4
+    - video79.mp4
+    - video55.mp4
+    - video56.mp4
+    - video57.mp4
+    - video58.mp4
+    - video59.mp4
+    - video60.mp4
+    - video61.mp4
+    - video62.mp4
+    - video38.mp4
+    - video39.mp4
+    - video41.mp4
+    - video42.mp4
+    - video43.mp4
+    - video44.mp4
+    - video45.mp4
+    - video46.mp4
+    - video47.mp4
+    - video48.mp4
+    - video49.mp4
+    - video50.mp4
+    - video51.mp4
+    - video52.mp4
+    - video53.mp4
+    - video54.mp4
+    - video37.mp4
+    - video63.mp4
+    - video23.mp4
+    - video24.mp4
+    - video25.mp4
+    - video26.mp4
+    - video27.mp4
+    - video28.mp4
+    - video29.mp4
+    - video30.mp4
+    - video31.mp4
+    - video32.mp4
+    - video33.mp4
+    - video34.mp4
+    - video35.mp4
+    - video36.mp4
+    - video09.mp4
+    - video10.mp4
+    - video11.mp4
+    - video12.mp4
+    - video13.mp4
+    - video15.mp4
+    - video16.mp4
+    - video17.mp4
+    - video18.mp4
+    - video19.mp4
+    - video20.mp4
+    - video22.mp4
     prefix: videos
