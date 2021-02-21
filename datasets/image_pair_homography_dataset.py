@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 from torchvision.transforms import ToTensor
 from typing import List, Callable
 
-from utils.transforms import RandomEdgeHomography, HOMOGRAPHY_RETURN
+from utils.transforms import RandomEdgeHomography, HOMOGRAPHY_RETURN, EndoscopyCircle
 
 
 class ImagePairHomographyDataset(Dataset):
@@ -20,7 +20,7 @@ class ImagePairHomographyDataset(Dataset):
         rho (int): Image edges are randomly perturbed within [-rho, rho]
         crp_shape (list of int): Shape of cropped image
         transforms (callable): Transforms to be applied before homography generation
-        seeds (list of np.int32): Seeds for deterministic output
+        seeds (list of np.int32): Seeds for deterministic output, e.g. for test set
 
     Returns:
         dict (dict): (
@@ -32,46 +32,54 @@ class ImagePairHomographyDataset(Dataset):
             'H' (torch.Tensor): Homography matrix of shape 3x3
         )
     """
-    def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int] , transforms: Callable=None, seeds: List[np.int32]=None):
+    def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int], transforms: Callable=None, seeds: List[np.int32]=None):
         if seeds:
             if (len(df) != len(seeds)):
                 raise Exception('In ImagePairHomographyDataset: Length of dataframe must equal length of seeds.')
-
-        if (len(df['file_seq'][0]) != 2):
-            raise Exception('In ImagePairHomographyDataset: Length of file_seq in dataframe must equal 2.')
         
-        self.df = df
-        self.prefix = prefix   
-        self.reh = RandomEdgeHomography(rho=rho, crp_shape=crp_shape, homography_return=HOMOGRAPHY_RETURN.DATASET, seeds=seeds)
-        self.transforms = transforms
-        self.tt = ToTensor()
+        self._df = df
+        self._prefix = prefix   
+        self._reh = RandomEdgeHomography(rho=rho, crp_shape=crp_shape, homography_return=HOMOGRAPHY_RETURN.DATASET, seeds=seeds)
+        self._transforms = transforms
+        self._seeds = seeds
+        self._tt = ToTensor()
 
     def __getitem__(self, idx):
-        file_seq = self.df['file_seq'][idx]
+        file_seq = self._df['file_seq'][idx]
         img_pair = []
 
-        for file in file_seq:
-            img = imageio.imread(os.path.join(self.prefix, self.df['path'][idx], file))
+        # set seed if desired
+        if self._seeds:
+            seed = self._seeds[idx]
+        else:
+            seed = np.random.randint(np.iinfo(np.int32).max)  # set random seed for numpy
+
+        # randomly sample image pair
+        np.random.seed(seed)
+        file_pair = np.random.choice(file_seq, 2)
+        np.random.seed(None)
+
+        for file in file_pair:
+            img = imageio.imread(os.path.join(self._prefix, self._df['path'][idx], file))
             img_pair.append(img)
 
-        if self.transforms:
-            seed = np.random.randint(np.iinfo(np.int32).max) # set random seed for numpy
+        if self._transforms:
             for i in range(len(img_pair)):
                 imgaug.seed(seed)
-                img_pair[i] = np.ascontiguousarray(self.transforms(img_pair[i]))
+                img_pair[i] = np.ascontiguousarray(self._transforms(img_pair[i]))
 
         # apply random edge homography
-        self.reh.set_seed_idx(idx)
-        reh = self.reh(img_pair[1])
+        self._reh.seed_idx = idx
+        reh = self._reh(img_pair[1])
 
-        img_crp = self.reh.crop(img_pair[0], reh['uv'])
+        img_crp = self._reh.crop(img_pair[0], reh['uv'])
         wrp_crp = reh['wrp_crp']
 
         for i in range(len(img_pair)):
-            img_pair[i] = self.tt(img_pair[i])
+            img_pair[i] = self._tt(img_pair[i])
 
-        img_crp = self.tt(img_crp)
-        wrp_crp = self.tt(wrp_crp)
+        img_crp = self._tt(img_crp)
+        wrp_crp = self._tt(wrp_crp)
 
         return {
             'img_pair': img_pair,
@@ -83,4 +91,4 @@ class ImagePairHomographyDataset(Dataset):
         }
 
     def __len__(self):
-        return len(self.df)
+        return len(self._df)

@@ -14,7 +14,7 @@ dependencies:
   - tqdm
   - pandas
   - shapely
-  - jupyter
+  - notebook
   - pip:
     - dotmap
     - kornia

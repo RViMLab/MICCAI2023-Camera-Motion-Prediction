@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 
-def warp_figure(img: np.array, uv: np.array, duv: np.array, duv_pred: np.array, H: np.array):
+def warp_figure(img: np.array, uv: np.array, duv: np.array, duv_pred: np.array, H: np.array) -> plt.Figure:
     r"""
 
     Args:
@@ -15,7 +15,7 @@ def warp_figure(img: np.array, uv: np.array, duv: np.array, duv_pred: np.array, 
         H (np.array): Homography corresponding to duv of shape 3x3
 
     Return:
-        figure (plt.figure): Matplotlib figure
+        figure (plt.Figure): Matplotlib figure
     """
     figure = plt.figure()
 
@@ -37,3 +37,35 @@ def warp_figure(img: np.array, uv: np.array, duv: np.array, duv_pred: np.array, 
     plt.imshow(wrp)
 
     return figure
+
+
+def duv_mean_pairwise_distance_figure(duvs: np.ndarray, re_fps: int, fps: int, dpi: int=200) -> plt.Figure:
+    r"""Helper function to plot the severity of a motion described by a homography.
+
+    Args:
+        duvs (np.ndarray): Edge delta of shape Nx4x2
+        re_fps (int): Frame rate of re-sampled video
+        fps (int): Frame rate of initial video
+        dpi (int): Figure resolution
+
+    Return:
+        figure (plt.Figure): Matplotlib figure that shows homography norm over the course of the sequence
+    """
+    figure = plt.figure(dpi=200)
+
+    # Mean pairwise distance
+    duvs_mpd = np.linalg.norm(duvs, axis=2).mean(axis=1)
+
+    plt.title('Camera Motion')
+    plt.plot(
+        np.arange(start=0, stop=re_fps*duvs_mpd.size, step=re_fps)/fps, 
+        duvs_mpd, 
+        label='Resampled frame rate {} at {} fps'.format(re_fps, int(fps))
+    )
+    plt.xlabel('Time / s')
+    plt.ylabel('Mean Pairwise Distance / pixel')
+    plt.grid()
+    plt.legend()
+
+    return figure
+

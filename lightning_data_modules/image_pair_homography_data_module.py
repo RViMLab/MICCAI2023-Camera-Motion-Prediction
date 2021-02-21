@@ -4,14 +4,14 @@ from sklearn.model_selection import train_test_split
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import random_split, Subset
-from typing import List, Callable
+from typing import List
 
 from datasets import ImagePairHomographyDataset
-from utils.transforms import dict_list_to_augment_image
+from utils.transforms import dictListToAugment
 
 
 class ImagePairHomographyDataModule(pl.LightningDataModule):
-    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, rho: int=32, crp_shape: List[int]=[480, 640], unsupervised: bool=False, random_state: int=42, train_transforms: Callable=None, val_transforms: Callable=None):
+    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, rho: int=32, crp_shape: List[int]=[480, 640], unsupervised: bool=False, random_state: int=42, train_transforms: List[dict]=None, val_transforms: List[dict]=None):
         super().__init__()
         self.train_df, self.val_df = train_test_split(
             df[df['test'] == False].reset_index(), 
@@ -28,8 +28,8 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
         self.crp_shape = crp_shape
         self.unsupervised = unsupervised
 
-        self.train_transforms = dict_list_to_augment_image(train_transforms)
-        self.val_transforms = dict_list_to_augment_image(val_transforms)
+        self.train_transforms = dictListToAugment(train_transforms)
+        self.val_transforms = dictListToAugment(val_transforms)
 
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
