@@ -27,7 +27,7 @@ class PredictiveHorizonModule(pl.LightningModule):
             out_features=8*preview_horizon
         )
 
-        self._mse_loss = nn.MSELoss()
+        self._distance_loss = nn.PairwiseDistance()
 
         self._lr = lr
         self._betas = betas
@@ -83,10 +83,15 @@ class PredictiveHorizonModule(pl.LightningModule):
                 self.logger.experiment.add_figure('verify/duv_mean_pairwise_distance', duv_mpd_seq_figure, self.global_step)
 
         duvs = self(transformed_videos[:,0].squeeze())  # forward batch of first images
-        mse_loss = self._mse_loss(duvs, duvs_reg)
 
-        self.log('train/mse', mse_loss)
-        return mse_loss
+        # distance loss
+        distance_loss = self._distance_loss(
+            duvs.view(-1, 2),
+            duvs_reg.view(-1, 2)
+        ).mean()
+
+        self.log('train/distance', distance_loss)
+        return distance_loss
 
     def validation_step(self, batch, batch_idx):
         if self._homography_regression is None:
@@ -100,10 +105,15 @@ class PredictiveHorizonModule(pl.LightningModule):
         duvs_reg = self._homography_regression(frames_i, frames_ips)
         duvs_reg = duvs_reg.view(videos.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
         duvs = self(transformed_videos[:,0].squeeze())       # forward batch of first images
-        mse_loss = self._mse_loss(duvs, duvs_reg)
+        
+        # distance loss
+        distance_loss = self._distance_loss(
+            duvs.view(-1, 2),
+            duvs_reg.view(-1, 2)
+        ).mean()
 
-        self.log('val/mse', mse_loss)
-        return mse_loss
+        self.log('val/distance', distance_loss, on_epoch=True)
+        return distance_loss
         
     def test_step(self, batch, batch_idx):
         # skip test step until hand labeled homography implemented

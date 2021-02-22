@@ -27,7 +27,7 @@ class NextViewModule(pl.LightningModule):
             out_features=8
         )
 
-        self._mse_loss = nn.MSELoss()
+        self._distance_loss = nn.PairwiseDistance()
 
         self._lr = lr
         self._betas = betas
@@ -59,6 +59,8 @@ class NextViewModule(pl.LightningModule):
         if self._homography_regression is None:
             raise ValueError('Homography regression model required in training step.')
         videos, transformed_videos, frame_rate, vid_fps, vid_idx = batch
+
+        # homography regression
         frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
         frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxHxW
         frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
@@ -81,28 +83,51 @@ class NextViewModule(pl.LightningModule):
                 duv_mpd_seq_figure = duv_mean_pairwise_distance_figure(duvs_reg[0].cpu().numpy(), re_fps=frame_rate[0].item(), fps=vid_fps[vid_idx[0]][0].item())  # get vid_idx of zeroth batch
                 self.logger.experiment.add_figure('verify/duv_mean_pairwise_distance', duv_mpd_seq_figure, self.global_step)
 
-        duvs = self(transformed_videos[:,0].squeeze())  # forward batch of first images
-        mse_loss = self._mse_loss(duvs, duvs_reg)
+        # homography prediction
+        transformed_frames_i = transformed_videos[:,:-self._frame_stride:self._frame_stride]
+        transformed_frames_i = transformed_frames_i.reshape((-1,) + frames_i.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
 
-        self.log('train/mse', mse_loss)
-        return mse_loss
+        duvs = self(transformed_frames_i)  # forward transformed correspondence to frames_i
+        duvs = duvs.view(videos.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
+
+        # distance loss
+        distance_loss = self._distance_loss(
+            duvs.view(-1, 2),
+            duvs_reg.view(-1, 2)
+        ).mean()
+
+        self.log('train/distance', distance_loss)
+        return distance_loss
 
     def validation_step(self, batch, batch_idx):
         if self._homography_regression is None:
             raise ValueError('Homography regression model required in validation step.')
         # by default without grad (torch.set_grad_enabled(False))
         videos, transformed_videos, frame_rate, vid_fps, vid_idx = batch
+
+        # homography regression
         frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
-        frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*N  xHxW
+        frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxHxW
         frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
 
         duvs_reg = self._homography_regression(frames_i, frames_ips)
         duvs_reg = duvs_reg.view(videos.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
-        duvs = self(transformed_videos[:,0].squeeze())       # forward batch of first images
-        mse_loss = self._mse_loss(duvs, duvs_reg)
 
-        self.log('val/mse', mse_loss)
-        return mse_loss
+        # homography prediction
+        transformed_frames_i = transformed_videos[:,:-self._frame_stride:self._frame_stride]
+        transformed_frames_i = transformed_frames_i.reshape((-1,) + frames_i.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
+
+        duvs = self(transformed_frames_i)  # forward transformed correspondence to frames_i
+        duvs = duvs.view(videos.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
+
+        # distance loss
+        distance_loss = self._distance_loss(
+            duvs.view(-1, 2),
+            duvs_reg.view(-1, 2)
+        ).mean()
+
+        self.log('val/distance', distance_loss, on_epoch=True)
+        return distance_loss
         
     def test_step(self, batch, batch_idx):
         # skip test step until hand labeled homography implemented, therefore, analyze homography histograms
