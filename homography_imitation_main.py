@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     # prepare data
     prefix = os.path.join(server['database']['location'])
-    meta_df = pd.read_pickle(os.path.join(config_path, configs['data']['meta_df']))
+    meta_df = pd.read_pickle(os.path.join(config_path, configs['data']['meta_df']))[:configs['data']['subset_length']]
 
     # load video meta data if existing, returns None if none existent
     train_md = load_pickle(os.path.join(server['configs']['location'], configs['data']['train_metadata']))
@@ -88,6 +88,11 @@ if __name__ == '__main__':
     generate_path(logger.log_dir)
     save_yaml(os.path.join(logger.log_dir, 'configs.yml'), configs)
     meta_df.to_pickle(os.path.join(logger.log_dir, configs['data']['meta_df']))
+
+    # save backup
+    save_pickle(os.path.join(logger.log_dir, configs['data']['train_metadata']), train_md)
+    save_pickle(os.path.join(logger.log_dir, configs['data']['val_metadata']), val_md)
+    save_pickle(os.path.join(logger.log_dir, configs['data']['test_metadata']), test_md)
 
     trainer = pl.Trainer(
         max_epochs=configs['trainer']['max_epochs'],

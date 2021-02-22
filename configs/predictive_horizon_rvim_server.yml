@@ -4,21 +4,21 @@ lightning_data_module: 'VideoDataModule'
 trainer:
     gpus: 1
     max_epochs: 20
-    log_every_n_steps: 1000
+    log_every_n_steps: 500
     limit_train_batches: 1.0
     limit_val_batches: 1.0
     limit_test_batches: 1.0
 data:
-    meta_df: 'cholec80_dummy_transforms.pkl'
+    meta_df: 'cholec80_transforms.pkl'
     subset_length: 10  # number of videos to take from meta_df, set to null to use full df
     train_metadata: 'train_metadata.pkl'
     val_metadata: 'val_metadata.pkl'
     test_metadata: 'test_metadata.pkl'
-    clip_length_in_frames: 20
+    clip_length_in_frames: 25
     frames_between_clips: 1
     frame_rate: 5  # re-sample framerate, total of clip_length_in_frames*frame_rate frames covered
     train_split: 0.8
-    batch_size: 2
+    batch_size: 8
     num_workers: 8
     random_state: 42
 model:
@@ -27,4 +27,4 @@ model:
     betas: [0.9, 0.999]
     log_n_steps: 500
     backbone: 'resnet34'
-    preview_horizon: 19  # = clip_length_in_frames - 1
+    preview_horizon: 24  # = clip_length_in_frames - 1
