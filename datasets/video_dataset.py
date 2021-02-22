@@ -72,7 +72,7 @@ class VideoDataset(Dataset):
         video = self._dtype_trafo(video)
         augmented_video = self._dtype_trafo(augmented_video)
 
-        return video, augmented_video, self._video_clips.frame_rate, self._video_clips.video_fps, video_idx
+        return video, augmented_video, self._video_clips.frame_rate, self._video_clips.video_fps, video_idx, idx
 
     def __len__(self):
         return self._video_clips.num_clips()

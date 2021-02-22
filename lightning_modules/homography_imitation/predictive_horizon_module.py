@@ -59,7 +59,7 @@ class PredictiveHorizonModule(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         if self._homography_regression is None:
             raise ValueError('Homography regression model required in training step.')
-        videos, transformed_videos, frame_rate, vid_fps, vid_idx = batch
+        videos, transformed_videos, frame_rate, vid_fps, vid_idc, frame_idc = batch
         frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
         frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxHxW
         frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
@@ -79,7 +79,7 @@ class PredictiveHorizonModule(pl.LightningModule):
                 self.logger.experiment.add_images('verify/blend_train', blends, self.global_step)
 
                 # visualize duv mean pairwise distance to zero
-                duv_mpd_seq_figure = duv_mean_pairwise_distance_figure(duvs_reg[0].cpu().numpy(), re_fps=frame_rate[0].item(), fps=vid_fps[vid_idx[0]][0].item())  # get vid_idx of zeroth batch
+                duv_mpd_seq_figure = duv_mean_pairwise_distance_figure(duvs_reg[0].cpu().numpy(), re_fps=frame_rate[0].item(), fps=vid_fps[vid_idc[0]][0].item())  # get vid_idc of zeroth batch
                 self.logger.experiment.add_figure('verify/duv_mean_pairwise_distance', duv_mpd_seq_figure, self.global_step)
 
         duvs = self(transformed_videos[:,0].squeeze())  # forward batch of first images
@@ -97,7 +97,7 @@ class PredictiveHorizonModule(pl.LightningModule):
         if self._homography_regression is None:
             raise ValueError('Homography regression model required in validation step.')
         # by default without grad (torch.set_grad_enabled(False))
-        videos, transformed_videos, frame_rate, vid_fps, vid_idx = batch
+        videos, transformed_videos, frame_rate, vid_fps, vid_idc, frame_idc = batch
         frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
         frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*N  xHxW
         frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
