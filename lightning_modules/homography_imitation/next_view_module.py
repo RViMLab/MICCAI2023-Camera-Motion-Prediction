@@ -11,8 +11,8 @@ from utils.processing import frame_pairs, image_edges, four_point_homography_to_
 from utils.viz import yt_alpha_blend, duv_mean_pairwise_distance_figure
 
 
-class PredictiveHorizonModule(pl.LightningModule):
-    def __init__(self, shape: List[int], lr: float=1e-4, betas: List[float]=[0.9, 0.999], log_n_steps: int=1000, backbone: str='resnet34', preview_horizon: int=4, frame_stride: int=1):
+class NextViewModule(pl.LightningModule):
+    def __init__(self, shape: List[int], lr: float=1e-4, betas: List[float]=[0.9, 0.999], log_n_steps: int=1000, backbone: str='resnet34', frame_stride: int=1):
         super().__init__()
         self.save_hyperparameters('lr', 'betas', 'backbone')
 
@@ -24,7 +24,7 @@ class PredictiveHorizonModule(pl.LightningModule):
         # modify out layers
         self._model.fc = nn.Linear(
             in_features=self._model.fc.in_features,
-            out_features=8*preview_horizon
+            out_features=8
         )
 
         self._mse_loss = nn.MSELoss()
@@ -34,7 +34,6 @@ class PredictiveHorizonModule(pl.LightningModule):
         self._validation_step_ct = 0
         self._log_n_steps = log_n_steps
 
-        self._preview_horizon = preview_horizon
         self._frame_stride = frame_stride
 
     def inject_homography_regression(self, homography_regression: dict, homography_regression_prefix: str):
@@ -52,9 +51,9 @@ class PredictiveHorizonModule(pl.LightningModule):
         optimizer = torch.optim.Adam(self._model.parameters(), lr=self._lr, betas=self._betas)
 
     def forward(self, img):
-        r"""Forward first images.
+        r"""Forward frames_i to predict duvs to frames_ips
         """
-        return self._model(img).view(-1, self._preview_horizon, 4, 2)
+        return self._model(img).view(-1, 4, 2)
 
     def training_step(self, batch, batch_idx):
         if self._homography_regression is None:
@@ -106,7 +105,7 @@ class PredictiveHorizonModule(pl.LightningModule):
         return mse_loss
         
     def test_step(self, batch, batch_idx):
-        # skip test step until hand labeled homography implemented
+        # skip test step until hand labeled homography implemented, therefore, analyze homography histograms
         pass
 
     def _create_blend_from_homography_regression(self, frames_i: torch.Tensor, frames_ips: torch.Tensor, duvs: torch.Tensor):
