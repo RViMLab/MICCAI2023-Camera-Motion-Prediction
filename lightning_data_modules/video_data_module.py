@@ -172,7 +172,7 @@ if __name__ == '__main__':
     start = time.time_ns()
 
     for idx, batch in enumerate(dl):
-        img, aug, fr, vid_fps, vid_idx, frame_idx = batch
+        img, aug, fr, vid_fps, vid_idx, clip_idc = batch
 
         print('\rBatch {}/{}, img shape: {}, aug shape: {}, frame_rate: {}, video_fps: {}, Loading time: {}'.format(idx + 1, len(dl), img.shape, aug.shape, fr[0].item(), vid_fps[vid_idx[0]][0].item(), (time.time_ns() - start)/1.e9), end='')
         img = tensor_to_image(img[0, 0])

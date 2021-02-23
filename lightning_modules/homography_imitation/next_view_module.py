@@ -58,7 +58,7 @@ class NextViewModule(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         if self._homography_regression is None:
             raise ValueError('Homography regression model required in training step.')
-        videos, transformed_videos, frame_rate, vid_fps, vid_idc, frame_idc = batch
+        videos, transformed_videos, frame_rate, vid_fps, vid_idc, clip_idc = batch
 
         # homography regression
         frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
@@ -103,7 +103,7 @@ class NextViewModule(pl.LightningModule):
         if self._homography_regression is None:
             raise ValueError('Homography regression model required in validation step.')
         # by default without grad (torch.set_grad_enabled(False))
-        videos, transformed_videos, frame_rate, vid_fps, vid_idc, frame_idc = batch
+        videos, transformed_videos, frame_rate, vid_fps, vid_idc, clip_idc = batch
 
         # homography regression
         frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images

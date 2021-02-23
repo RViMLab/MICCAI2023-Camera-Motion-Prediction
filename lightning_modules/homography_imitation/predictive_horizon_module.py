@@ -59,7 +59,7 @@ class PredictiveHorizonModule(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         if self._homography_regression is None:
             raise ValueError('Homography regression model required in training step.')
-        videos, transformed_videos, frame_rate, vid_fps, vid_idc, frame_idc = batch
+        videos, transformed_videos, frame_rate, vid_fps, vid_idc, clip_idc = batch
         frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
         frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxHxW
         frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
@@ -97,7 +97,7 @@ class PredictiveHorizonModule(pl.LightningModule):
         if self._homography_regression is None:
             raise ValueError('Homography regression model required in validation step.')
         # by default without grad (torch.set_grad_enabled(False))
-        videos, transformed_videos, frame_rate, vid_fps, vid_idc, frame_idc = batch
+        videos, transformed_videos, frame_rate, vid_fps, vid_idc, clip_idc = batch
         frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
         frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*N  xHxW
         frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
