@@ -25,6 +25,6 @@ model:
     shape: [3, 480, 640]
     lr: 1.e-4
     betas: [0.9, 0.999]
-    log_n_steps: 100
+    log_n_steps: 500
     backbone: 'resnet34'
     preview_horizon: 19  # = clip_length_in_frames - 1

@@ -27,7 +27,7 @@ class PredictiveHorizonModule(pl.LightningModule):
             out_features=8*preview_horizon
         )
 
-        self._mse_loss = nn.MSELoss()
+        self._distance_loss = nn.PairwiseDistance()
 
         self._lr = lr
         self._betas = betas
@@ -52,14 +52,14 @@ class PredictiveHorizonModule(pl.LightningModule):
         optimizer = torch.optim.Adam(self._model.parameters(), lr=self._lr, betas=self._betas)
 
     def forward(self, img):
-        r"""Forward first images, alternatively, forward frames_i to predict duvs to frames_ips
+        r"""Forward first images.
         """
         return self._model(img).view(-1, self._preview_horizon, 4, 2)
 
     def training_step(self, batch, batch_idx):
         if self._homography_regression is None:
             raise ValueError('Homography regression model required in training step.')
-        videos, transformed_videos, frame_rate, vid_fps, vid_idx = batch
+        videos, transformed_videos, frame_rate, vid_fps, vid_idc, clip_idc = batch
         frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
         frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxHxW
         frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
@@ -79,29 +79,25 @@ class PredictiveHorizonModule(pl.LightningModule):
                 self.logger.experiment.add_images('verify/blend_train', blends, self.global_step)
 
                 # visualize duv mean pairwise distance to zero
-                duv_mpd_seq_figure = duv_mean_pairwise_distance_figure(duvs_reg[0].cpu().numpy(), re_fps=frame_rate[0].item(), fps=vid_fps[vid_idx[0]][0].item())  # get vid_idx of zeroth batch
+                duv_mpd_seq_figure = duv_mean_pairwise_distance_figure(duvs_reg[0].cpu().numpy(), re_fps=frame_rate[0].item(), fps=vid_fps[vid_idc[0]][0].item())  # get vid_idc of zeroth batch
                 self.logger.experiment.add_figure('verify/duv_mean_pairwise_distance', duv_mpd_seq_figure, self.global_step)
 
-                # log homography deviation
-                # find minima/maxima
-                # submit dgx:
-                #  - homography imitation on subset
-                #  - homography min/max on subset
-                # search subset and cluster proportional to motion
-                # submit intention
-                # 
-
         duvs = self(transformed_videos[:,0].squeeze())  # forward batch of first images
-        mse_loss = self._mse_loss(duvs, duvs_reg)
 
-        self.log('train/mse', mse_loss)
-        return mse_loss
+        # distance loss
+        distance_loss = self._distance_loss(
+            duvs.view(-1, 2),
+            duvs_reg.view(-1, 2)
+        ).mean()
+
+        self.log('train/distance', distance_loss)
+        return distance_loss
 
     def validation_step(self, batch, batch_idx):
         if self._homography_regression is None:
             raise ValueError('Homography regression model required in validation step.')
         # by default without grad (torch.set_grad_enabled(False))
-        videos, transformed_videos, frame_rate, vid_fps, vid_idx = batch
+        videos, transformed_videos, frame_rate, vid_fps, vid_idc, clip_idc = batch
         frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
         frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*N  xHxW
         frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
@@ -109,10 +105,15 @@ class PredictiveHorizonModule(pl.LightningModule):
         duvs_reg = self._homography_regression(frames_i, frames_ips)
         duvs_reg = duvs_reg.view(videos.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
         duvs = self(transformed_videos[:,0].squeeze())       # forward batch of first images
-        mse_loss = self._mse_loss(duvs, duvs_reg)
+        
+        # distance loss
+        distance_loss = self._distance_loss(
+            duvs.view(-1, 2),
+            duvs_reg.view(-1, 2)
+        ).mean()
 
-        self.log('val/mse', mse_loss)
-        return mse_loss
+        self.log('val/distance', distance_loss, on_epoch=True)
+        return distance_loss
         
     def test_step(self, batch, batch_idx):
         # skip test step until hand labeled homography implemented
