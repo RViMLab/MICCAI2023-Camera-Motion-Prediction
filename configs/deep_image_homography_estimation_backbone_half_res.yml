@@ -1,0 +1,37 @@
+experiment: 'deep_image_homography_estimation_backbone'
+lightning_module: 'DeepImageHomographyEstimationModuleBackbone'
+lightning_data_module: 'ImagePairHomographyDataModule'
+trainer:
+    gpus: 1
+    max_epochs: 100
+    log_every_n_steps: 25
+    limit_train_batches: 1.0
+    limit_val_batches: 1.0
+    limit_test_batches: 1.0
+data:
+    pkl_name: 'log_without_camera_motion_seq_len_25.pkl'
+    pkl_path: 'camera_motion_separated_png/without_camera_motion'
+    train_split: 0.8
+    random_state: 42
+    batch_size: 512
+    num_workers: 8
+    rho: 128
+    crp_shape: [240, 320]
+    unsupervised: False
+    train_transforms: # augmentations from imgaug https://imgaug.readthedocs.io/en/latest/source/overview_of_augmenters.html
+        - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',             'kwargs': {'size': {'height': 306, 'width': 408}}}
+        - {'chance': 0.1, 'module': 'imgaug.augmenters',                'type': 'Grayscale',          'kwargs': {}}
+        - {'chance': 0.5, 'module': 'imgaug.augmenters',                'type': 'HorizontalFlip',     'kwargs': {}}
+        - {'chance': 0.5, 'module': 'imgaug.augmenters',                'type': 'VerticalFlip',       'kwargs': {}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Crop',               'kwargs': {'percent': !!python/tuple [0., 0.4]}}
+        - {'chance': 0.3, 'module': 'imgaug.augmenters',                'type': 'MultiplyBrightness', 'kwargs': {'mul': [0.5, 1.5]}}
+        - {'chance': 0.1, 'module': 'imgaug.augmenters',                'type': 'GaussianBlur',       'kwargs': {}}
+        - {'chance': 0.1, 'module': 'imgaug.augmenters.imgcorruptlike', 'type': 'Fog',                'kwargs': {'severity': 2}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters.imgcorruptlike', 'type': 'Contrast',           'kwargs': {'severity': 1}}
+    val_transforms: null
+model:
+    shape: [3, 240, 320]
+    lr: 1.e-4
+    betas: [0.9, 0.999]
+    log_n_steps: 250
+    backbone: 'resnet34'
