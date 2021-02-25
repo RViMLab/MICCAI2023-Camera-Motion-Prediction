@@ -3,7 +3,7 @@ lightning_module: 'DeepImageHomographyEstimationModuleBackbone'
 lightning_data_module: 'ImagePairHomographyDataModule'
 trainer:
     gpus: 1
-    max_epochs: 50
+    max_epochs: 100
     log_every_n_steps: 100
     limit_train_batches: 1.0
     limit_val_batches: 1.0
@@ -15,7 +15,7 @@ data:
     random_state: 42
     batch_size: 128
     num_workers: 8
-    rho: 64
+    rho: 256
     crp_shape: [480, 640]
     unsupervised: False
     train_transforms: # augmentations from imgaug https://imgaug.readthedocs.io/en/latest/source/overview_of_augmenters.html
