@@ -50,7 +50,7 @@ class RandomEdgeHomography():
 
         if np.random.rand() < self._p0:
             # Step 2: Set perturbation to zero
-            duv = np.zeros([4,2])
+            duv = np.zeros([4,2], dtype=np.int)
             wrp_uv = uv + duv
 
             # Step 3: Compute homography
@@ -58,7 +58,6 @@ class RandomEdgeHomography():
 
             # Additional step: Compute outer boarder
             wrp_bdr = cv2.perspectiveTransform(boundary.reshape(-1,1,2)[:,:,::-1], np.linalg.inv(H))
-
             feasible = True
 
         while not feasible:

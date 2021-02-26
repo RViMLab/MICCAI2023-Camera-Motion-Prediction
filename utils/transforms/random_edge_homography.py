@@ -70,7 +70,7 @@ class RandomEdgeHomography(object):
 
         if np.random.rand() < self._p0:
             # Step 2: Set perturbation to zero
-            duv = np.zeros([4,2])
+            duv = np.zeros([4,2], dtype=np.int)
 
             # Randomly find top left corner that fits crop
             top_left = self._random_top_left(inner_shape=self._crp_shape, outer_shape=outer_shape[:2])
@@ -82,7 +82,6 @@ class RandomEdgeHomography(object):
 
             # Additional step: Compute outer boarder
             wrp_outer_uv = cv2.perspectiveTransform(outer_uv.reshape(-1,1,2)[:,:,::-1], np.linalg.inv(H))
-
             feasible = True
 
         while not feasible:
