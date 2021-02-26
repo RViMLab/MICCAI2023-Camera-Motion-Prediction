@@ -1,8 +1,7 @@
 import pickle
-from typing import Union
 
 
-def load_pickle(path: str) -> Union[dict, None]:
+def load_pickle(path: str) -> dict:
     r"""Loads a binary file into a dictionary.
 
     Args:
@@ -14,7 +13,7 @@ def load_pickle(path: str) -> Union[dict, None]:
         with open(path, 'rb') as f:
             return pickle.load(f)
     except:
-        return None
+       raise RuntimeError('Failed to load {}'.format(path))
 
 
 def save_pickle(path: str, dic: dict) -> None:
