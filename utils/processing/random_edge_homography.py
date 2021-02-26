@@ -15,12 +15,13 @@ class RandomEdgeHomography():
     def __init__(self, img):
         self.img = img
 
-    def compute(self, rho, crp_shape, verbose=False):
+    def compute(self, rho, crp_shape, p0=0., verbose=False):
         r"""Compute the random homographies.
 
         Args:
             rho (int): uv are perturbed within [-rho, rho]
             crp_shape (tuple of in): Crop shape
+            p0 (float): Chance for homography being identity
             verbose (bool): Return dictionary with additional outputs
 
         Return:
@@ -46,6 +47,19 @@ class RandomEdgeHomography():
                 [self.img.shape[0] - 1,                     0],
         ], dtype=np.float)
         shape = self.img.shape
+
+        if np.random.rand() < self._p0:
+            # Step 2: Set perturbation to zero
+            duv = np.zeros([4,2])
+            wrp_uv = uv + duv
+
+            # Step 3: Compute homography
+            H = cv2.getPerspectiveTransform(inner_uv[:,::-1].astype(np.float32), wrp_inner_uv[:,::-1].astype(np.float32))
+
+            # Additional step: Compute outer boarder
+            wrp_bdr = cv2.perspectiveTransform(boundary.reshape(-1,1,2)[:,:,::-1], np.linalg.inv(H))
+
+            feasible = True
 
         while not feasible:
             # Step 2: Randomly perturb uv

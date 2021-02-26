@@ -19,6 +19,7 @@ class ImagePairHomographyDataset(Dataset):
         prefix (str): Path to database e.g. </path/to/database>/path/to/frames/frame.png
         rho (int): Image edges are randomly perturbed within [-rho, rho]
         crp_shape (list of int): Shape of cropped image
+        p0 (float): Chance for homography being identity
         transforms (callable): Transforms to be applied before homography generation
         seeds (list of np.int32): Seeds for deterministic output, e.g. for test set
 
@@ -32,14 +33,14 @@ class ImagePairHomographyDataset(Dataset):
             'H' (torch.Tensor): Homography matrix of shape 3x3
         )
     """
-    def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int], transforms: Callable=None, seeds: List[np.int32]=None):
+    def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int], p0: float=0., transforms: Callable=None, seeds: List[np.int32]=None):
         if seeds:
             if (len(df) != len(seeds)):
                 raise Exception('In ImagePairHomographyDataset: Length of dataframe must equal length of seeds.')
         
         self._df = df
         self._prefix = prefix   
-        self._reh = RandomEdgeHomography(rho=rho, crp_shape=crp_shape, homography_return=HOMOGRAPHY_RETURN.DATASET, seeds=seeds)
+        self._reh = RandomEdgeHomography(rho=rho, crp_shape=crp_shape, p0=p0, homography_return=HOMOGRAPHY_RETURN.DATASET, seeds=seeds)
         self._transforms = transforms
         self._seeds = seeds
         self._tt = ToTensor()

@@ -19,6 +19,7 @@ class ImagePairHomographyEndoscopyViewDataset(Dataset):
         prefix (str): Path to database e.g. </path/to/database>/path/to/frames/frame.png
         rho (int): Image edges are randomly perturbed within [-rho, rho]
         crp_shape (list of int): Shape of cropped image
+        p0 (float): Chance for homography being identity
         c_off_scale (float): Center offset scale of image shape. Perturbes endoscopic view around image center
         dc_scale (float): Center update scale
         c_update_chance (float): Chance by which center is updated
@@ -37,14 +38,14 @@ class ImagePairHomographyEndoscopyViewDataset(Dataset):
             'H' (torch.Tensor): Homography matrix of shape 3x3
         )
     """
-    def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int], c_off_scale: float=0.125, dc_scale: float=0.1, c_update_chance: float=0.1, r_min_scale: float=0.25, r_amp_scale: float=0.5, transforms: Callable=None, seeds: List[np.int32]=None):
+    def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int], p0: float=0., c_off_scale: float=0.125, dc_scale: float=0.1, c_update_chance: float=0.1, r_min_scale: float=0.25, r_amp_scale: float=0.5, transforms: Callable=None, seeds: List[np.int32]=None):
         if seeds:
             if (len(df) != len(seeds)):
                 raise Exception('In ImagePairHomographyDataset: Length of dataframe must equal length of seeds.')
         
         self._df = df
         self._prefix = prefix   
-        self._reh = RandomEdgeHomography(rho=rho, crp_shape=crp_shape, homography_return=HOMOGRAPHY_RETURN.DATASET, seeds=seeds)
+        self._reh = RandomEdgeHomography(rho=rho, crp_shape=crp_shape, p0=p0, homography_return=HOMOGRAPHY_RETURN.DATASET, seeds=seeds)
         self._ec = EndoscopyCircle()
         self._c_off_scale = c_off_scale
         self._dc_scale = dc_scale

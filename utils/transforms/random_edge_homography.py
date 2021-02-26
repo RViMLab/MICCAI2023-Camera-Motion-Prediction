@@ -24,7 +24,7 @@ class RandomEdgeHomography(object):
         homography_return (IntEnum): Return different outputs on __call__()
         seeds (list of np.int32): Seeds for deterministic output, list of randomly generated int
     """
-    def __init__(self, rho: int, crp_shape: List[int], p0: float=0, homography_return: IntEnum=HOMOGRAPHY_RETURN.DEFAULT, seeds: List[np.int32]=None):
+    def __init__(self, rho: int, crp_shape: List[int], p0: float=0., homography_return: IntEnum=HOMOGRAPHY_RETURN.DEFAULT, seeds: List[np.int32]=None):
         self._rho = rho
         self._crp_shape = crp_shape
         self._p0 = p0

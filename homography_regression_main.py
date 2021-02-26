@@ -40,6 +40,7 @@ if __name__ == '__main__':
         'num_workers': configs['data']['num_workers'],
         'rho': configs['data']['rho'],
         'crp_shape': configs['data']['crp_shape'],
+        'p0': configs['data']['p0'],
         'unsupervised': configs['data']['unsupervised'],
         'train_transforms': configs['data']['train_transforms'],
         'val_transforms': configs['data']['val_transforms']

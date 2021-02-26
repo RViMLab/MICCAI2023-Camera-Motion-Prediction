@@ -17,6 +17,7 @@ data:
     num_workers: 4
     rho: 64
     crp_shape: [480, 640]
+    p0: 0.05
     unsupervised: True
     train_transforms: # augmentations from imgaug https://imgaug.readthedocs.io/en/latest/source/overview_of_augmenters.html
         - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',             'kwargs': {'size': {'height': 612, 'width': 816}}}
