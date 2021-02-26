@@ -1,8 +1,7 @@
 import yaml
-from typing import Union
 
 
-def load_yaml(path: str) -> Union[dict, None]:
+def load_yaml(path: str) -> dict:
     r"""Load YAML file into dictionary.
 
     Args:
@@ -15,7 +14,7 @@ def load_yaml(path: str) -> Union[dict, None]:
             yml = yaml.load(f, Loader=yaml.FullLoader)
         return yml
     except:
-        return None
+       raise RuntimeError('Failed to load {}'.format(path))
 
 
 def save_yaml(path: str, dic: dict) -> None:
