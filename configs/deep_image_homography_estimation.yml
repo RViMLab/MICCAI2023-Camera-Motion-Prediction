@@ -8,6 +8,8 @@ trainer:
     limit_train_batches: 1.0
     limit_val_batches: 1.0
     limit_test_batches: 1.0
+    fast_dev_run: False
+    profiler: False
 data:
     pkl_name: 'log_without_camera_motion_seq_len_2.pkl'
     pkl_path: 'camera_motion_separated_png/without_camera_motion'
