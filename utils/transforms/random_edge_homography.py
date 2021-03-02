@@ -148,7 +148,7 @@ class RandomEdgeHomography(object):
         Return:
             crp (np.array): Cropped image
         """
-        crp = img[int(uv[0,0]):int(uv[2,0]),int(uv[0,1]):int(uv[2,1])]
+        crp = img[int(uv[0,0]):int(uv[2,0])+1,int(uv[0,1]):int(uv[2,1])+1]
         return crp
 
     def visualize(self, dic: dict):
