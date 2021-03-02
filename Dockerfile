@@ -17,4 +17,4 @@ RUN useradd --uid $USER_ID --gid $GROUP_ID $USER
 # Create conda env
 WORKDIR /workspace
 COPY env.yml .
-RUN conda env create -f env.yml
+RUN conda env create -f env_dgx.yml

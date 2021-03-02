@@ -1,5 +1,5 @@
 #!/bin/bash
-docker_tag=10.202.67.201:32581/$USER:hil_03
+docker_tag=10.202.67.201:32581/$USER:hil_04
 
 docker build . -f Dockerfile \
   --tag $docker_tag \
