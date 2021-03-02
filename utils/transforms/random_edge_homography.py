@@ -23,14 +23,16 @@ class RandomEdgeHomography(object):
         p0 (float): Chance for homography being identity
         homography_return (IntEnum): Return different outputs on __call__()
         seeds (list of np.int32): Seeds for deterministic output, list of randomly generated int
+        max_rollouts (int): Maximum number of homography rollouts
     """
-    def __init__(self, rho: int, crp_shape: List[int], p0: float=0., homography_return: IntEnum=HOMOGRAPHY_RETURN.DEFAULT, seeds: List[np.int32]=None):
+    def __init__(self, rho: int, crp_shape: List[int], p0: float=0., homography_return: IntEnum=HOMOGRAPHY_RETURN.DEFAULT, seeds: List[np.int32]=None, max_rollouts: int=1000):
         self._rho = rho
         self._crp_shape = crp_shape
         self._p0 = p0
         self._homography_return = homography_return
         self._seeds = seeds
         self._seed_idx = 0
+        self._max_rollouts = max_rollouts
 
     @property
     def seed_idx(self):
@@ -68,23 +70,29 @@ class RandomEdgeHomography(object):
         outer_uv = self._shape_to_uv(img.shape[:2])
         outer_shape = img.shape
 
-        if np.random.rand() < self._p0:
-            # Step 2: Set perturbation to zero
-            duv = np.zeros([4,2], dtype=np.int)
-
-            # Randomly find top left corner that fits crop
-            top_left = self._random_top_left(inner_shape=self._crp_shape, outer_shape=outer_shape[:2])
-            inner_uv = self._shape_to_uv(self._crp_shape, top_left)
-            wrp_inner_uv = inner_uv + duv
-
-            # Step 3: Compute homography
-            H = cv2.getPerspectiveTransform(inner_uv[:,::-1].astype(np.float32), wrp_inner_uv[:,::-1].astype(np.float32))
-
-            # Additional step: Compute outer boarder
-            wrp_outer_uv = cv2.perspectiveTransform(outer_uv.reshape(-1,1,2)[:,:,::-1], np.linalg.inv(H))
-            feasible = True
-
+        rollouts = 0
+        p0 = np.random.rand()
+        
         while not feasible:
+            if rollouts >= self._max_rollouts or p0 < self._p0:
+                # Step 2: Set perturbation to zero
+                duv = np.zeros([4,2], dtype=np.int)
+
+                # Randomly find top left corner that fits crop
+                top_left = self._random_top_left(inner_shape=self._crp_shape, outer_shape=outer_shape[:2])
+                inner_uv = self._shape_to_uv(self._crp_shape, top_left)
+                wrp_inner_uv = inner_uv + duv
+
+                # Step 3: Compute homography
+                H = cv2.getPerspectiveTransform(inner_uv[:,::-1].astype(np.float32), wrp_inner_uv[:,::-1].astype(np.float32))
+
+                # Additional step: Compute outer boarder
+                wrp_outer_uv = cv2.perspectiveTransform(outer_uv.reshape(-1,1,2)[:,:,::-1], np.linalg.inv(H))
+                feasible = True
+                break
+            
+            rollouts += 1
+
             # Step 2: Randomly perturb uv
             duv = np.random.randint(-self._rho, self._rho, [4,2])
 
@@ -224,11 +232,11 @@ if __name__ == '__main__':
     import os
     path = os.getcwd()
     file_path = os.path.join(path, 'utils/transforms/sample.npy')
-    crp_shape = (240, 320)
-    rho = 128
+    crp_shape = (480, 640)
+    rho = 256
 
     img = np.load(file_path)
-    img = cv2.resize(img, (408, 306))
+    img = cv2.resize(img, (816, 612))
     reh = RandomEdgeHomography(rho, crp_shape, p0=0.1, homography_return=HOMOGRAPHY_RETURN.VISUAL)
 
     for i in range(100):

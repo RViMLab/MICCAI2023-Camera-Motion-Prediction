@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from shapely.geometry import Point
 from shapely.geometry import MultiPoint
+from typing import List, Tuple
 
 
 class RandomEdgeHomography():
@@ -15,7 +16,7 @@ class RandomEdgeHomography():
     def __init__(self, img):
         self.img = img
 
-    def compute(self, rho, crp_shape, p0=0., verbose=False):
+    def compute(self, rho, crp_shape, p0=0., verbose=False, max_rollouts: int=1000):
         r"""Compute the random homographies.
 
         Args:
@@ -23,6 +24,7 @@ class RandomEdgeHomography():
             crp_shape (tuple of in): Crop shape
             p0 (float): Chance for homography being identity
             verbose (bool): Return dictionary with additional outputs
+            max_rollouts (int): Maximum number of homography rollouts
 
         Return:
             img_crp (np.array): Cropped image of shape crp_shape x C
@@ -37,44 +39,52 @@ class RandomEdgeHomography():
                 wrp (np.array): Warped image
                 wrp_bdr (np.array): uv of warped image
         """
-        img_crp, uv = self._random_crop(crp_shape=crp_shape, padding=rho)
-
         feasible = False
-        boundary = np.array([
-                [0                    ,                     0],
-                [0                    , self.img.shape[1] - 1],
-                [self.img.shape[0] - 1, self.img.shape[1] - 1],
-                [self.img.shape[0] - 1,                     0],
-        ], dtype=np.float)
-        shape = self.img.shape
+        outer_uv = self._shape_to_uv(img.shape[:2])
+        outer_shape = img.shape
 
-        if np.random.rand() < self._p0:
-            # Step 2: Set perturbation to zero
-            duv = np.zeros([4,2], dtype=np.int)
-            wrp_uv = uv + duv
+        rollouts = 0
+        p0_sample = np.random.rand()
+        
+        while not feasible:
+            if rollouts >= max_rollouts or p0_sample < p0:
+                # Step 2: Set perturbation to zero
+                duv = np.zeros([4,2], dtype=np.int)
+
+                # Randomly find top left corner that fits crop
+                top_left = self._random_top_left(inner_shape=crp_shape, outer_shape=outer_shape[:2])
+                inner_uv = self._shape_to_uv(crp_shape, top_left)
+                wrp_inner_uv = inner_uv + duv
+
+                # Step 3: Compute homography
+                H = cv2.getPerspectiveTransform(inner_uv[:,::-1].astype(np.float32), wrp_inner_uv[:,::-1].astype(np.float32))
+
+                # Additional step: Compute outer boarder
+                wrp_outer_uv = cv2.perspectiveTransform(outer_uv.reshape(-1,1,2)[:,:,::-1], np.linalg.inv(H))
+                feasible = True
+                break
+            
+            rollouts += 1
+
+            # Step 2: Randomly perturb uv
+            duv = np.random.randint(-rho, rho, [4,2])
+
+            # Randomly find top left corner that fits crop
+            top_left = self._random_top_left(inner_shape=crp_shape, outer_shape=outer_shape[:2])
+            inner_uv = self._shape_to_uv(crp_shape, top_left)
+            wrp_inner_uv = inner_uv + duv
 
             # Step 3: Compute homography
             H = cv2.getPerspectiveTransform(inner_uv[:,::-1].astype(np.float32), wrp_inner_uv[:,::-1].astype(np.float32))
 
-            # Additional step: Compute outer boarder
-            wrp_bdr = cv2.perspectiveTransform(boundary.reshape(-1,1,2)[:,:,::-1], np.linalg.inv(H))
-            feasible = True
-
-        while not feasible:
-            # Step 2: Randomly perturb uv
-            duv = np.random.randint(-rho, rho, [4,2])
-            wrp_uv = uv + duv
-
-            # Step 3: Compute homography
-            H = cv2.getPerspectiveTransform(uv[:,::-1].astype(np.float32), wrp_uv[:,::-1].astype(np.float32))
-
             # Additional step: Check if crop lies within warped image
-            wrp_bdr = cv2.perspectiveTransform(boundary.reshape(-1,1,2)[:,:,::-1], np.linalg.inv(H))
-            feasible = self._inside(uv, wrp_bdr.reshape(-1,2)[:,::-1])
+            wrp_outer_uv = cv2.perspectiveTransform(outer_uv.reshape(-1,1,2)[:,:,::-1], np.linalg.inv(H))
+            feasible = self._inside(inner_uv, wrp_outer_uv.reshape(-1,2)[:,::-1])
 
         # Step 4: Apply inverse homography to image and crop
-        wrp = cv2.warpPerspective(self.img, np.linalg.inv(H), (self.img.shape[1], self.img.shape[0])).reshape(shape)
-        wrp_crp = wrp[uv[0,0]:uv[2,0],uv[0,1]:uv[2,1]]
+        wrp = cv2.warpPerspective(img, np.linalg.inv(H), (img.shape[1], img.shape[0])).reshape(outer_shape)
+        wrp_crp = self.crop(wrp, inner_uv)
+        img_crp = self.crop(img, inner_uv)
 
         if verbose == True:
             return {
@@ -82,14 +92,26 @@ class RandomEdgeHomography():
                 'wrp_crp': wrp_crp, 
                 'duv': duv,
                 'H': H,
-                'uv': uv, 
-                'wrp_uv': wrp_uv,
-                'img': self.img.copy(),
+                'uv': inner_uv, 
+                'wrp_uv': wrp_inner_uv,
+                'img': img.copy(),
                 'wrp': wrp, 
-                'wrp_bdr': wrp_bdr
+                'wrp_bdr': wrp_outer_uv
             }
         else:
             return img_crp, wrp_crp, duv
+
+    def crop(self, img: np.array, uv: np.array):
+        r"""Performs crop on image.
+
+        Args:
+            img (np.array): Input image of shape HxWxC
+            uv (np.array): Edges for crop
+        Return:
+            crp (np.array): Cropped image
+        """
+        crp = img[int(uv[0,0]):int(uv[2,0]),int(uv[0,1]):int(uv[2,1])]
+        return crp
 
     def visualize(self, dic):
         r"""Creates a visualization of a random homgraphy.
@@ -112,6 +134,38 @@ class RandomEdgeHomography():
         cv2.polylines(dic['wrp'], [dic['wrp_bdr'].astype(np.int32)], isClosed=True, color=(255, 255, 0), thickness=2)
         return dic
 
+    def _shape_to_uv(self, shape: List[int], top_left: List[int]=[0, 0]):
+        r"""Determines the edges of a rectanlge, given the shape and the top left corner.
+
+        Args:
+            shape (list of int): Shape of rectangle, HxW
+            top_left (list of int): Top left corner of rectangle
+
+        Returns:
+            uv (np.array): Edges, 4x2
+        """
+        uv = np.array([
+                [top_left[0]               , top_left[1]               ],
+                [top_left[0]               , top_left[1] + shape[1] - 1],
+                [top_left[0] + shape[0] - 1, top_left[1] + shape[1] - 1],
+                [top_left[0] + shape[0] - 1, top_left[1]               ],
+        ], dtype=np.float)
+        return uv
+
+    def _random_top_left(self, inner_shape: List[int], outer_shape: List[int]):
+        r"""Determines a random top left corner, which still fits inner rectangle
+        into outer rectangle.
+
+        Args:
+            inner_shape (list of int): Shape of inner rectangle, HxW
+            outer_shape (list of int): Shape of outer rectangle, HxW
+
+        Return:
+            top_left (np.array): Random top left corner within feasible area
+        """
+        top_left = np.random.randint(0, np.subtract(outer_shape, inner_shape), 2)
+        return top_left
+
     def _inside(self, pts, polygon):
         r"""Determine if points lie within a polygon.
         Args:
@@ -130,31 +184,11 @@ class RandomEdgeHomography():
                 break
         return inside
 
-    def _random_crop(self, crp_shape, padding):
-        r"""Performs random image crop.
-
-        Args:
-            crp_shape (tuple of int): Destination array shape
-            padding (int or tuple of int): Padding area that is not cropped from
-        Return:
-            crp (np.array): Cropped image
-            uv (np.array): Edge coordinates
-        """
-        top_left = np.random.randint(padding, np.subtract(self.img.shape[:2], np.add(padding, crp_shape)), 2)
-        uv = np.array([
-            top_left,
-            [top_left[0]               , top_left[1] + crp_shape[1]],
-            [top_left[0] + crp_shape[0], top_left[1] + crp_shape[1]],
-            [top_left[0] + crp_shape[0], top_left[1]               ]
-        ])
-        crp = self.img[uv[0,0]:uv[2,0],uv[0,1]:uv[2,1]]
-        return crp, uv
-
 
 if __name__ == '__main__':
     import os
     path = os.getcwd()
-    file_path = os.path.join(path, 'sample.npy')
+    file_path = os.path.join(path, 'utils/processing/sample.npy')
     crp_shape = (128, 128)
     rho = 64
 
@@ -162,7 +196,7 @@ if __name__ == '__main__':
     reh = RandomEdgeHomography(img)
 
     for i in range(100):
-        dic = reh.compute(rho, crp_shape, True)
+        dic = reh.compute(rho, crp_shape, verbose=True)
         dic = reh.visualize(dic)
 
         cv2.imshow('img', dic['img'])
