@@ -22,18 +22,28 @@ class ImagePairHomographyDataset(Dataset):
         p0 (float): Chance for homography being identity
         transforms (callable): Transforms to be applied before homography generation
         seeds (list of np.int32): Seeds for deterministic output, e.g. for test set
+        return_img_pair (bool): Whether to return the original image pair
 
     Returns:
-        dict (dict): (
-            'img_pair' (torch.Tensor): Image pair of shape 2xCxHxW 
-            'img_crp' (torch.Tensor): Crop of image img_pair[0] of shape Cx crp_shape[0] x crp_shape[1]
-            'wrp_crp' (torch.Tensor): Crop of warp of image img_pair[1] of shape Cx crp_shape[0] x crp_shape[1]
-            'uv' (torch.Tensor): Edges of crop of shape 4x2
-            'duv' (torch.Tensor): Perturbation of edges uv within [-rho, rho] of shape 4x2
-            'H' (torch.Tensor): Homography matrix of shape 3x3
-        )
+        if return_img_pair:
+            dict (dict): (
+                'img_pair' (torch.Tensor): Image pair of shape 2xCxHxW 
+                'img_crp' (torch.Tensor): Crop of image img_pair[0] of shape Cx crp_shape[0] x crp_shape[1]
+                'wrp_crp' (torch.Tensor): Crop of warp of image img_pair[1] of shape Cx crp_shape[0] x crp_shape[1]
+                'uv' (torch.Tensor): Edges of crop of shape 4x2
+                'duv' (torch.Tensor): Perturbation of edges uv within [-rho, rho] of shape 4x2
+                'H' (torch.Tensor): Homography matrix of shape 3x3
+            )
+        else:
+            dict (dict): (
+                'img_crp' (torch.Tensor): Crop of image img_pair[0] of shape Cx crp_shape[0] x crp_shape[1]
+                'wrp_crp' (torch.Tensor): Crop of warp of image img_pair[1] of shape Cx crp_shape[0] x crp_shape[1]
+                'uv' (torch.Tensor): Edges of crop of shape 4x2
+                'duv' (torch.Tensor): Perturbation of edges uv within [-rho, rho] of shape 4x2
+                'H' (torch.Tensor): Homography matrix of shape 3x3
+            )
     """
-    def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int], p0: float=0., transforms: Callable=None, seeds: List[np.int32]=None):
+    def __init__(self, df: pd.DataFrame, prefix: str, rho: int, crp_shape: List[int], p0: float=0., transforms: Callable=None, seeds: List[np.int32]=None, return_img_pair: bool=True):
         if seeds:
             if (len(df) != len(seeds)):
                 raise Exception('In ImagePairHomographyDataset: Length of dataframe must equal length of seeds.')
@@ -43,6 +53,7 @@ class ImagePairHomographyDataset(Dataset):
         self._reh = RandomEdgeHomography(rho=rho, crp_shape=crp_shape, p0=p0, homography_return=HOMOGRAPHY_RETURN.DATASET, seeds=seeds)
         self._transforms = transforms
         self._seeds = seeds
+        self._return_image_pair = return_img_pair
         self._tt = ToTensor()
 
     def __getitem__(self, idx):
@@ -82,14 +93,23 @@ class ImagePairHomographyDataset(Dataset):
         img_crp = self._tt(img_crp)
         wrp_crp = self._tt(wrp_crp)
 
-        return {
-            'img_pair': img_pair,
-            'img_crp': img_crp,
-            'wrp_crp': wrp_crp,
-            'uv': reh['uv'], 
-            'duv': reh['duv'], 
-            'H': reh['H']
-        }
+        if self._return_image_pair:
+            return {
+                'img_pair': img_pair,
+                'img_crp': img_crp,
+                'wrp_crp': wrp_crp,
+                'uv': reh['uv'],
+                'duv': reh['duv'],
+                'H': reh['H']
+            }
+        else:
+            return {
+                'img_crp': img_crp,
+                'wrp_crp': wrp_crp,
+                'uv': reh['uv'], 
+                'duv': reh['duv'], 
+                'H': reh['H']
+            }
 
     def __len__(self):
         return len(self._df)

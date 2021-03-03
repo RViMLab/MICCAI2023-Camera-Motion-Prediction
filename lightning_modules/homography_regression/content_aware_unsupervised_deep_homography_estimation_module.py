@@ -9,7 +9,8 @@ from kornia import get_perspective_transform, warp_perspective, crop_and_resize,
 
 from models import DeepHomographyRegression
 from models import ConvBlock
-from utils.viz import warp_figure
+from utils.viz import warp_figure, yt_alpha_blend
+from utils.processing import image_edges, four_point_homography_to_matrix
 
 
 class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule):
@@ -206,6 +207,15 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
 
         if self.validation_step_ct % self.log_n_steps == 0:
             # log figures
+            # uv = image_edges(batch['img_crp'])
+            # H = four_point_homography_to_matrix(uv, duv_pred)
+            # wrp_pred = warp_perspective(batch['img_crp'], torch.inverse(H), batch['wrp_crp'].shape[-2:])
+
+            # blend = yt_alpha_blend(
+            #     batch['wrp_crp'],
+            #     wrp_pred                
+            # )
+
             wrp_figure = warp_figure(
                 img=tensor_to_image(batch['img_pair'][0][0]), 
                 uv=batch['uv'][0].squeeze().cpu().numpy(), 
@@ -215,6 +225,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
             )
 
             self.logger.experiment.add_figure('val/wrp', wrp_figure, self.validation_step_ct)
+            # self.logger.experiment.add_images('val/blend', blend, self.validation_step_ct)
             self.logger.experiment.add_images('val/img_crp', batch['img_crp'], self.validation_step_ct)
             self.logger.experiment.add_images('val/wrp_crp', batch['wrp_crp'], self.validation_step_ct)
             self.logger.experiment.add_images('val/mask_0', dic['m_0'], self.validation_step_ct)

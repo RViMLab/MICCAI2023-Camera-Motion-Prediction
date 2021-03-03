@@ -34,12 +34,12 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
-            self._train_set = ImagePairHomographyDataset(self._train_df, self._prefix, self._rho, self._crp_shape, self._p0, transforms=self._train_transforms)
+            self._train_set = ImagePairHomographyDataset(self._train_df, self._prefix, self._rho, self._crp_shape, self._p0, transforms=self._train_transforms, return_img_pair=self._unsupervised)
             seeds = np.arange(0, len(self._val_df)).tolist() # assure validation set is seeded the same for all epochs
-            self._val_set = ImagePairHomographyDataset(self._val_df, self._prefix, self._rho, self._crp_shape, self._p0, transforms=self._val_transforms, seeds=seeds)
+            self._val_set = ImagePairHomographyDataset(self._val_df, self._prefix, self._rho, self._crp_shape, self._p0, transforms=self._val_transforms, seeds=seeds, return_img_pair=True)
         if stage == 'test' or stage is None:
             seeds = np.arange(0, len(self._test_df)).tolist() # assure test set is seeded the same for all runs
-            self._test_set = ImagePairHomographyDataset(self._test_df, self._prefix, self._rho, self._crp_shape, self._p0, seeds=seeds) # for final evaluation
+            self._test_set = ImagePairHomographyDataset(self._test_df, self._prefix, self._rho, self._crp_shape, self._p0, seeds=seeds, return_img_pair=self._unsupervised) # for final evaluation
 
     def transfer_batch_to_device(self, batch, device):
         batch['img_crp'] = batch['img_crp'].to(device)
@@ -65,12 +65,12 @@ if __name__ == '__main__':
     import os
 
     prefix = '/media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated_png/without_camera_motion'
-    pkl_name = 'log_without_camera_motion_seq_len_2.pkl'
+    pkl_name = 'log_without_camera_motion_seq_len_25.pkl'
     df = pd.read_pickle(os.path.join(prefix, pkl_name))
 
-    cdm = ImagePairHomographyDataModule(df, prefix, train_split=0.8, batch_size=16, num_workers=0, rho=32, crp_shape=[640, 480])
+    cdm = ImagePairHomographyDataModule(df, prefix, train_split=0.8, batch_size=64, num_workers=0, rho=32, crp_shape=[320, 240])
     cdm.setup()
+    train_dl = cdm.train_dataloader()
 
-    for batch in cdm.train_dataloader():
-        print(len(batch))
-        print(batch['img_pair'][0].shape)
+    for idx, batch in enumerate(train_dl):
+        print('\ridx: {}, crp shape: {}, wrp shape: {}, len: {}'.format(idx, batch['img_crp'].shape, batch['wrp_crp'].shape, len(batch)), end='')

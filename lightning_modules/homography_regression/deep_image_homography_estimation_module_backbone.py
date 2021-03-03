@@ -3,9 +3,10 @@ import torch.nn as nn
 import torchvision.models as models
 import pytorch_lightning as pl
 from typing import List
-from kornia import tensor_to_image
+from kornia import tensor_to_image, warp_perspective
 
-from utils.viz import warp_figure
+from utils.viz import warp_figure, yt_alpha_blend
+from utils.processing import image_edges, four_point_homography_to_matrix
 
 
 class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
@@ -60,6 +61,17 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
         self.log('val/distance', distance_loss, on_epoch=True)
 
         if self.validation_step_ct % self.log_n_steps == 0:
+            # uv = image_edges(batch['img_crp'])
+            # H = four_point_homography_to_matrix(uv, duv_pred)
+            # wrp_pred = warp_perspective(batch['img_crp'], torch.inverse(H), batch['wrp_crp'].shape[-2:])
+
+            # blend = yt_alpha_blend(
+            #     batch['wrp_crp'],
+            #     wrp_pred                
+            # )
+
+            # self.logger.experiment.add_images('val/blend', blend, self.validation_step_ct)
+
             figure = warp_figure(
                 img=tensor_to_image(batch['img_pair'][0][0]), 
                 uv=batch['uv'][0].squeeze().numpy(), 
