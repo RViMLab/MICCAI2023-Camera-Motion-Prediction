@@ -212,8 +212,8 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
             wrp_pred = warp_perspective(batch['img_crp'], torch.inverse(H), batch['wrp_crp'].shape[-2:])
 
             blend = yt_alpha_blend(
-                batch['wrp_crp'],
-                wrp_pred                
+                batch['wrp_crp'][0],
+                wrp_pred[0]     
             )
 
             # wrp_figure = warp_figure(
@@ -225,7 +225,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
             # )
 
             # self.logger.experiment.add_figure('val/wrp', wrp_figure, self.validation_step_ct)
-            self.logger.experiment.add_images('val/blend', blend, self.validation_step_ct)
+            self.logger.experiment.add_image('val/blend', blend, self.validation_step_ct)
             self.logger.experiment.add_images('val/img_crp', batch['img_crp'], self.validation_step_ct)
             self.logger.experiment.add_images('val/wrp_crp', batch['wrp_crp'], self.validation_step_ct)
             self.logger.experiment.add_images('val/mask_0', dic['m_0'], self.validation_step_ct)

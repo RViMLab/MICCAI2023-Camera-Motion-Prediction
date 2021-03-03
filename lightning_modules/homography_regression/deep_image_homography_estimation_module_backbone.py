@@ -66,11 +66,11 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
             wrp_pred = warp_perspective(batch['img_crp'], torch.inverse(H), batch['wrp_crp'].shape[-2:])
 
             blend = yt_alpha_blend(
-                batch['wrp_crp'],
-                wrp_pred                
+                batch['wrp_crp'][0],
+                wrp_pred[0]     
             )
 
-            self.logger.experiment.add_images('val/blend', blend, self.validation_step_ct)
+            self.logger.experiment.add_image('val/blend', blend, self.validation_step_ct)
 
             # figure = warp_figure(
             #     img=tensor_to_image(batch['img_pair'][0][0]), 
