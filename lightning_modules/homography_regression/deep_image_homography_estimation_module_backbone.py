@@ -61,25 +61,25 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
         self.log('val/distance', distance_loss, on_epoch=True)
 
         if self.validation_step_ct % self.log_n_steps == 0:
-            # uv = image_edges(batch['img_crp'])
-            # H = four_point_homography_to_matrix(uv, duv_pred)
-            # wrp_pred = warp_perspective(batch['img_crp'], torch.inverse(H), batch['wrp_crp'].shape[-2:])
+            uv = image_edges(batch['img_crp'])
+            H = four_point_homography_to_matrix(uv, duv_pred)
+            wrp_pred = warp_perspective(batch['img_crp'], torch.inverse(H), batch['wrp_crp'].shape[-2:])
 
-            # blend = yt_alpha_blend(
-            #     batch['wrp_crp'],
-            #     wrp_pred                
-            # )
-
-            # self.logger.experiment.add_images('val/blend', blend, self.validation_step_ct)
-
-            figure = warp_figure(
-                img=tensor_to_image(batch['img_pair'][0][0]), 
-                uv=batch['uv'][0].squeeze().numpy(), 
-                duv=batch['duv'][0].squeeze().cpu().numpy(), 
-                duv_pred=duv_pred[0].squeeze().cpu().numpy(), 
-                H=batch['H'][0].squeeze().numpy()
+            blend = yt_alpha_blend(
+                batch['wrp_crp'],
+                wrp_pred                
             )
-            self.logger.experiment.add_figure('val/wrp', figure, self.validation_step_ct)
+
+            self.logger.experiment.add_images('val/blend', blend, self.validation_step_ct)
+
+            # figure = warp_figure(
+            #     img=tensor_to_image(batch['img_pair'][0][0]), 
+            #     uv=batch['uv'][0].squeeze().numpy(), 
+            #     duv=batch['duv'][0].squeeze().cpu().numpy(), 
+            #     duv_pred=duv_pred[0].squeeze().cpu().numpy(), 
+            #     H=batch['H'][0].squeeze().numpy()
+            # )
+            # self.logger.experiment.add_figure('val/wrp', figure, self.validation_step_ct)
         self.validation_step_ct += 1
         return distance_loss
 

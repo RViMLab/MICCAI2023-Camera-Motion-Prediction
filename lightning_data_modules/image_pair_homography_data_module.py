@@ -36,7 +36,7 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
         if stage == 'fit' or stage is None:
             self._train_set = ImagePairHomographyDataset(self._train_df, self._prefix, self._rho, self._crp_shape, self._p0, transforms=self._train_transforms, return_img_pair=self._unsupervised)
             seeds = np.arange(0, len(self._val_df)).tolist() # assure validation set is seeded the same for all epochs
-            self._val_set = ImagePairHomographyDataset(self._val_df, self._prefix, self._rho, self._crp_shape, self._p0, transforms=self._val_transforms, seeds=seeds, return_img_pair=True)
+            self._val_set = ImagePairHomographyDataset(self._val_df, self._prefix, self._rho, self._crp_shape, self._p0, transforms=self._val_transforms, seeds=seeds, return_img_pair=self._unsupervised)
         if stage == 'test' or stage is None:
             seeds = np.arange(0, len(self._test_df)).tolist() # assure test set is seeded the same for all runs
             self._test_set = ImagePairHomographyDataset(self._test_df, self._prefix, self._rho, self._crp_shape, self._p0, seeds=seeds, return_img_pair=self._unsupervised) # for final evaluation
