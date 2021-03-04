@@ -11,7 +11,7 @@ from utils.transforms import dictListToAugment
 
 
 class ImagePairHomographyDataModule(pl.LightningDataModule):
-    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, rho: int=32, crp_shape: List[int]=[480, 640], p0: float=0., unsupervised: bool=False, random_state: int=42, train_transforms: List[dict]=None, val_transforms: List[dict]=None):
+    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, rho: int=32, crp_shape: List[int]=[480, 640], p0: float=0., rnd_time_sample: bool=True, unsupervised: bool=False, random_state: int=42, train_transforms: List[dict]=None, val_transforms: List[dict]=None):
         super().__init__()
         self._train_df, self._val_df = train_test_split(
             df[df['test'] == False].reset_index(), 
@@ -27,6 +27,7 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
         self._rho = rho
         self._crp_shape = crp_shape
         self._p0 = p0
+        self._rnd_time_sample = rnd_time_sample
         self._unsupervised = unsupervised
 
         self._train_transforms = dictListToAugment(train_transforms)
@@ -34,12 +35,12 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
-            self._train_set = ImagePairHomographyDataset(self._train_df, self._prefix, self._rho, self._crp_shape, self._p0, transforms=self._train_transforms, return_img_pair=self._unsupervised)
+            self._train_set = ImagePairHomographyDataset(self._train_df, self._prefix, self._rho, self._crp_shape, self._p0, self._rnd_time_sample, transforms=self._train_transforms, return_img_pair=self._unsupervised)
             seeds = np.arange(0, len(self._val_df)).tolist() # assure validation set is seeded the same for all epochs
-            self._val_set = ImagePairHomographyDataset(self._val_df, self._prefix, self._rho, self._crp_shape, self._p0, transforms=self._val_transforms, seeds=seeds, return_img_pair=True)
+            self._val_set = ImagePairHomographyDataset(self._val_df, self._prefix, self._rho, self._crp_shape, self._p0, self._rnd_time_sample, transforms=self._val_transforms, seeds=seeds, return_img_pair=True)
         if stage == 'test' or stage is None:
             seeds = np.arange(0, len(self._test_df)).tolist() # assure test set is seeded the same for all runs
-            self._test_set = ImagePairHomographyDataset(self._test_df, self._prefix, self._rho, self._crp_shape, self._p0, seeds=seeds, return_img_pair=self._unsupervised) # for final evaluation
+            self._test_set = ImagePairHomographyDataset(self._test_df, self._prefix, self._rho, self._crp_shape, self._p0, self._rnd_time_sample, seeds=seeds, return_img_pair=self._unsupervised) # for final evaluation
 
     def transfer_batch_to_device(self, batch, device):
         batch['img_crp'] = batch['img_crp'].to(device)
