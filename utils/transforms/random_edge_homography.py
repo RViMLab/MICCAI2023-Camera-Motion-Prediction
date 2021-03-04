@@ -218,7 +218,7 @@ class RandomEdgeHomography(object):
         inside = True
         n_pts = polygon.shape[0]
         polygon = MultiPoint(polygon).convex_hull
-        if len(polygon.exterior.coords) is not n_pts + 1:  # return false in case polygon is not properly computed
+        if polygon.type is not 'Polygon':  # return false in case polygon is not properly computed, e.g. if all points are the same
             return False
         for p in pts:
             p = Point(p)
