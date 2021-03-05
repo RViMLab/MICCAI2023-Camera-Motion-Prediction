@@ -11,16 +11,45 @@ from utils.transforms import dictListToAugment
 
 
 class ImagePairHomographyDataModule(pl.LightningDataModule):
-    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, rho: int=32, crp_shape: List[int]=[480, 640], p0: float=0., seq_len: int=2, unsupervised: bool=False, random_state: int=42, train_transforms: List[dict]=None, val_transforms: List[dict]=None):
+    def __init__(self, 
+        df: pd.DataFrame, 
+        prefix: str, 
+        train_split: float, 
+        batch_size: int, 
+        num_workers: int=2, 
+        rho: int=32, 
+        crp_shape: List[int]=[480, 640], 
+        p0: float=0., 
+        seq_len: int=2, 
+        unsupervised: bool=False, 
+        random_state: int=42, 
+        train_transforms: List[dict]=None, 
+        val_transforms: List[dict]=None, 
+        tolerance: float = 0.05
+    ):
         super().__init__()
-        self._train_df, self._val_df = train_test_split(
-            df[df['test'] == False].reset_index(), 
-            train_size=train_split, 
+        # split into train and test set
+        self._train_df = df[df['test'] == False]
+        self._test_df = df[df['test'] == True].reset_index()
+
+        # further split train into train and validation set
+        unique_vid = self._train_df.vid.unique()
+
+        train_vid, val_vid = train_test_split(
+            unique_vid,
+            train_size=train_split,
             random_state=random_state
         )
-        self._train_df = self._train_df.reset_index()
-        self._val_df = self._val_df.reset_index()
-        self._test_df = df[df['test'] == True].reset_index()
+
+        self._val_df = self._train_df[self._train_df.vid.apply(lambda x: x in val_vid)].reset_index()
+        self._train_df = self._train_df[self._train_df.vid.apply(lambda x: x in train_vid)].reset_index()
+
+        # assert if fraction off
+        fraction = len(self._val_df)/len(self._train_df)
+        assert np.isclose(
+            fraction, 1 - train_split, atol=tolerance
+        ), 'Train set fraction {:.3f} not close enough to train_split {} at tolerance {}'.format(fraction, train_split, tolerance)
+
         self._prefix = prefix
         self._batch_size = batch_size
         self._num_workers = num_workers
