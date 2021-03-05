@@ -11,23 +11,52 @@ from utils.transforms import dictListToAugment
 
 
 class ImagePairHomographyDataModule(pl.LightningDataModule):
-    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, rho: int=32, crp_shape: List[int]=[480, 640], p0: float=0., rnd_time_sample: bool=True, unsupervised: bool=False, random_state: int=42, train_transforms: List[dict]=None, val_transforms: List[dict]=None):
+    def __init__(self, 
+        df: pd.DataFrame, 
+        prefix: str, 
+        train_split: float, 
+        batch_size: int, 
+        num_workers: int=2, 
+        rho: int=32, 
+        crp_shape: List[int]=[480, 640], 
+        p0: float=0., 
+        seq_len: int=2, 
+        unsupervised: bool=False, 
+        random_state: int=42, 
+        train_transforms: List[dict]=None, 
+        val_transforms: List[dict]=None, 
+        tolerance: float = 0.05
+    ):
         super().__init__()
-        self._train_df, self._val_df = train_test_split(
-            df[df['test'] == False].reset_index(), 
-            train_size=train_split, 
+        # split into train and test set
+        self._train_df = df[df['test'] == False]
+        self._test_df = df[df['test'] == True].reset_index()
+
+        # further split train into train and validation set
+        unique_vid = self._train_df.vid.unique()
+
+        train_vid, val_vid = train_test_split(
+            unique_vid,
+            train_size=train_split,
             random_state=random_state
         )
-        self._train_df = self._train_df.reset_index()
-        self._val_df = self._val_df.reset_index()
-        self._test_df = df[df['test'] == True].reset_index()
+
+        self._val_df = self._train_df[self._train_df.vid.apply(lambda x: x in val_vid)].reset_index()
+        self._train_df = self._train_df[self._train_df.vid.apply(lambda x: x in train_vid)].reset_index()
+
+        # assert if fraction off
+        fraction = len(self._val_df)/len(self._train_df)
+        assert np.isclose(
+            fraction, 1 - train_split, atol=tolerance
+        ), 'Train set fraction {:.3f} not close enough to train_split {} at tolerance {}'.format(fraction, train_split, tolerance)
+
         self._prefix = prefix
         self._batch_size = batch_size
         self._num_workers = num_workers
         self._rho = rho
         self._crp_shape = crp_shape
         self._p0 = p0
-        self._rnd_time_sample = rnd_time_sample
+        self._seq_len = seq_len
         self._unsupervised = unsupervised
 
         self._train_transforms = dictListToAugment(train_transforms)
@@ -35,12 +64,12 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
-            self._train_set = ImagePairHomographyDataset(self._train_df, self._prefix, self._rho, self._crp_shape, self._p0, self._rnd_time_sample, transforms=self._train_transforms, return_img_pair=self._unsupervised)
+            self._train_set = ImagePairHomographyDataset(self._train_df, self._prefix, self._rho, self._crp_shape, self._p0, self._seq_len, transforms=self._train_transforms, return_img_pair=self._unsupervised)
             seeds = np.arange(0, len(self._val_df)).tolist() # assure validation set is seeded the same for all epochs
-            self._val_set = ImagePairHomographyDataset(self._val_df, self._prefix, self._rho, self._crp_shape, self._p0, self._rnd_time_sample, transforms=self._val_transforms, seeds=seeds, return_img_pair=True)
+            self._val_set = ImagePairHomographyDataset(self._val_df, self._prefix, self._rho, self._crp_shape, self._p0, self._seq_len, transforms=self._val_transforms, seeds=seeds, return_img_pair=True)
         if stage == 'test' or stage is None:
             seeds = np.arange(0, len(self._test_df)).tolist() # assure test set is seeded the same for all runs
-            self._test_set = ImagePairHomographyDataset(self._test_df, self._prefix, self._rho, self._crp_shape, self._p0, self._rnd_time_sample, seeds=seeds, return_img_pair=self._unsupervised) # for final evaluation
+            self._test_set = ImagePairHomographyDataset(self._test_df, self._prefix, self._rho, self._crp_shape, self._p0, self._seq_len, seeds=seeds, return_img_pair=self._unsupervised) # for final evaluation
 
     def transfer_batch_to_device(self, batch, device):
         batch['img_crp'] = batch['img_crp'].to(device)
@@ -64,14 +93,27 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
 
 if __name__ == '__main__':
     import os
+    from dotmap import DotMap
+    import time
+    
+    from utils.io import load_yaml
 
-    prefix = '/media/martin/Samsung_T5/data/endoscopic_data/camera_motion_separated_png/without_camera_motion'
-    pkl_name = 'log_without_camera_motion_seq_len_25.pkl'
+    server = 'local'
+    server = DotMap(load_yaml('configs/servers.yml')[server])
+    prefix = os.path.join(server.database.location, 'camera_motion_separated_png/without_camera_motion')
+
+    pkl_name = 'light_log_without_camera_motion.pkl'
+    # pkl_name = 'log_without_camera_motion_seq_len_2.pkl'
     df = pd.read_pickle(os.path.join(prefix, pkl_name))
 
     cdm = ImagePairHomographyDataModule(df, prefix, train_split=0.8, batch_size=64, num_workers=0, rho=32, crp_shape=[320, 240])
+    # cdm = ImagePairHomographyDataModuleSequenceDf(df, prefix, train_split=0.8, batch_size=64, num_workers=0, rho=32, crp_shape=[320, 240])
     cdm.setup()
     train_dl = cdm.train_dataloader()
 
+    start = time.time_ns()
     for idx, batch in enumerate(train_dl):
         print('\ridx: {}, crp shape: {}, wrp shape: {}, len: {}'.format(idx, batch['img_crp'].shape, batch['wrp_crp'].shape, len(batch)), end='')
+        if idx == 9:
+            break
+    print('\nTime taken: {}'.format((time.time_ns() - start)/1.e9))
