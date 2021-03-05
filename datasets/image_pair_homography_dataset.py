@@ -262,3 +262,47 @@ class ImagePairHomographyDatasetSequenceDf(Dataset):
 
     def __len__(self):
         return len(self._df)
+
+
+if __name__ == '__main__':
+    import os
+    import numpy as np
+    import pandas as pd
+    from dotmap import DotMap
+    import imageio
+    import cv2
+
+    from utils.io import load_yaml
+
+    server = 'local'
+    server = DotMap(load_yaml('configs/servers.yml')[server])
+    prefix = os.path.join(server.database.location, 'camera_motion_separated_png/without_camera_motion')
+
+    pkl_name = 'light_log_without_camera_motion.pkl'
+    df = pd.read_pickle(os.path.join(prefix, pkl_name))
+    seq_len = 25
+
+    col = 'vid'
+    grouped_df = df.groupby(col)
+    idcs = grouped_df.apply(lambda x: x.iloc[seq_len-1:len(x) - (seq_len - 1)]).index.get_level_values(1)
+    print(len(idcs))
+
+    dummy_idx = 0
+    print(idcs[dummy_idx])
+
+    # sample
+    print(df.loc[idcs[dummy_idx]])
+
+    # random index
+    rnd_idcs = np.random.choice(np.arange(dummy_idx, dummy_idx+seq_len), 2, replace=(seq_len == 1))
+    print(rnd_idcs)
+
+    # sample
+    file_pair = df.loc[idcs[rnd_idcs]]
+    print(file_pair)
+
+    # load
+    for _, row in file_pair.iterrows():
+        img = imageio.imread(os.path.join(prefix, row.folder, row.file))
+        cv2.imshow('img', img)
+        cv2.waitKey()
