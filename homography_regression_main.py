@@ -41,6 +41,7 @@ if __name__ == '__main__':
         'rho': configs['data']['rho'],
         'crp_shape': configs['data']['crp_shape'],
         'p0': configs['data']['p0'],
+        'rnd_time_sample': configs['data']['rnd_time_sample'],
         'unsupervised': configs['data']['unsupervised'],
         'train_transforms': configs['data']['train_transforms'],
         'val_transforms': configs['data']['val_transforms']
