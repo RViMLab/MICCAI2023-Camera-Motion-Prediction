@@ -20,7 +20,7 @@ data:
     rho: 128
     crp_shape: [240, 320]
     p0: 0.05
-    rnd_time_sample: True
+    seq_len: 2
     unsupervised: False
     train_transforms: # augmentations from imgaug https://imgaug.readthedocs.io/en/latest/source/overview_of_augmenters.html
         - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',             'kwargs': {'size': {'height': 306, 'width': 408}}}
