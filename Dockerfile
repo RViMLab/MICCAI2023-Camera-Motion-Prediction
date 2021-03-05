@@ -1,7 +1,7 @@
 # Start from nvidia base image 
 # - cuda only: https://hub.docker.com/r/nvidia/cuda
 # - torch: https://ngc.nvidia.com/catalog/containers/nvidia:pytorch has conda by default
-FROM pytorch/conda-builder:cuda101
+FROM nvcr.io/nvidia/pytorch:20.12-py3
 
 # OpenCV bug https://github.com/NVIDIA/nvidia-docker/issues/864 
 RUN yum install -y libSM libXext libXrender
