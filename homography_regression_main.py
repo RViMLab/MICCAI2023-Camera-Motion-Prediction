@@ -73,7 +73,8 @@ if __name__ == '__main__':
         limit_test_batches=configs['trainer']['limit_test_batches'],
         gpus=configs['trainer']['gpus'],
         fast_dev_run=configs['trainer']['fast_dev_run'],
-        profiler=configs['trainer']['profiler']
+        profiler=configs['trainer']['profiler'],
+        distributed_backend=configs['trainer']['distributed_backend']
     )
 
     # fit and validation

@@ -10,6 +10,7 @@ trainer:
     limit_test_batches: 1.0
     fast_dev_run: False
     profiler: False
+    distributed_backend: null
 data:
     pkl_name: 'light_log_without_camera_motion.pkl'
     pkl_path: 'camera_motion_separated_png/without_camera_motion'

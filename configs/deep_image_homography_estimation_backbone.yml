@@ -2,21 +2,22 @@ experiment: 'deep_image_homography_estimation_backbone'
 lightning_module: 'DeepImageHomographyEstimationModuleBackbone'
 lightning_data_module: 'ImagePairHomographyDataModule'
 trainer:
-    gpus: 1
-    max_epochs: 50
-    log_every_n_steps: 100
+    gpus: [0, 1]
+    max_epochs: 500
+    log_every_n_steps: 50
     limit_train_batches: 1.0
     limit_val_batches: 1.0
     limit_test_batches: 1.0
     fast_dev_run: False
     profiler: False
+    distributed_backend: 'ddp'
 data:
     pkl_name: 'light_log_without_camera_motion.pkl'
     pkl_path: 'camera_motion_separated_png/without_camera_motion'
     train_split: 0.8
     random_state: 42
-    batch_size: 128
-    num_workers: 4
+    batch_size: 108
+    num_workers: 8
     rho: 256
     crp_shape: [480, 640]
     p0: 0.05
@@ -37,5 +38,5 @@ model:
     shape: [3, 480, 640]
     lr: 1.e-4
     betas: [0.9, 0.999]
-    log_n_steps: 1000
+    log_n_steps: 500
     backbone: 'resnet34'
