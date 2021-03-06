@@ -82,10 +82,10 @@ class ImagePairHomographyDataset(Dataset):
 
         # randomly sample image pair
         np.random.seed(seed)
-        idcs = np.random.choice(np.arange(idx, idx+self._seq_len), 2, replace=(self._seq_len == 1))  # static if self._seq_len = 1
+        idcs = self._idcs[idx] + np.random.choice(np.arange(seq_len), 2, replace=(seq_len == 1))  # static if self._seq_len = 1
         np.random.seed(None)
 
-        file_pair = self._df.loc[self._idcs[idcs]]
+        file_pair = self._df.loc[idcs]
 
         for _, row in file_pair.iterrows():
             img = imageio.imread(os.path.join(self._prefix, row.folder, row.file))
@@ -280,7 +280,7 @@ if __name__ == '__main__':
 
     pkl_name = 'light_log_without_camera_motion.pkl'
     df = pd.read_pickle(os.path.join(prefix, pkl_name))
-    seq_len = 25
+    seq_len = 25  # static if seq_len = 1
 
     col = 'vid'
     grouped_df = df.groupby(col)
@@ -294,11 +294,11 @@ if __name__ == '__main__':
     print(df.loc[idcs[dummy_idx]])
 
     # random index
-    rnd_idcs = np.random.choice(np.arange(dummy_idx, dummy_idx+seq_len), 2, replace=(seq_len == 1))
+    rnd_idcs = idcs[dummy_idx] + np.random.choice(np.arange(seq_len), 2, replace=(seq_len == 1))
     print(rnd_idcs)
 
     # sample
-    file_pair = df.loc[idcs[rnd_idcs]]
+    file_pair = df.loc[rnd_idcs]
     print(file_pair)
 
     # load
