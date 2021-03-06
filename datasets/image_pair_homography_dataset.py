@@ -82,7 +82,7 @@ class ImagePairHomographyDataset(Dataset):
 
         # randomly sample image pair
         np.random.seed(seed)
-        idcs = self._idcs[idx] + np.random.choice(np.arange(seq_len), 2, replace=(seq_len == 1))  # static if self._seq_len = 1
+        idcs = self._idcs[idx] + np.random.choice(np.arange(self._seq_len), 2, replace=(self._seq_len == 1))  # static if self._seq_len = 1
         np.random.seed(None)
 
         file_pair = self._df.loc[idcs]
