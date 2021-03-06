@@ -11,7 +11,7 @@ trainer:
     fast_dev_run: False
     profiler: False
 data:
-    pkl_name: 'log_without_camera_motion_seq_len_2.pkl'
+    pkl_name: 'light_log_without_camera_motion.pkl'
     pkl_path: 'camera_motion_separated_png/without_camera_motion'
     train_split: 0.8
     random_state: 42
