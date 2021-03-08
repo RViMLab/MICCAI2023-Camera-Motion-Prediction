@@ -42,6 +42,14 @@ class RandomEdgeHomography(object):
     def seed_idx(self, seed_idx: int):
         self._seed_idx = seed_idx
 
+    @property
+    def rho(self):
+        return self._rho
+
+    @rho.setter
+    def rho(self, rho):
+        self._rho = rho
+
     def __call__(self, img: np.array):
         r"""Compute the random homographies.
 
