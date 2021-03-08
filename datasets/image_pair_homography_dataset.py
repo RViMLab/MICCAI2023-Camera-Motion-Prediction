@@ -60,7 +60,8 @@ class ImagePairHomographyDataset(Dataset):
                 raise Exception('In ImagePairHomographyDataset: Length of dataframe must equal length of seeds.')
         
         self._df = df
-        self._prefix = prefix   
+        self._prefix = prefix
+        self._rho = rho
         self._reh = RandomEdgeHomography(rho=rho, crp_shape=crp_shape, p0=p0, homography_return=HOMOGRAPHY_RETURN.DATASET, seeds=seeds)
         if seq_len < 1:
             raise ValueError('Sequence length {} must be greater or equal 1.'.format(seq_len))
@@ -70,6 +71,15 @@ class ImagePairHomographyDataset(Dataset):
         self._return_image_pair = return_img_pair
         self._idcs = self._filterFeasibleSequenceIndices(self._df, col='vid', seq_len=self._seq_len)
         self._tt = ToTensor()
+
+    @property
+    def rho(self):
+        return self._rho
+
+    @rho.setter
+    def rho(self, rho):
+        self._rho = rho
+        self._reh.rho = rho
 
     def __getitem__(self, idx):
         img_pair = []

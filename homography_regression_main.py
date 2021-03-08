@@ -8,6 +8,7 @@ import torch
 from utils.io import load_yaml, save_yaml, generate_path
 from lightning_modules import homography_regression
 import lightning_data_modules
+from lightning_callbacks import RhoCallback
 
 
 if __name__ == '__main__':
@@ -64,16 +65,23 @@ if __name__ == '__main__':
     generate_path(logger.log_dir)
     save_yaml(os.path.join(logger.log_dir, 'configs.yml'), configs)
 
+    # callback for homography augmentation edge deviation change
+    callbacks = None
+    if configs['callback'] is not None:
+        callbacks = [RhoCallback(configs['callback']['rhos'], configs['callback']['epochs'])]
+
     trainer = pl.Trainer(
         max_epochs=configs['trainer']['max_epochs'],
         logger=logger,
+        callbacks=callbacks,
         log_every_n_steps=configs['trainer']['log_every_n_steps'],
         limit_train_batches=configs['trainer']['limit_train_batches'],
         limit_val_batches=configs['trainer']['limit_val_batches'],
         limit_test_batches=configs['trainer']['limit_test_batches'],
         gpus=configs['trainer']['gpus'],
         fast_dev_run=configs['trainer']['fast_dev_run'],
-        profiler=configs['trainer']['profiler']
+        profiler=configs['trainer']['profiler'],
+        distributed_backend=configs['trainer']['distributed_backend']
     )
 
     # fit and validation

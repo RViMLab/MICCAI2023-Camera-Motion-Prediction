@@ -62,6 +62,17 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
         self._train_transforms = dictListToAugment(train_transforms)
         self._val_transforms = dictListToAugment(val_transforms)
 
+    @property
+    def rho(self):
+        return self._rho
+
+    @rho.setter
+    def rho(self, rho: int):
+        self._rho = rho
+        self._train_set.rho = rho
+        self._val_set.rho = rho
+        self._test_set.rho = rho
+
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
             self._train_set = ImagePairHomographyDataset(self._train_df, self._prefix, self._rho, self._crp_shape, self._p0, self._seq_len, transforms=self._train_transforms, return_img_pair=self._unsupervised)

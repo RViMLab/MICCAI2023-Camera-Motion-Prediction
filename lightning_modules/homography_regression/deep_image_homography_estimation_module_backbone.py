@@ -74,10 +74,10 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
 
             figure = warp_figure(
                 img=tensor_to_image(batch['img_pair'][0][0]), 
-                uv=batch['uv'][0].squeeze().numpy(), 
+                uv=batch['uv'][0].squeeze().cpu().numpy(), 
                 duv=batch['duv'][0].squeeze().cpu().numpy(), 
                 duv_pred=duv_pred[0].squeeze().cpu().numpy(), 
-                H=batch['H'][0].squeeze().numpy()
+                H=batch['H'][0].squeeze().cpu().numpy()
             )
             self.logger.experiment.add_figure('val/wrp', figure, self.validation_step_ct)
         self.validation_step_ct += 1
