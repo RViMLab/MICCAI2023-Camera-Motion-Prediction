@@ -17,8 +17,8 @@ class RhoCallback(pl.Callback):
         self._rhos = rhos
         self._epochs = epochs
 
-    def on_epoch_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule):
-        if trainer.max_epochs > max(self._epochs):
+    def on_epoch_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule):
+        if trainer.max_epochs < max(self._epochs):
             warnings.warn("Epoch change list tries to callback at epoch {} greater than trainer's max epoch  {}".format(max(self._epochs), trainer.max_epochs), UserWarning)
 
         idx = bisect.bisect_right(self._epochs, trainer.current_epoch) - 1  # lightning indexing [0, ..., N-1] epochs
