@@ -103,7 +103,7 @@ if __name__ == '__main__':
     prefix = os.path.join(server.database.location, 'camera_motion_separated_png/without_camera_motion')
 
     pkl_name = 'light_log_without_camera_motion.pkl'
-    # pkl_name = 'log_without_camera_motion_seq_len_2.pkl'
+    # pkl_name = 'light_log_without_camera_motion.pkl'
     df = pd.read_pickle(os.path.join(prefix, pkl_name))
 
     cdm = ImagePairHomographyDataModule(df, prefix, train_split=0.8, batch_size=64, num_workers=0, rho=32, crp_shape=[320, 240])
