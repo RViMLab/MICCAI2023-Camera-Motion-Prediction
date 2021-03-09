@@ -50,6 +50,7 @@ class PredictiveHorizonModule(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self._model.parameters(), lr=self._lr, betas=self._betas)
+        return optimizer
 
     def forward(self, img):
         r"""Forward first images.
