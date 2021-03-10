@@ -285,7 +285,7 @@ if __name__ == '__main__':
     from utils.io import load_yaml
 
     server = 'local'
-    server = DotMap(load_yaml('configs/servers.yml')[server])
+    server = DotMap(load_yaml('config/servers.yml')[server])
     prefix = os.path.join(server.database.location, 'camera_motion_separated_png/without_camera_motion')
 
     pkl_name = 'light_log_without_camera_motion.pkl'

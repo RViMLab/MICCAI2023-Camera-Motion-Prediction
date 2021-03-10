@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--server', type=str, required=True)
-    parser.add_argument('-d', '--databases', type=str, default='configs/high_fps_without_camera_motion_videos_transforms.yml')
+    parser.add_argument('-d', '--databases', type=str, default='config/high_fps_without_camera_motion_videos_transforms.yml')
     parser.add_argument('-o', '--output_folder', type=str, required=True)
     parser.add_argument('-l', '--log', type=str, default='log_with_camera_motion')
     parser.add_argument('--stride', type=int, default=1)
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('--seq_len', type=int, default=1)
     args = parser.parse_args()
 
-    servers = load_yaml('configs/servers.yml')
+    servers = load_yaml('config/servers.yml')
     server = args.server
 
     # dict of videos

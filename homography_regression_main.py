@@ -14,7 +14,7 @@ from lightning_callbacks import RhoCallback
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-sf', '--servers_file', type=str, default='configs/servers.yml', help='Servers file.')
+    parser.add_argument('-sf', '--servers_file', type=str, default='config/servers.yml', help='Servers file.')
     parser.add_argument('-s', '--server', type=str, default='local', help='Specify server.')
     parser.add_argument('-c', '--configs', type=str, required=True, help='Path to configuration file.')
     parser.add_argument('-f', '--find_lr', action='store_true')
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         'unsupervised': configs['data']['unsupervised'],
         'train_transforms': configs['data']['train_transforms'],
         'val_transforms': configs['data']['val_transforms']
-    } 
+    }
 
     dm = getattr(lightning_data_modules, configs['lightning_data_module'])(**kwargs)
     dm.setup()
@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
     # save configs
     generate_path(logger.log_dir)
-    save_yaml(os.path.join(logger.log_dir, 'configs.yml'), configs)
+    save_yaml(os.path.join(logger.log_dir, 'config.yml'), configs)
 
     # callback for homography augmentation edge deviation change
     callbacks = None

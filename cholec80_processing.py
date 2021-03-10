@@ -7,7 +7,7 @@ from utils.io import scan2df, save_yaml, load_yaml
 from utils import endoscopy
 
 if __name__ == '__main__':
-    servers = load_yaml('configs/servers.yml')
+    servers = load_yaml('config/servers.yml')
     server = 'rvim_server'
 
     prefix = servers[server]['database']['location']
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     offset = 5
 
     # output
-    out_prefix = os.path.join(os.getcwd(), 'configs')
+    out_prefix = os.path.join(os.getcwd(), 'config')
     out_file = 'cholec80_transforms.yml'
 
     dsize = [640, 480] # opencv convention for resize output

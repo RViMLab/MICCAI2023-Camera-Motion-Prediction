@@ -12,7 +12,7 @@ import lightning_modules
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-sf', '--servers_file', type=str, default='configs/servers.yml', help='Servers file.')
+    parser.add_argument('-sf', '--servers_file', type=str, default='config/servers.yml', help='Servers file.')
     parser.add_argument('-s', '--server', type=str, default='local', help='Specify server.')
     parser.add_argument('-c', '--configs', type=str, required=True, help='Path to configuration file.')
     parser.add_argument('-bp', '--backbone_path', type=str, required=True, help='Path to log folders, relative to server logging location.')
@@ -21,12 +21,12 @@ if __name__ == '__main__':
     servers = load_yaml(args.servers_file)
     server = servers[args.server]
 
-    config_path = server['configs']['location']
+    config_path = server['config']['location']
 
     configs = load_yaml(args.configs)
 
     # append configs by backbone
-    backbone_configs = load_yaml(os.path.join(server['logging']['location'], args.backbone_path, 'configs.yml'))
+    backbone_configs = load_yaml(os.path.join(server['logging']['location'], args.backbone_path, 'config.yml'))
     df = scan2df(os.path.join(server['logging']['location'], args.backbone_path, 'checkpoints'), '.ckpt')
     ckpts = sorted(list(df['file']), key=natural_keys)
     configs['model']['homography_regression'] = {
@@ -42,9 +42,9 @@ if __name__ == '__main__':
     meta_df = pd.read_pickle(os.path.join(config_path, configs['data']['meta_df']))[:configs['data']['subset_length']]
 
     # load video meta data if existing, returns None if none existent
-    train_md = load_pickle(os.path.join(server['configs']['location'], configs['data']['train_metadata']))
-    val_md = load_pickle(os.path.join(server['configs']['location'], configs['data']['val_metadata']))
-    test_md = load_pickle(os.path.join(server['configs']['location'], configs['data']['test_metadata']))
+    train_md = load_pickle(os.path.join(server['config']['location'], configs['data']['train_metadata']))
+    val_md = load_pickle(os.path.join(server['config']['location'], configs['data']['val_metadata']))
+    test_md = load_pickle(os.path.join(server['config']['location'], configs['data']['test_metadata']))
 
     # load specific data module
     kwargs = {
@@ -67,9 +67,9 @@ if __name__ == '__main__':
 
     train_md, val_md, test_md = dm.setup()
 
-    save_pickle(os.path.join(server['configs']['location'], configs['data']['train_metadata']), train_md)
-    save_pickle(os.path.join(server['configs']['location'], configs['data']['val_metadata']), val_md)
-    save_pickle(os.path.join(server['configs']['location'], configs['data']['test_metadata']), test_md)
+    save_pickle(os.path.join(server['config']['location'], configs['data']['train_metadata']), train_md)
+    save_pickle(os.path.join(server['config']['location'], configs['data']['val_metadata']), val_md)
+    save_pickle(os.path.join(server['config']['location'], configs['data']['test_metadata']), test_md)
 
     # load specific module
     kwargs = {k: v for k, v in configs['model'].items() if k not in 'homography_regression'}  # exclude homography regression from kwargs
@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
     # save configs
     generate_path(logger.log_dir)
-    save_yaml(os.path.join(logger.log_dir, 'configs.yml'), configs)
+    save_yaml(os.path.join(logger.log_dir, 'config.yml'), configs)
     meta_df.to_pickle(os.path.join(logger.log_dir, configs['data']['meta_df']))
 
     # save backup

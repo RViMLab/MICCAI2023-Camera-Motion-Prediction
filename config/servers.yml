@@ -1,20 +1,20 @@
 local: 
-    configs:
-        location: '/home/martin/Documents/code_snippets/homography_imitation_learning/configs'
+    config:
+        location: '/home/martin/Documents/code_snippets/homography_imitation_learning/config'
     database:
         location: '/media/martin/Samsung_T5/data/endoscopic_data'
     logging:
         location: '/media/martin/Samsung_T5/logs'
 dgx1-1:
-    configs:
-        location: '/workspace/homography_imitation_learning/configs'
+    config:
+        location: '/workspace/homography_imitation_learning/config'
     database: 
         location: '/nfs/home/mhuber/data/endoscopic_data'
     logging:
         location: '/nfs/home/mhuber/tresorit/homography_imitation_learning_logs'
 rvim_server:
-    configs:
-        location: '/home/martin/proj/homography_imitation_learning/configs'
+    config:
+        location: '/home/martin/proj/homography_imitation_learning/config'
     database:
         location: '/media/raid/martin/endoscopic_data'
     logging:
