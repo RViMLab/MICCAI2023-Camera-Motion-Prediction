@@ -17,6 +17,7 @@ if __name__ == '__main__':
     parser.add_argument('-sf', '--servers_file', type=str, default='configs/servers.yml', help='Servers file.')
     parser.add_argument('-s', '--server', type=str, default='local', help='Specify server.')
     parser.add_argument('-c', '--configs', type=str, required=True, help='Path to configuration file.')
+    parser.add_argument('-f', '--find_lr', action='store_true')
     args = parser.parse_args()
 
     servers = load_yaml(args.servers_file)
@@ -61,6 +62,10 @@ if __name__ == '__main__':
         name=configs['experiment']
     )
 
+    # save configs
+    generate_path(logger.log_dir)
+    save_yaml(os.path.join(logger.log_dir, 'configs.yml'), configs)
+
     # callback for homography augmentation edge deviation change
     callbacks = None
     if configs['callback'] is not None:
@@ -81,19 +86,16 @@ if __name__ == '__main__':
     )
 
     # find learning rate
-    lr_finder = trainer.tuner.lr_find(module, dm, max_lr=10)
-    fig = lr_finder.plot(suggest=True)
+    if args.find_lr:
+        print('Finding learning rate...')
+        lr_finder = trainer.tuner.lr_find(module, dm, max_lr=10)
+        fig = lr_finder.plot(suggest=True)
 
-    configs['model']['lr'] = lr_finder.suggestion()
-    module.lr = lr_finder.suggestion()
-    logger.experiment.add_figure('init/learning_rate_finder', fig, trainer.global_step)
+        logger.experiment.add_figure('init/learning_rate_finder', fig, trainer.global_step)
+        print('Done.')
+    else:
+        # fit and validation
+        trainer.fit(module, dm)
 
-    # save configs
-    generate_path(logger.log_dir)
-    save_yaml(os.path.join(logger.log_dir, 'configs.yml'), configs)
-
-    # fit and validation
-    trainer.fit(module, dm)
-
-    # test
-    trainer.test()
+        # test
+        trainer.test()
