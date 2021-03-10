@@ -189,16 +189,16 @@ class ImagePairHomographyDatasetSequenceDf(Dataset):
         Legacy code.
     """
     def __init__(self, 
-        df: pd.DataFrame, 
-        prefix: str, 
-        rho: int, 
-        crp_shape: List[int],
-        p0: float=0., 
-        rnd_time_sample: bool=True, 
-        transforms: Callable=None, 
-        seeds: List[np.int32]=None, 
-        return_img_pair: bool=True
-    ) -> None:
+            df: pd.DataFrame, 
+            prefix: str, 
+            rho: int, 
+            crp_shape: List[int],
+            p0: float=0., 
+            rnd_time_sample: bool=True, 
+            transforms: Callable=None, 
+            seeds: List[np.int32]=None, 
+            return_img_pair: bool=True
+        ) -> None:
         if seeds:
             if (len(df) != len(seeds)):
                 raise Exception('In ImagePairHomographyDatasetSequenceDf: Length of dataframe must equal length of seeds.')

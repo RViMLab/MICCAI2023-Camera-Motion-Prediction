@@ -7,7 +7,17 @@ from torchvision.datasets.video_utils import VideoClips
 
 
 class VideoDataset(Dataset):
-    def __init__(self, video_paths: List[str], clip_length_in_frames: int=25, frames_between_clips: int=1, frame_rate: int=1, precomputed_metadata: dict=None, num_workers: int=0, pre_transforms: List[Callable]=None, aug_transforms: List[Callable]=None, seeds: bool=False) -> None:
+    def __init__(self, 
+        video_paths: List[str], 
+        clip_length_in_frames: int=25, 
+        frames_between_clips: int=1, 
+        frame_rate: int=1, 
+        precomputed_metadata: dict=None, 
+        num_workers: int=0, 
+        pre_transforms: List[Callable]=None, 
+        aug_transforms: List[Callable]=None, 
+        seeds: bool=False
+    ) -> None:
         r"""Dataset to load video clips with homographies
 
         Args:
@@ -51,12 +61,6 @@ class VideoDataset(Dataset):
             video = self._pre_transforms[video_idx](video)
 
         augmented_video = video.clone()
-        #  - else train subset on server
-        #  - if time annotate data
-        # methods:
-        #  - hs for next image
-        #  - hs for preview horizon
-        #  - change forward method of lightning module to take batch[0] -> frames_i
 
         # set seed if desired
         if self._seeds:

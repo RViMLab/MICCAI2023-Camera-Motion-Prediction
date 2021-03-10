@@ -10,7 +10,20 @@ from utils.transforms import anyDictListToCompose
 
 
 class VideoDataModule(pl.LightningDataModule):
-    def __init__(self, meta_df: pd.DataFrame, prefix: str, clip_length_in_frames: int=25, frames_between_clips: int=1, frame_rate: int=1, train_split: float=0.8, batch_size: int=32, num_workers: int=2, random_state: int=42, train_metadata: dict=None, val_metadata: dict=None, test_metadata: dict=None) -> None:
+    def __init__(self, 
+            meta_df: pd.DataFrame, 
+            prefix: str, 
+            clip_length_in_frames: int=25, 
+            frames_between_clips: int=1, 
+            frame_rate: int=1, 
+            train_split: float=0.8,
+            batch_size: int=32, 
+            num_workers: int=2, 
+            random_state: int=42, 
+            train_metadata: dict=None, 
+            val_metadata: dict=None, 
+            test_metadata: dict=None
+        ) -> None:
         r"""Pytorch Lightning datamodule for videos.
         
         Args:
