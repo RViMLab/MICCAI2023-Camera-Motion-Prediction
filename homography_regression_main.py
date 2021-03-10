@@ -90,6 +90,7 @@ if __name__ == '__main__':
         print('Finding learning rate...')
         lr_finder = trainer.tuner.lr_find(module, dm, max_lr=10)
         fig = lr_finder.plot(suggest=True)
+        fig.set_dpi(300)
 
         logger.experiment.add_figure('init/learning_rate_finder', fig, trainer.global_step)
         print('Done.')
