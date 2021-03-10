@@ -61,10 +61,6 @@ if __name__ == '__main__':
         name=configs['experiment']
     )
 
-    # save configs
-    generate_path(logger.log_dir)
-    save_yaml(os.path.join(logger.log_dir, 'configs.yml'), configs)
-
     # callback for homography augmentation edge deviation change
     callbacks = None
     if configs['callback'] is not None:
@@ -83,6 +79,18 @@ if __name__ == '__main__':
         profiler=configs['trainer']['profiler'],
         distributed_backend=configs['trainer']['distributed_backend']
     )
+
+    # find learning rate
+    lr_finder = trainer.tuner.lr_find(module, dm, max_lr=10)
+    fig = lr_finder.plot(suggest=True)
+
+    configs['model']['lr'] = lr_finder.suggestion()
+    module.lr = lr_finder.suggestion()
+    logger.experiment.add_figure('init/learning_rate_finder', fig, trainer.global_step)
+
+    # save configs
+    generate_path(logger.log_dir)
+    save_yaml(os.path.join(logger.log_dir, 'configs.yml'), configs)
 
     # fit and validation
     trainer.fit(module, dm)
