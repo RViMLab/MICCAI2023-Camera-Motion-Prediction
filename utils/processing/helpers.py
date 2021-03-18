@@ -61,7 +61,7 @@ def forward_backward_sequence(video: Union[np.ndarray, torch.Tensor], step: int=
     r"""Helper function to sample unique forward-backward images from image sequence.
 
     Args:
-        video (torch.Tensor): Image sequence of shape BxNxCxHxW
+        video (torch.Tensor): Image sequence of shape BxNxCxHxW, best to have even sequence length if step=2 and last_step=1, e.g. 6, 4
         step (int): Step between frames
         last_step (int): Last step in sequence
 
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     import torch
     import numpy as np
 
-    seq_len = 2
+    seq_len = 3
     step = 2
     last_step = 1
 
