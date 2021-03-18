@@ -59,7 +59,7 @@ class ImagePairHomographyDataset(Dataset):
             if (len(df) != len(seeds)):
                 raise Exception('In ImagePairHomographyDataset: Length of dataframe must equal length of seeds.')
         
-        self._df = df
+        self._df = df.sort_values(['vid', 'frame']).reset_index(drop=True)
         self._prefix = prefix
         self._rho = rho
         self._reh = RandomEdgeHomography(rho=rho, crp_shape=crp_shape, p0=p0, homography_return=HOMOGRAPHY_RETURN.DATASET, seeds=seeds)
