@@ -1,5 +1,6 @@
+import numpy as np
 import torch
-from typing import Tuple
+from typing import Tuple, Union
 from kornia import get_perspective_transform
 
 
@@ -55,3 +56,59 @@ def frame_pairs(video: torch.Tensor, step: int=1) -> Tuple[torch.Tensor, torch.T
     frames_ips = video[:,step::step]
     return frames_i, frames_ips
 
+
+def forward_backward_sequence(video: Union[np.ndarray, torch.Tensor], step: int=2, last_step: int=1) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
+    r"""Helper function to sample unique forward-backward images from image sequence.
+
+    Args:
+        video (torch.Tensor): Image sequence of shape BxNxCxHxW
+        step (int): Step between frames
+        last_step (int): Last step in sequence
+
+    Return:
+        forward (torch.Tensor): Forward image sequence
+        backward (troch.Tensor): Backward image sequence
+    """
+    forward  = video[:,:-last_step:step] 
+    backward = video[:,last_step::step]
+
+    if video.shape[1] - forward.shape[1] < last_step:
+        raise ValueError('Length of video must fit the last step. Decrease last_step or forward longer video.')
+
+    if isinstance(video, torch.Tensor):
+        forward  = torch.cat((forward, video[:,(forward.shape[1]-1)*step+last_step].unsqueeze(1)), axis=1)
+        backward = torch.cat((video[:,0].unsqueeze(1), backward), axis=1).flip(1)  # changed order of backward sequence
+    elif isinstance(video, np.ndarray):
+        forward  = np.concatenate((forward, np.expand_dims(video[:,(forward.shape[1]-1)*step+last_step], 1)), axis=1)
+        backward = np.concatenate((np.expand_dims(video[:,0], 1), backward), axis=1)[:,::-1]  # changed order of backward sequence
+    else:
+        raise ValueError('Unsupported type: {}'.format(type(video)))
+
+    return forward, backward
+
+
+if __name__ == '__main__':
+    import torch
+    import numpy as np
+
+    seq_len = 6
+    step = 2
+    last_step = 1
+
+    # np
+    dummy_vid = np.zeros([1,seq_len,1,2,2])
+    for i in range(seq_len):
+        dummy_vid[:, i] = i
+
+    forward, backward = forward_backward_sequence(dummy_vid, step, last_step)
+    print(forward)
+    print(backward)
+
+    # torch
+    dummy_vid = torch.zeros([1,seq_len,1,2,2])
+    for i in range(seq_len):
+        dummy_vid[:,i] = i
+
+    forward, backward = forward_backward_sequence(dummy_vid, step, last_step)
+    print(forward)
+    print(backward)
