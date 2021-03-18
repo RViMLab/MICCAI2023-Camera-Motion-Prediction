@@ -69,18 +69,18 @@ def forward_backward_sequence(video: Union[np.ndarray, torch.Tensor], step: int=
         forward (torch.Tensor): Forward image sequence
         backward (troch.Tensor): Backward image sequence
     """
-    forward  = video[:,:-last_step:step] 
-    backward = video[:,last_step::step]
-
-    if video.shape[1] - forward.shape[1] < last_step:
-        raise ValueError('Length of video must fit the last step. Decrease last_step or forward longer video.')
-
     if isinstance(video, torch.Tensor):
-        forward  = torch.cat((forward, video[:,(forward.shape[1]-1)*step+last_step].unsqueeze(1)), axis=1)
-        backward = torch.cat((video[:,0].unsqueeze(1), backward), axis=1).flip(1)  # changed order of backward sequence
+        forward  = video[:,:-last_step:step]
+        backward = video.flip(1)[:,:-last_step:step]  # flip video and run forward
+
+        forward  = torch.cat((forward, backward[:,0].unsqueeze(1)), axis=1)
+        backward = torch.cat((backward, forward[:,0].unsqueeze(1)), axis=1)
     elif isinstance(video, np.ndarray):
-        forward  = np.concatenate((forward, np.expand_dims(video[:,(forward.shape[1]-1)*step+last_step], 1)), axis=1)
-        backward = np.concatenate((np.expand_dims(video[:,0], 1), backward), axis=1)[:,::-1]  # changed order of backward sequence
+        forward  = video[:,:-last_step:step]
+        backward = video[:,::-1][:,:-last_step:step]  # flip video and run forward
+
+        forward  = np.concatenate((forward, np.expand_dims(backward[:,0],1)), axis=1)
+        backward = np.concatenate((backward, np.expand_dims(forward[:,0],1)), axis=1)
     else:
         raise ValueError('Unsupported type: {}'.format(type(video)))
 
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     import torch
     import numpy as np
 
-    seq_len = 6
+    seq_len = 2
     step = 2
     last_step = 1
 
