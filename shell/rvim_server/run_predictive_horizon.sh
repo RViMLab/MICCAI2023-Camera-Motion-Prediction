@@ -7,5 +7,5 @@ conda activate hil
 
 python /home/martin/proj/homography_imitation_learning/homography_imitation_main.py \
   --server rvim_server \
-  --configs configs/predictive_horizon_rvim_server.yml \
+  --configs config/predictive_horizon_rvim_server.yml \
   --backbone_path deep_image_homography_estimation_backbone/version_2

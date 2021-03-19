@@ -7,5 +7,5 @@ conda activate hil
 
 python /workspace/homography_imitation_learning/homography_imitation_main.py \
   --server dgx1-1 \
-  --configs configs/next_view_dgx.yml \
+  --configs config/next_view_dgx.yml \
   --backbone_path deep_image_homography_estimation_backbone/version_2

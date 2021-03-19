@@ -7,4 +7,4 @@ conda activate hil
 
 python /workspace/homography_imitation_learning/homography_regression_main.py \
   --server dgx1-1 \
-  --configs configs/deep_image_homography_estimation_backbone.yml
+  --configs config/deep_image_homography_estimation_backbone.yml
