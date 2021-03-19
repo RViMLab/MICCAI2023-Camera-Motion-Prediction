@@ -5,7 +5,7 @@ FROM nvcr.io/nvidia/pytorch:20.12-py3
 
 # OpenCV bug https://github.com/NVIDIA/nvidia-docker/issues/864 
 RUN apt-get update
-RUN apt-get install -y dialog apt-utils
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN apt-get install -y libsm6 libxext6 libxrender-dev
 
 ARG USER_ID
