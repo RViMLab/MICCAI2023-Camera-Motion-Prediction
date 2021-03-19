@@ -3,7 +3,7 @@ lightning_module: 'DeepImageHomographyEstimationModuleBackbone'
 lightning_data_module: 'ImagePairHomographyDataModule'
 trainer:
     gpus: 1
-    max_epochs: 500
+    max_epochs: 100
     log_every_n_steps: 100
     limit_train_batches: 0.001
     limit_val_batches: 0.001
@@ -21,8 +21,8 @@ data:
     num_workers: 4
     rho: 256
     crp_shape: [480, 640]
-    p0: 0.05
-    seq_len: 25
+    p0: 0.01
+    seq_len: 50
     unsupervised: False
     train_transforms: # augmentations from imgaug https://imgaug.readthedocs.io/en/latest/source/overview_of_augmenters.html
         - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',             'kwargs': {'size': {'height': 612, 'width': 816}}}
@@ -39,5 +39,7 @@ model:
     shape: [3, 480, 640]
     lr: 1.e-4
     betas: [0.9, 0.999]
+    milestones: [0]
+    gamma: 1.0
     log_n_steps: 1000
     backbone: 'resnet34'

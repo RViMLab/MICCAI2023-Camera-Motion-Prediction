@@ -9,39 +9,42 @@ from utils.viz import warp_figure
 
 class UnsupervisedDeepHomographyEstimationModuleBackbone(pl.LightningModule):
     
-    def __init__(self, shape: List[int], lr: float=1e-4, betas: List[float]=[0.9, 0.999], log_n_steps: int=1000, backbone: str='resnet34'):
+    def __init__(self, shape: List[int], lr: float=1e-4, betas: List[float]=[0.9, 0.999], milestones: List[int]=[0], gamma: float=1.0, log_n_steps: int=1000, backbone: str='resnet34'):
         super().__init__()
         self.save_hyperparameters('lr', 'betas', 'backbone')
-        self.model = getattr(models, backbone)(**{'pretrained': False})
+        self._model = getattr(models, backbone)(**{'pretrained': False})
 
         # modify in and out layers
-        self.model.conv1 = nn.Conv2d(
+        self._model.conv1 = nn.Conv2d(
             in_channels=6,
-            out_channels=self.model.conv1.out_channels,
-            kernel_size=self.model.conv1.kernel_size,
-            stride=self.model.conv1.stride,
-            padding=self.model.conv1.padding
+            out_channels=self._model.conv1.out_channels,
+            kernel_size=self._model.conv1.kernel_size,
+            stride=self._model.conv1.stride,
+            padding=self._model.conv1.padding
         )
-        self.model.fc = nn.Linear(
-            in_features=self.model.fc.in_features,
+        self._model.fc = nn.Linear(
+            in_features=self._model.fc.in_features,
             out_features=8
         )
 
-        self.mse_loss = nn.MSELoss()
-        self.distance_loss = nn.PairwiseDistance()
+        self._mse_loss = nn.MSELoss()
+        self._distance_loss = nn.PairwiseDistance()
 
-        self.lr = lr
-        self.betas = betas
-        self.validation_step_ct = 0
-        self.log_n_steps = log_n_steps
+        self._lr = lr
+        self._betas = betas
+        self._milestones = milestones
+        self._gamma = gamma
+        self._validation_step_ct = 0
+        self._log_n_steps = log_n_steps
 
     def forward(self, img, wrp):
         cat = torch.cat((img, wrp), dim=1)
-        return self.model(cat).view(-1,4,2)
+        return self._model(cat).view(-1,4,2)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr, betas=self.betas)
-        return optimizer
+        optimizer = torch.optim.Adam(self._model.parameters(), lr=self._lr, betas=self._betas)
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=self._milestones, gamma=self._gamma)
+        return [optimizer], [scheduler]
 
     def training_step(self, batch, batch_idx):
         duv_pred = self(batch['img_crp'], batch['wrp_crp'])
@@ -51,8 +54,8 @@ class UnsupervisedDeepHomographyEstimationModuleBackbone(pl.LightningModule):
         wrp_pred = warp_perspective(batch['img_pair'][0], torch.inverse(H_pred), batch['img_pair'][0].shape[-2:])
         wrp_crp_pred = crop_and_resize(wrp_pred, batch['uv'].flip(-1), batch['wrp_crp'].shape[-2:])
 
-        mse_loss = self.mse_loss(wrp_crp_pred, batch['wrp_crp'])
-        distance_loss = self.distance_loss(
+        mse_loss = self._mse_loss(wrp_crp_pred, batch['wrp_crp'])
+        distance_loss = self._distance_loss(
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
@@ -64,13 +67,13 @@ class UnsupervisedDeepHomographyEstimationModuleBackbone(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         duv_pred = self(batch['img_crp'], batch['wrp_crp'])
-        distance_loss = self.distance_loss(
+        distance_loss = self._distance_loss(
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
         self.log('val/distance', distance_loss, on_epoch=True)
 
-        if self.validation_step_ct % self.log_n_steps == 0:
+        if self._validation_step_ct % self._log_n_steps == 0:
             figure = warp_figure(
                 img=tensor_to_image(batch['img_pair'][0][0]), 
                 uv=batch['uv'][0].squeeze().cpu().numpy(), 
@@ -78,13 +81,13 @@ class UnsupervisedDeepHomographyEstimationModuleBackbone(pl.LightningModule):
                 duv_pred=duv_pred[0].squeeze().cpu().numpy(), 
                 H=batch['H'][0].squeeze().numpy()
             )
-            self.logger.experiment.add_figure('val/wrp', figure, self.validation_step_ct)
-        self.validation_step_ct += 1
+            self.logger.experiment.add_figure('val/wrp', figure, self._validation_step_ct)
+        self._validation_step_ct += 1
         return distance_loss
 
     def test_step(self, batch, batch_idx):
         duv_pred = self(batch['img_crp'], batch['wrp_crp'])
-        distance_loss = self.distance_loss(
+        distance_loss = self._distance_loss(
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
