@@ -14,7 +14,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-sf', '--servers_file', type=str, default='config/servers.yml', help='Servers file.')
     parser.add_argument('-s', '--server', type=str, default='local', help='Specify server.')
-    parser.add_argument('-c', '--configs', type=str, required=True, help='Path to configuration file.')
+    parser.add_argument('-c', '--config', type=str, required=True, help='Path to configuration file.')
     parser.add_argument('-bp', '--backbone_path', type=str, required=True, help='Path to log folders, relative to server logging location.')
     args = parser.parse_args()
 

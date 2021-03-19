@@ -7,4 +7,4 @@ conda activate hil
 
 python /home/martin/proj/homography_imitation_learning/homography_regression_main.py \
   --server rvim_server \
-  --configs config/unsupervised_deep_homography_estimation.yml
+  --config config/unsupervised_deep_homography_estimation.yml

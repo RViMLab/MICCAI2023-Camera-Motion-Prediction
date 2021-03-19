@@ -7,4 +7,4 @@ conda activate hil
 
 python /workspace/homography_imitation_learning/homography_regression_main.py \
   --server dgx1-1 \
-  --configs config/content_aware_unsupervised_deep_homography_estimation.yml
+  --config config/content_aware_unsupervised_deep_homography_estimation.yml
