@@ -23,7 +23,7 @@ if __name__ == '__main__':
     servers = load_yaml(args.servers_file)
     server = servers[args.server]
 
-    configs = load_yaml(arg.config)
+    configs = load_yaml(args.config)
 
     # prepare data
     prefix = os.path.join(server['database']['location'], configs['data']['pkl_path'])
