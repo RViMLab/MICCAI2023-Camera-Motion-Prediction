@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     config_path = server['config']['location']
 
-    configs = load_yaml(args.configs)
+    configs = load_yaml(arg.config)
 
     # append configs by backbone
     backbone_configs = load_yaml(os.path.join(server['logging']['location'], args.backbone_path, 'config.yml'))
