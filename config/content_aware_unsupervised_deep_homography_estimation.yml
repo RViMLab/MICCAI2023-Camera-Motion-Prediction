@@ -37,6 +37,7 @@ data:
     val_transforms: null
 model:
     shape: [3, 480, 640]
+    pretrained: null
     lam: 2.0
     mu: 0.01
     pre_train_epochs: 4

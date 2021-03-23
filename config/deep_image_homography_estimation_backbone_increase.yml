@@ -39,6 +39,7 @@ data:
     val_transforms: null
 model:
     shape: [3, 480, 640]
+    pretrained: False
     lr: 1.e-4
     betas: [0.9, 0.999]
     milestones: [0]

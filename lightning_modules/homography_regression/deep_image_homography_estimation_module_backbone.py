@@ -10,10 +10,20 @@ from utils.processing import image_edges, four_point_homography_to_matrix
 
 
 class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
-    def __init__(self, shape: List[int], lr: float=1e-4, betas: List[float]=[0.9, 0.999], milestones: List[int]=[0], gamma: float=1.0, log_n_steps: int=1000, backbone: str='resnet34'):
+    def __init__(
+        self, 
+        shape: List[int], 
+        pretrained: bool=False,
+        lr: float=1e-4, 
+        betas: List[float]=[0.9, 0.999], 
+        milestones: List[int]=[0], 
+        gamma: float=1.0, 
+        log_n_steps: int=1000, 
+        backbone: str='resnet34'
+    ):
         super().__init__()
         self.save_hyperparameters('lr', 'betas', 'backbone')
-        self.model = getattr(models, backbone)(**{'pretrained': False})
+        self.model = getattr(models, backbone)(**{'pretrained': pretrained})
 
         # modify in and out layers
         self.model.conv1 = nn.Conv2d(

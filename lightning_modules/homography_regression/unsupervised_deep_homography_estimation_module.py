@@ -9,7 +9,16 @@ from utils.viz import warp_figure
 
 class UnsupervisedDeepHomographyEstimationModule(pl.LightningModule):
     
-    def __init__(self, shape: List[int], lr: float=1e-4, betas: List[float]=[0.9, 0.999], milestones: List[int]=[0], gamma: float=1.0, log_n_steps: int=1000):
+    def __init__(
+        self, 
+        shape: List[int], 
+        pretrained: bool=False, 
+        lr: float=1e-4, 
+        betas: List[float]=[0.9, 0.999], 
+        milestones: List[int]=[0], 
+        gamma: float=1.0, 
+        log_n_steps: int=1000
+    ):
         super().__init__()
         self.save_hyperparameters('lr', 'betas')
         self._model = DeepHomographyRegression(shape)

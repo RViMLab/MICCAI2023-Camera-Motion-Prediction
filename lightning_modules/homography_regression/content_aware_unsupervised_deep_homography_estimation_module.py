@@ -14,7 +14,19 @@ from utils.processing import image_edges, four_point_homography_to_matrix
 
 
 class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule):
-    def __init__(self, shape: List[int], lam: float=2.0, mu: float=0.01, pre_train_epochs: int=4, lr: float=1e-4, betas: List[float]=[0.9, 0.999], milestones: List[int]=[0], gamma: float=1.0, log_n_steps: int=1000):
+    def __init__(
+        self, 
+        shape: List[int], 
+        pretrained: bool=False,
+        lam: float=2.0, 
+        mu: float=0.01, 
+        pre_train_epochs: int=4, 
+        lr: float=1e-4, 
+        betas: List[float]=[0.9, 0.999], 
+        milestones: List[int]=[0], 
+        gamma: float=1.0, 
+        log_n_steps: int=1000
+    ):
         r"""Content-aware unsupervised deep homography estimation model from https://arxiv.org/abs/1909.05983.
 
         Args:
@@ -36,7 +48,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
             ('conv4', ConvBlock(16, 32, padding=1)),
             ('conv5', ConvBlock(32, 1, padding=1, activation=torch.sigmoid)),
         ]))
-        self._homography_estimator = resnet34(pretrained=False)
+        self._homography_estimator = resnet34(pretrained=pretrained)
 
         # modify in and out layers
         self._homography_estimator.conv1 = nn.Conv2d(
