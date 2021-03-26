@@ -99,12 +99,12 @@ class ImagePairHomographyDataset(Dataset):
 
         for _, row in file_pair.iterrows():
             img = imageio.imread(os.path.join(self._prefix, row.folder, row.file))
-            img_pair.append(img)
-
-        if self._transforms:
-            for i in range(len(img_pair)):
+            
+            if self._transforms:
                 imgaug.seed(seed)
-                img_pair[i] = np.ascontiguousarray(self._transforms(img_pair[i]))
+                img_pair.append(np.ascontiguousarray(self._transforms(img)))
+            else:
+                img_pair.append(img)
 
         # apply random edge homography
         self._reh.seed_idx = idx
