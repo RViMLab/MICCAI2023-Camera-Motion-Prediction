@@ -139,7 +139,6 @@ class RandomEdgeHomography(object):
             }
         if self._homography_return == HOMOGRAPHY_RETURN.DATASET:
             return {
-                'img': img,
                 'img_crp': img_crp, 
                 'wrp_crp': wrp_crp, 
                 'uv': inner_uv,
