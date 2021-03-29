@@ -68,7 +68,7 @@ if __name__ == '__main__':
                 relative_prefix = 'train'
             relative_prefix = os.path.join(relative_prefix, database['videos']['files'][vid_idx][:-4]) # unique name of the video
 
-            file_name = 'frame_{}.png'.format(frame_idx)
+            file_name = 'frame_{}.npy'.format(frame_idx)
 
             prefix = os.path.join(absolute_prefix, relative_prefix)
             generate_path(prefix)
