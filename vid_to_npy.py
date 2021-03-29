@@ -1,7 +1,7 @@
-import cv2
 import os
 import argparse
 import pandas as pd
+import numpy as np
 from tqdm import tqdm
 
 import utils
@@ -74,7 +74,8 @@ if __name__ == '__main__':
             generate_path(prefix)
 
             path = os.path.join(prefix, file_name)
-            cv2.imwrite(path, cs[0]) # note: currenlty only saves first image of sequence
+            np.save(path, cs[0])  # note: currenlty only saves first image of sequence
+            # cv2.imwrite(path, cs[0]) # note: currenlty only saves first image of sequence
 
             df = df.append({
                 'file': file_name, 
