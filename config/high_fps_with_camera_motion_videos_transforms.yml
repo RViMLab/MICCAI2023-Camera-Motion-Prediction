@@ -13,8 +13,8 @@ databases:
         - 164
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id001
   - *id001
   - *id001
@@ -28,8 +28,8 @@ databases:
         - 29
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id002
   - *id002
   - *id002
@@ -285,8 +285,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id003
   - *id003
   - *id003
@@ -315,8 +315,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id003
   - *id003
   - *id003
@@ -394,8 +394,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id004
   - *id004
   - *id004
@@ -409,8 +409,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id004
   - *id004
   - *id004
@@ -429,8 +429,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id006
   - *id006
   - *id004
@@ -477,8 +477,8 @@ databases:
         - 204
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id006
   - *id004
   - *id004
@@ -509,8 +509,8 @@ databases:
         - 9
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id007
   - *id007
   - *id007
@@ -543,8 +543,8 @@ databases:
         - 9
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   videos:
     files:
     - vid_189.avi
