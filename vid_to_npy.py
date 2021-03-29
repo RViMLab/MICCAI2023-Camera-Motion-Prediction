@@ -6,16 +6,16 @@ from tqdm import tqdm
 
 import utils
 from utils.io import load_yaml, generate_path
-from utils.transforms import Compose, dictListToCompose
+from utils.transforms import Compose, anyDictListToCompose
 from utils.sampling import ConsecutiveSequences
 from utils.processing import RandomEdgeHomography
 
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--server', type=str, required=True)
-    parser.add_argument('-d', '--databases', type=str, default='config/high_fps_without_camera_motion_videos_transforms.yml')
+    parser.add_argument('-p', '--prefix', type=str, default='', help='Prefix within database.')
+    parser.add_argument('-d', '--dataframe', type=str, default='config/high_fps_without_camera_motion_videos_transforms.pkl')
     parser.add_argument('-o', '--output_folder', type=str, required=True)
     parser.add_argument('-l', '--log', type=str, default='log_with_camera_motion')
     parser.add_argument('--stride', type=int, default=1)
@@ -25,66 +25,47 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     servers = load_yaml('config/servers.yml')
-    server = args.server
+    server = servers[args.server]
 
     # dict of videos
-    yml = load_yaml(path=args.databases)
+    df = pd.read_pickle(args.dataframe)
+    log_df = pd.DataFrame(columns=['file', 'path', 'vid_idx', 'frame_idx', 'database'])
 
-    absolute_prefix = args.output_folder
-    generate_path(absolute_prefix)
+    output_prefix = args.output_folder
+    generate_path(output_prefix)
 
-    df = pd.DataFrame(columns=['file', 'path', 'vid_idx', 'frame_idx', 'database'])
+    for _, row in df.iterrows():
+        if args.prefix is not None:
+            paths = [os.path.join(server['database']['location'], args.prefix, row.file['path'], row.file['name'])]
+        else:
+            paths = [os.path.join(server['database']['location'], row.database, row.file['path'], row.file['name'])]
 
-    for database in yml['databases']:
+        vid_relative_output_prefix = os.path.join(row.file['path'], row.file['name'][:-4])
+        vid_absolute_output_prefix = os.path.join(output_prefix, vid_relative_output_prefix)
+        generate_path(vid_absolute_output_prefix)
 
-        print('Processing database {}'.format(database['name']))
-        paths = []
-        for files in database['videos']['files']:
-            paths.append(os.path.join(
-                servers[server]['database']['location'], 
-                database['prefix'], 
-                database['videos']['prefix'], 
-                files)
-            )
-
-        composes = []
-        for dict_list in database['transforms']:
-            composes.append(dictListToCompose(dict_list, utils.transforms)) # generate compose transform from dict
-        consecutive_sequences = ConsecutiveSequences(
-            paths=paths, 
-            stride=args.stride, 
-            max_seq=args.max_seq, 
-            seq_stride=args.seq_stride, 
-            seq_len=args.seq_len, 
-            transforms=composes, 
+        compose = [anyDictListToCompose(row.pre_transforms)]
+        consecutive_sequence = ConsecutiveSequences(
+            paths=paths,
+            stride=args.stride,
+            max_seq=args.max_seq,
+            seq_len=args.seq_len,
+            transforms=compose,
             verbose=True
-        ) # generate iterator
-        
-        for cs, vid_idx, frame_idx in tqdm(consecutive_sequences):
-            # only save first image of sequence
-            if database['test'] == True:
-                relative_prefix = 'test'
-            else:
-                relative_prefix = 'train'
-            relative_prefix = os.path.join(relative_prefix, database['videos']['files'][vid_idx][:-4]) # unique name of the video
+        )  # generate iterator
 
+        for cs, vid_idx, frame_idx in tqdm(consecutive_sequence):
             file_name = 'frame_{}.npy'.format(frame_idx)
+            np.save(os.path.join(vid_absolute_output_prefix, file_name), cs[0])  # note: currenlty only saves first image of sequence
 
-            prefix = os.path.join(absolute_prefix, relative_prefix)
-            generate_path(prefix)
-
-            path = os.path.join(prefix, file_name)
-            np.save(path, cs[0])  # note: currenlty only saves first image of sequence
-            # cv2.imwrite(path, cs[0]) # note: currenlty only saves first image of sequence
-
-            df = df.append({
+            log_df = log_df.append({
                 'file': file_name, 
-                'path': relative_prefix, 
+                'path': vid_relative_output_prefix, 
                 'vid_idx': vid_idx, 
                 'frame_idx': frame_idx,
-                'database': {'name': database['name'], 'test': database['test']}
-            }, ignore_index=True)
+                'database': {'name': row.database, 'test': not row.train}
+            }, ignore_index=True)  # legacy
                 
     df_name = args.log
-    df.to_pickle(os.path.join(absolute_prefix, '{}.pkl'.format(df_name)))
-    df.to_csv(os.path.join(absolute_prefix, '{}.csv'.format(df_name)))
+    log_df.to_pickle(os.path.join(output_prefix, '{}.pkl'.format(df_name)))
+    log_df.to_csv(os.path.join(output_prefix, '{}.csv'.format(df_name)))
