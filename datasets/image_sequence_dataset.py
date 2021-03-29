@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
-import imageio
 from typing import Callable, List
 
 
@@ -34,7 +33,7 @@ class ImageSequenceDataset(Dataset):
         file_seq = self._df.loc[idcs]
 
         for _, row in file_seq.iterrows():
-            img = imageio.imread(os.path.join(self._prefix, row.folder, row.file))
+            img = np.load(os.path.join(self._prefix, row.folder, row.file))
             img_seq.append(img)
 
         img_seq = np.stack(img_seq).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
@@ -85,7 +84,7 @@ class ImageSequenceDatasetSequenceDf(Dataset):
         img_seq = []
 
         for file in file_seq:
-            img = imageio.imread(os.path.join(self._prefix, self._df['path'][idx], file))
+            img = np.load(os.path.join(self._prefix, self._df['path'][idx], file))
             if self._transforms:
                 img = self._transforms(img)
             img_seq.append(img)
@@ -101,14 +100,13 @@ if __name__ == '__main__':
     import numpy as np
     import pandas as pd
     from dotmap import DotMap
-    import imageio
     import cv2
 
     from utils.io import load_yaml
 
     server = 'local'
     server = DotMap(load_yaml('config/servers.yml')[server])
-    prefix = os.path.join(server.database.location, 'camera_motion_separated_png/without_camera_motion')
+    prefix = os.path.join(server.database.location, 'camera_motion_separated_npy/without_camera_motion')
     pkl_name = 'light_log_without_camera_motion.pkl'
 
     col = 'vid'
@@ -134,7 +132,7 @@ if __name__ == '__main__':
     # load
     img_seq = []
     for _, row in file_seq.iterrows():
-        img = imageio.imread(os.path.join(prefix, row.folder, row.file))
+        img = np.load(os.path.join(prefix, row.folder, row.file))
         img_seq.append(img)
         cv2.imshow('img', img)
         cv2.waitKey()

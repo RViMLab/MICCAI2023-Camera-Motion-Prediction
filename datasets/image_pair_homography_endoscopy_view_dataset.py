@@ -1,5 +1,4 @@
 import os
-import imageio
 import imgaug
 import pandas as pd
 import numpy as np
@@ -71,13 +70,13 @@ class ImagePairHomographyEndoscopyViewDataset(Dataset):
         np.random.seed(None)
 
         for file in file_pair:
-            img = imageio.imread(os.path.join(self._prefix, self._df['path'][idx], file))
-            img_pair.append(img)
+            img = np.load(os.path.join(self._prefix, self._df['path'][idx], file))
 
-        if self._transforms:
-            for i in range(len(img_pair)):
+            if self._transforms:
                 imgaug.seed(seed)
-                img_pair[i] = np.ascontiguousarray(self._transforms(img_pair[i]))
+                img_pair.append(np.ascontiguousarray(self._transforms(img)))
+            else:
+                img_pair.append(img)
 
         # apply random edge homography
         self._reh.seed_idx = idx

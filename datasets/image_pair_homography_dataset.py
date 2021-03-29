@@ -1,5 +1,4 @@
 import os
-import imageio
 import imgaug
 import pandas as pd
 import numpy as np
@@ -98,7 +97,7 @@ class ImagePairHomographyDataset(Dataset):
         file_pair = self._df.loc[idcs]
 
         for _, row in file_pair.iterrows():
-            img = imageio.imread(os.path.join(self._prefix, row.folder, row.file))
+            img = np.load(os.path.join(self._prefix, row.folder, row.file))
             
             if self._transforms:
                 imgaug.seed(seed)
@@ -231,13 +230,13 @@ class ImagePairHomographyDatasetSequenceDf(Dataset):
             file_pair = [file_seq[0], file_seq[1]]
 
         for file in file_pair:
-            img = imageio.imread(os.path.join(self._prefix, self._df['path'][idx], file))
-            img_pair.append(img)
-
-        if self._transforms:
-            for i in range(len(img_pair)):
+            img = np.load(os.path.join(self._prefix, self._df['path'][idx], file))
+            
+            if self._transforms:
                 imgaug.seed(seed)
-                img_pair[i] = np.ascontiguousarray(self._transforms(img_pair[i]))
+                img_pair.append(np.ascontiguousarray(self._transforms(img)))
+            else:
+                img_pair.append(img)
 
         # apply random edge homography
         self._reh.seed_idx = idx
@@ -279,7 +278,6 @@ if __name__ == '__main__':
     import numpy as np
     import pandas as pd
     from dotmap import DotMap
-    import imageio
     import cv2
 
     from utils.io import load_yaml
@@ -313,6 +311,6 @@ if __name__ == '__main__':
 
     # load
     for _, row in file_pair.iterrows():
-        img = imageio.imread(os.path.join(prefix, row.folder, row.file))
+        img = np.load(os.path.join(prefix, row.folder, row.file))
         cv2.imshow('img', img)
         cv2.waitKey()
