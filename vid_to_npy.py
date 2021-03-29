@@ -14,7 +14,7 @@ from utils.processing import RandomEdgeHomography
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--server', type=str, required=True)
-    parser.add_argument('-p', '--prefix', type=str, default='', help='Prefix within database.')
+    parser.add_argument('-p', '--prefix', type=str, default='', help='Prefix within database, e.g. camera_motion_separated.')
     parser.add_argument('-d', '--dataframe', type=str, default='config/high_fps_without_camera_motion_videos_transforms.pkl')
     parser.add_argument('-o', '--output_folder', type=str, required=True)
     parser.add_argument('-l', '--log', type=str, default='log_with_camera_motion')
