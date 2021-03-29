@@ -13,8 +13,8 @@ databases:
         - 164
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id001
   - *id001
   - &id002
@@ -27,8 +27,8 @@ databases:
         - 29
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id002
   - *id002
   - *id002
@@ -305,8 +305,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id003
   - *id003
   - *id003
@@ -322,8 +322,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id003
   - *id003
   - *id003
@@ -341,8 +341,8 @@ databases:
         - 204
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id003
   - - Crop:
         shape:
@@ -353,8 +353,8 @@ databases:
         - 260
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id003
   - *id003
   - *id003
@@ -369,8 +369,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id003
   - *id004
   - *id003
@@ -388,8 +388,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id003
   - *id004
   - *id003
@@ -758,8 +758,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - &id011
     - Crop:
         shape:
@@ -770,8 +770,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id008
   - *id008
   - &id009
@@ -784,8 +784,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id008
   - *id009
   - *id008
@@ -858,8 +858,8 @@ databases:
         - 204
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - &id012
     - Crop:
         shape:
@@ -870,8 +870,8 @@ databases:
         - 204
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id008
   - &id010
     - Crop:
@@ -883,8 +883,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id010
   - *id010
   - *id010
@@ -1018,8 +1018,8 @@ databases:
         - 163
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id008
   - *id009
   - *id009
@@ -1101,8 +1101,8 @@ databases:
         - 9
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   - *id013
   - *id013
   - *id013
@@ -1136,8 +1136,8 @@ databases:
         - 9
     - Resize:
         dsize:
-        - 740
-        - 555
+        - 816
+        - 612
   videos:
     files:
     - vid_448.avi

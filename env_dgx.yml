@@ -27,3 +27,5 @@ dependencies:
     - imgaug
     - imagecorruptions
     - sklearn
+    - efficientnet_pytorch
+    - h5py
