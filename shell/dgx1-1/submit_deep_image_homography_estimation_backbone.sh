@@ -1,6 +1,6 @@
 runai submit hil-supervised-backbone \
   -p mhuber \
-  -i 10.202.67.201:32581/mhuber:hil_05 \
+  -i 10.202.67.201:32581/mhuber:hil_06 \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
   -v /nfs/home/mhuber/data:/nfs/home/mhuber/data \
   -v /nfs/home/mhuber/tresorit/homography_imitation_learning_logs:/nfs/home/mhuber/tresorit/homography_imitation_learning_logs \
