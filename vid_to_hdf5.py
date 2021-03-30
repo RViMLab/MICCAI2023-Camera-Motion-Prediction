@@ -68,7 +68,6 @@ if __name__ == '__main__':
             'frame': frame_idx,
             'test': not df.iloc[vid_idx].train
         }, ignore_index=True)
-        break
     print('Done.')
 
     hdf_storage.close()
