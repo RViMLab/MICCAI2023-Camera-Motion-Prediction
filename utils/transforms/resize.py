@@ -14,7 +14,7 @@ INTERPOLATION_DICT = {
 
 
 class Resize(object):
-    def __init__(self, dsize: list, interpolation: str='linear'):
+    def __init__(self, dsize: list, interpolation: str='cubic'):
         r"""Callable resize operation.
 
         Args:
