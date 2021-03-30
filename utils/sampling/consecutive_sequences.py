@@ -82,7 +82,7 @@ class ConsecutiveSequences():
 
     def __len__(self):
         if not self._max_seq:
-            return (self._frame_counts / self._seq_stride + 1).astype(np.int).sum()
+            return (self._frame_counts / self._seq_stride).astype(np.int).sum()
         else:
             return self._max_seq
 
