@@ -17,7 +17,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--prefix', type=str, default='', help='Prefix within database, e.g. camera_motion_separated.')
     parser.add_argument('-d', '--dataframe', type=str, default='config/high_fps_without_camera_motion_videos_transforms.pkl')
     parser.add_argument('-o', '--output_folder', type=str, required=True)
-    parser.add_argument('-l', '--log', type=str, default='log_with_camera_motion')
+    parser.add_argument('-l', '--log', type=str, default='log_without_camera_motion')
     parser.add_argument('--stride', type=int, default=1)
     parser.add_argument('--max_seq', type=int, default=None)
     parser.add_argument('--seq_stride', type=int, default=1)
@@ -56,9 +56,21 @@ if __name__ == '__main__':
     hdf_storage = h5py.File(os.path.join(args.output_folder, '{}.hdf5'.format(args.log)), 'w')
     hdf_storage.create_dataset('img', shape=((l,) + shape), dtype=np.uint8)
 
+    # generate dataframe for meta information
+    log_df = pd.DataFrame(columns=['vid', 'frame', 'test'])
+
     print('Writing files to HDF5 storage...')
     for idx, (cs, vid_idx, frame_idx) in enumerate(tqdm(consecutive_sequence)):
         hdf_storage['img'][idx] = cs[0]  # note: currenlty only saves first image of sequence
+
+        log_df = log_df.append({
+            'vid': vid_idx,
+            'frame': frame_idx,
+            'test': not df.iloc[vid_idx].train
+        }, ignore_index=True)
+        break
     print('Done.')
 
     hdf_storage.close()
+    log_df.to_pickle(os.path.join(args.output_folder, '{}.pkl'.format(args.log)))
+    log_df.to_csv(os.path.join(args.output_folder, '{}.csv'.format(args.log)))
