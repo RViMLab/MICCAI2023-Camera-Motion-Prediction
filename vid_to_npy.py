@@ -35,10 +35,10 @@ if __name__ == '__main__':
 
     for row_idx, row in df.iterrows():
         print('Processing row {}/{}'.format(row_idx, len(df)))
-        if args.prefix is not None:
-            paths = [os.path.join(server['database']['location'], args.prefix, row.file['path'], row.file['name'])]
-        else:
+        if not args.prefix:
             paths = [os.path.join(server['database']['location'], row.database, row.file['path'], row.file['name'])]
+        else:
+            paths = [os.path.join(server['database']['location'], args.prefix, row.file['path'], row.file['name'])]
 
         vid_relative_output_prefix = os.path.join(row.file['path'], row.file['name'][:-4])
         vid_absolute_output_prefix = os.path.join(output_prefix, vid_relative_output_prefix)
