@@ -8,6 +8,8 @@ RUN apt-get update
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN apt-get install -y libsm6 libxext6 libxrender-dev
 
+RUN apt-get install tmux
+
 ARG USER_ID
 ARG GROUP_ID
 ARG USER
