@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 
-import utils
 from utils.io import load_yaml, generate_path
 from utils.transforms import Compose, anyDictListToCompose
 from utils.sampling import ConsecutiveSequences
@@ -17,7 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--prefix', type=str, default='', help='Prefix within database, e.g. camera_motion_separated.')
     parser.add_argument('-d', '--dataframe', type=str, default='config/high_fps_without_camera_motion_videos_transforms.pkl')
     parser.add_argument('-o', '--output_folder', type=str, required=True)
-    parser.add_argument('-l', '--log', type=str, default='log_with_camera_motion')
+    parser.add_argument('-l', '--log', type=str, default='log_without_camera_motion')
     parser.add_argument('--stride', type=int, default=1)
     parser.add_argument('--max_seq', type=int, default=None)
     parser.add_argument('--seq_stride', type=int, default=1)
@@ -34,7 +33,8 @@ if __name__ == '__main__':
     output_prefix = args.output_folder
     generate_path(output_prefix)
 
-    for _, row in df.iterrows():
+    for row_idx, row in df.iterrows():
+        print('Processing row {}/{}'.format(row_idx, len(df)))
         if args.prefix is not None:
             paths = [os.path.join(server['database']['location'], args.prefix, row.file['path'], row.file['name'])]
         else:
