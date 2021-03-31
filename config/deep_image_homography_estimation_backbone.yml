@@ -14,7 +14,7 @@ trainer:
 callback: null
 data:
     pkl_name: 'light_log_without_camera_motion.pkl'
-    pkl_path: 'camera_motion_separated_png/without_camera_motion'
+    pkl_path: 'camera_motion_separated_npy/without_camera_motion'
     train_split: 0.8
     random_state: 42
     batch_size: 4

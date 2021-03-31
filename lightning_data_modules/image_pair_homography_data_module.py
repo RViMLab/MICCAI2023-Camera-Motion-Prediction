@@ -93,13 +93,13 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
         return batch
 
     def train_dataloader(self):
-        return DataLoader(self._train_set, batch_size=self._batch_size, num_workers=self._num_workers)
+        return DataLoader(self._train_set, batch_size=self._batch_size, num_workers=self._num_workers, pin_memory=True)
 
     def val_dataloader(self):
-        return DataLoader(self._val_set, batch_size=self._batch_size, num_workers=self._num_workers)
+        return DataLoader(self._val_set, batch_size=self._batch_size, num_workers=self._num_workers, pin_memory=True)
 
     def test_dataloader(self):
-        return DataLoader(self._test_set, batch_size=self._batch_size, num_workers=self._num_workers)
+        return DataLoader(self._test_set, batch_size=self._batch_size, num_workers=self._num_workers, pin_memory=True)
 
 
 if __name__ == '__main__':
@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
     server = 'local'
     server = DotMap(load_yaml('config/servers.yml')[server])
-    prefix = os.path.join(server.database.location, 'camera_motion_separated_png/without_camera_motion')
+    prefix = os.path.join(server.database.location, 'camera_motion_separated_npy/without_camera_motion')
 
     pkl_name = 'light_log_without_camera_motion.pkl'
     # pkl_name = 'light_log_without_camera_motion.pkl'
