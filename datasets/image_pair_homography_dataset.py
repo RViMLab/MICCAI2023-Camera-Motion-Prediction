@@ -284,7 +284,7 @@ if __name__ == '__main__':
 
     server = 'local'
     server = DotMap(load_yaml('config/servers.yml')[server])
-    prefix = os.path.join(server.database.location, 'camera_motion_separated_png/without_camera_motion')
+    prefix = os.path.join(server.database.location, 'camera_motion_separated_npy/without_camera_motion')
 
     pkl_name = 'light_log_without_camera_motion.pkl'
     df = pd.read_pickle(os.path.join(prefix, pkl_name))
