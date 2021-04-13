@@ -1,4 +1,5 @@
 import os
+import random
 import imgaug
 import pandas as pd
 import numpy as np
@@ -87,7 +88,7 @@ class ImagePairHomographyDataset(Dataset):
         if self._seeds:
             seed = self._seeds[idx]
         else:
-            seed = np.random.randint(np.iinfo(np.int32).max)  # set random seed for numpy
+            seed = random.randint(0, np.iinfo(np.int64).max)  # set random seed for numpy
 
         # randomly sample image pair
         np.random.seed(seed)
@@ -219,7 +220,7 @@ class ImagePairHomographyDatasetSequenceDf(Dataset):
         if self._seeds:
             seed = self._seeds[idx]
         else:
-            seed = np.random.randint(np.iinfo(np.int32).max)  # set random seed for numpy
+            seed = random.randint(0, np.iinfo(np.int64).max)  # set random seed for numpy
 
         # randomly sample image pair
         if self._rnd_time_sample:
