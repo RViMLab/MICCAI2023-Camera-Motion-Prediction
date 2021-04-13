@@ -1,7 +1,8 @@
 #!/bin/bash
-docker_tag=10.202.67.201:32581/$USER:hil_06
+docker_tag=10.202.67.207:5000/$USER:hil_01
 
 docker build . -f Dockerfile \
   --tag $docker_tag \
-  --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) --build-arg USER=$USER
+  --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) --build-arg USER=$USER \
+  --network=host
 docker push $docker_tag
