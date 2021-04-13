@@ -121,7 +121,8 @@ class RandomEdgeHomography(object):
         wrp_crp = self.crop(wrp, inner_uv)
         img_crp = self.crop(img, inner_uv)
 
-        np.random.seed(None)
+        if self._seeds:
+            np.random.seed(None)
             
         if self._homography_return == HOMOGRAPHY_RETURN.DEFAULT:
             return img_crp, wrp_crp, duv
