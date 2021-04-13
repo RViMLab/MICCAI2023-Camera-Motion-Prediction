@@ -63,7 +63,7 @@ class ImagePairHomographyEndoscopyViewDataset(Dataset):
         if self._seeds:
             seed = self._seeds[idx]
         else:
-            seed = random.randint(0, np.iinfo(np.int64).max)  # set random seed for numpy
+            seed = random.randint(0, np.iinfo(np.int32).max)  # set random seed for numpy
 
         # randomly sample image pair
         np.random.seed(seed)
@@ -97,7 +97,7 @@ class ImagePairHomographyEndoscopyViewDataset(Dataset):
             )
 
         else:  # train
-            seed = random.randint(0, np.iinfo(np.int64).max) # random seed via sampling
+            seed = random.randint(0, np.iinfo(np.int32).max) # random seed via sampling
             img_crp, wrp_crp = self._ec.movingCenterPipeline(
                 img=img_crp, wrp=wrp_crp, 
                 c_off_scale=self._c_off_scale, dc_scale=self._dc_scale, c_update_chance=self._c_update_chance,

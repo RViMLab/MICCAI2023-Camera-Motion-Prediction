@@ -67,7 +67,7 @@ class VideoDataset(Dataset):
         if self._seeds:
             seed = idx
         else:
-            seed = random.randint(0, np.iinfo(np.int64).max)  # set random seed for numpy
+            seed = random.randint(0, np.iinfo(np.int32).max)  # set random seed for numpy
 
         if self._aug_transforms[video_idx]:
             torch.manual_seed(seed)
