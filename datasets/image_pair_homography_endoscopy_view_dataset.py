@@ -80,7 +80,7 @@ class ImagePairHomographyEndoscopyViewDataset(Dataset):
                 img_pair.append(img)
 
         # apply random edge homography
-        self._reh.seed_idx = idx
+        self._reh.seed_idx = idx  # only uses seed index if self._reh._seeds is not None
         reh = self._reh(img_pair[1])
 
         img_crp = self._reh.crop(img_pair[0], reh['uv'])
