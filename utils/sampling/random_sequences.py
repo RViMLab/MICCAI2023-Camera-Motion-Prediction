@@ -1,4 +1,5 @@
 import cv2
+import random
 import numpy as np
 import torch
 from typing import List, Callable, Union
@@ -51,10 +52,9 @@ class RandomSequences():
         """
         if self._seq < self._max_seq:
             vid_idx = np.random.choice(len(self._video_captures), 1, p=self._prob_vid)
-            frame_idx = np.random.randint(
+            frame_idx = random.randint(
                 0, 
-                self._video_captures[vid_idx[0]].get(cv2.CAP_PROP_FRAME_COUNT) - 1 - max(self._strides)*self._seq_len, 
-                1
+                self._video_captures[vid_idx[0]].get(cv2.CAP_PROP_FRAME_COUNT) - 1 - max(self._strides)*self._seq_len
             )
             stride = np.random.choice(self._strides, 1)[0]
             self._seq += 1
