@@ -21,7 +21,7 @@ data:
     frame_rate: 5  # re-sample framerate, total of clip_length_in_frames*frame_rate frames covered
     train_split: 0.8
     batch_size: 6
-    num_workers: 6
+    num_workers: 16
     random_state: 42
 model:
     shape: [3, 480, 640]

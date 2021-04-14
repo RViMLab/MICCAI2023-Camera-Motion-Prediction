@@ -17,7 +17,7 @@ data:
     train_split: 0.8
     random_state: 42
     batch_size: 16
-    num_workers: 4
+    num_workers: 16
     rho: 64
     crp_shape: [480, 640]
     p0: 0.05
