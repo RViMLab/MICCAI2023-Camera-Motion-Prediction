@@ -42,6 +42,7 @@ class FeatureHomographyEstimation(object):
         if des_img is None or des_wrp is None or des_img.shape[0] < 2 or des_wrp.shape[0] < 2:
             return None, None
 
+        des_img, des_wrp = des_img.astype(np.float32), des_wrp.astype(np.float32)
         good_matches = self._match(des_img, des_wrp)
 
         kp_img = np.float32([ kp_img[m.queryIdx].pt for m in good_matches ]).reshape(-1,1,2)
