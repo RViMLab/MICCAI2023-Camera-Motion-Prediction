@@ -1,0 +1,3 @@
+[submodule "utils/processing/endoscopy"]
+	path = utils/processing/endoscopy
+	url = https://github.com/RViMLab/endoscopy.git
