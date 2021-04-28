@@ -45,4 +45,4 @@ model:
     milestones: [0]
     gamma: 1.0
     log_n_steps: 1000
-    backbone: 'resnet34'
+    backbone: 'ResNet-34'

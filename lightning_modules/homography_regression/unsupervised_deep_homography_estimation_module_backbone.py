@@ -3,6 +3,7 @@ import torch.nn as nn
 import torchvision.models as models
 import pytorch_lightning as pl
 from kornia import warp_perspective, get_perspective_transform, crop_and_resize, tensor_to_image
+from pycls.models import model_zoo
 from typing import List
 
 from utils.viz import warp_figure
@@ -18,24 +19,42 @@ class UnsupervisedDeepHomographyEstimationModuleBackbone(pl.LightningModule):
         milestones: List[int]=[0], 
         gamma: float=1.0, 
         log_n_steps: int=1000, 
-        backbone: str='resnet34'
+        backbone: str='ResNet-34'
     ):
         super().__init__()
         self.save_hyperparameters('lr', 'betas', 'backbone')
-        self._model = getattr(models, backbone)(**{'pretrained': pretrained})
+        if backbone == 'ResNet-34':
+            self.model = getattr(models, 'resnet34')(**{'pretrained': pretrained})
 
-        # modify in and out layers
-        self._model.conv1 = nn.Conv2d(
-            in_channels=6,
-            out_channels=self._model.conv1.out_channels,
-            kernel_size=self._model.conv1.kernel_size,
-            stride=self._model.conv1.stride,
-            padding=self._model.conv1.padding
-        )
-        self._model.fc = nn.Linear(
-            in_features=self._model.fc.in_features,
-            out_features=8
-        )
+            # modify in and out layers
+            self.model.conv1 = nn.Conv2d(
+                in_channels=6,
+                out_channels=self.model.conv1.out_channels,
+                kernel_size=self.model.conv1.kernel_size,
+                stride=self.model.conv1.stride,
+                padding=self.model.conv1.padding
+            )
+            self.model.fc = nn.Linear(
+                in_features=self.model.fc.in_features,
+                out_features=8
+            )
+        else:
+            if backbone not in model_zoo.get_model_list():
+                raise ValueError('Model {} not available.'.format(backbone))
+            self.model = model_zoo.build_model(backbone, pretrained)
+
+            self.model.stem.conv = nn.Conv2d(
+                in_channels=6,
+                out_channels=self.model.stem.conv.out_channels,
+                kernel_size=self.model.stem.conv.kernel_size,
+                stride=self.model.stem.conv.stride,
+                padding=self.model.stem.conv.padding
+            )
+
+            self.model.head.fc = nn.Linear(
+                in_features=self.model.head.fc.in_features,
+                out_features=8
+            )
 
         self._mse_loss = nn.MSELoss()
         self._distance_loss = nn.PairwiseDistance()
