@@ -1,7 +1,7 @@
 
 import cv2
 import numpy as np
-from typing import Tuple, List
+from typing import Union, Tuple, List
 
 
 class FeatureHomographyEstimation(object):
@@ -22,17 +22,22 @@ class FeatureHomographyEstimation(object):
         self.fd = fd
         self.matcher = cv2.FlannBasedMatcher()
 
-    def __call__(self, img: np.array, wrp: np.array, ransacReprojThreshold=5.0) -> Tuple[np.array, np.array]:
+    def __call__(self, img: np.array, wrp: np.array, ransacReprojThreshold=5.0, return_kp: bool=False) -> Union[Tuple[np.array, np.array], Tuple[np.array, np.array, np.array, np.array]]:
         r"""Estimates the homography between images and returns point representation and homography.
 
         Args:
             img (np.array): Input image of shape HxWxC
             wrp (np.array): Warped input image of shape HxWxC
             ransacReprojThreshold (double): Ransac reprojection error threshold
+            return_kp (bool): If true, return keypoints
 
         Returns:
             H (np.array): Estimated homography of shape 3x3
             duv (np.array): Deformation of image edges uv under estimated homography 4x2
+
+            if return_kp:
+                kp_img (np.array): Matching image keypoints of shape Nx1x2
+                kp_wrp (np.array): Matching warp keypoints of shape Nx1x2
         """
         uv = self._image_edges(img)
 
@@ -40,7 +45,10 @@ class FeatureHomographyEstimation(object):
         kp_img, des_img = self.fd.detectAndCompute(img, None)
         kp_wrp, des_wrp = self.fd.detectAndCompute(wrp, None)
         if des_img is None or des_wrp is None or des_img.shape[0] < 2 or des_wrp.shape[0] < 2:
-            return None, None
+            if return_kp:
+                return None, None, None, None
+            else:   
+                return None, None
 
         des_img, des_wrp = des_img.astype(np.float32), des_wrp.astype(np.float32)
         good_matches = self._match(des_img, des_wrp)
@@ -48,15 +56,24 @@ class FeatureHomographyEstimation(object):
         kp_img = np.float32([ kp_img[m.queryIdx].pt for m in good_matches ]).reshape(-1,1,2)
         kp_wrp = np.float32([ kp_wrp[m.trainIdx].pt for m in good_matches ]).reshape(-1,1,2)
         if kp_img.shape[0] < 4 or kp_wrp.shape[0] < 4:
-            return None, None
+            if return_kp:
+                return None, None, None, None
+            else:   
+                return None, None
         H, _ = cv2.findHomography(kp_img, kp_wrp, cv2.RANSAC, ransacReprojThreshold)
         if H is None:
-            return None, None
+            if return_kp:
+                return None, None, None, None
+            else:   
+                return None, None
 
         uv_pred = cv2.perspectiveTransform(uv.astype(np.float32).reshape(-1, 1, 2), H).squeeze()
         duv = uv_pred - uv
 
-        return H, duv
+        if return_kp:
+            return H, duv, kp_img, kp_wrp
+        else:
+            return H, duv
 
     def _grayscale(self, img: np.array, wrp: np.array) -> Tuple[np.array, np.array]:
         img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
