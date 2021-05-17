@@ -4,6 +4,7 @@ import torchvision.models as models
 import pytorch_lightning as pl
 from typing import List
 from kornia import tensor_to_image, warp_perspective
+from pycls.models import model_zoo
 
 from utils.viz import warp_figure, yt_alpha_blend
 from utils.processing import image_edges, four_point_homography_to_matrix
@@ -19,26 +20,44 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
         milestones: List[int]=[0], 
         gamma: float=1.0, 
         log_n_steps: int=1000, 
-        backbone: str='resnet34'
+        backbone: str='ResNet-34'
     ):
         super().__init__()
         self.save_hyperparameters('lr', 'betas', 'backbone')
-        self.model = getattr(models, backbone)(**{'pretrained': pretrained})
+        if backbone == 'ResNet-34':
+            self._model = getattr(models, 'resnet34')(**{'pretrained': pretrained})
 
-        # modify in and out layers
-        self.model.conv1 = nn.Conv2d(
-            in_channels=6,
-            out_channels=self.model.conv1.out_channels,
-            kernel_size=self.model.conv1.kernel_size,
-            stride=self.model.conv1.stride,
-            padding=self.model.conv1.padding
-        )
-        self.model.fc = nn.Linear(
-            in_features=self.model.fc.in_features,
-            out_features=8
-        )
+            # modify in and out layers
+            self._model.conv1 = nn.Conv2d(
+                in_channels=6,
+                out_channels=self._model.conv1.out_channels,
+                kernel_size=self._model.conv1.kernel_size,
+                stride=self._model.conv1.stride,
+                padding=self._model.conv1.padding
+            )
+            self._model.fc = nn.Linear(
+                in_features=self._model.fc.in_features,
+                out_features=8
+            )
+        else:
+            if backbone not in model_zoo.get_model_list():
+                raise ValueError('Model {} not available.'.format(backbone))
+            self._model = model_zoo.build_model(backbone, pretrained)
 
-        self.distance_loss = nn.PairwiseDistance()
+            self._model.stem.conv = nn.Conv2d(
+                in_channels=6,
+                out_channels=self._model.stem.conv.out_channels,
+                kernel_size=self._model.stem.conv.kernel_size,
+                stride=self._model.stem.conv.stride,
+                padding=self._model.stem.conv.padding
+            )
+
+            self._model.head.fc = nn.Linear(
+                in_features=self._model.head.fc.in_features,
+                out_features=8
+            )
+
+        self._distance_loss = nn.PairwiseDistance()
 
         self._lr = lr
         self._betas = betas
@@ -49,16 +68,16 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
 
     def forward(self, img, wrp):
         cat = torch.cat((img, wrp), dim=1)
-        return self.model(cat).view(-1,4,2)
+        return self._model(cat).view(-1,4,2)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr, betas=self._betas)
+        optimizer = torch.optim.Adam(self._model.parameters(), lr=self._lr, betas=self._betas)
         scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=self._milestones, gamma=self._gamma)
         return [optimizer], [scheduler]
 
     def training_step(self, batch, batch_idx):
         duv_pred = self(batch['img_crp'], batch['wrp_crp'])
-        distance_loss = self.distance_loss(
+        distance_loss = self._distance_loss(
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
@@ -67,7 +86,7 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         duv_pred = self(batch['img_crp'], batch['wrp_crp'])
-        distance_loss = self.distance_loss(
+        distance_loss = self._distance_loss(
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
@@ -98,7 +117,7 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         duv_pred = self(batch['img_crp'], batch['wrp_crp'])
-        distance_loss = self.distance_loss(
+        distance_loss = self._distance_loss(
             duv_pred.view(-1, 2), 
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()

@@ -43,4 +43,4 @@ model:
     milestones: [2, 4, 9, 29, 49]
     gamma: 0.5
     log_n_steps: 100
-    backbone: 'resnet18'
+    backbone: 'ResNet-34'
