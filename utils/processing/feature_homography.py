@@ -22,7 +22,7 @@ class FeatureHomographyEstimation(object):
         self.fd = fd
         self.matcher = cv2.FlannBasedMatcher()
 
-    def __call__(self, img: np.array, wrp: np.array, ransacReprojThreshold=5.0, return_kp: bool=False) -> Union[Tuple[np.array, np.array], Tuple[np.array, np.array, np.array, np.array]]:
+    def __call__(self, img: np.array, wrp: np.array, ransacReprojThreshold=5.0, return_kp: bool=False) -> Union[Tuple[np.array, np.array], Tuple[np.array, np.array, np.array, np.array, np.array]]:
         r"""Estimates the homography between images and returns point representation and homography.
 
         Args:
@@ -46,7 +46,7 @@ class FeatureHomographyEstimation(object):
         kp_wrp, des_wrp = self.fd.detectAndCompute(wrp, None)
         if des_img is None or des_wrp is None or des_img.shape[0] < 2 or des_wrp.shape[0] < 2:
             if return_kp:
-                return None, None, None, None
+                return None, None, None, None, None
             else:   
                 return None, None
 
@@ -57,13 +57,13 @@ class FeatureHomographyEstimation(object):
         kp_wrp = np.float32([ kp_wrp[m.trainIdx].pt for m in good_matches ]).reshape(-1,1,2)
         if kp_img.shape[0] < 4 or kp_wrp.shape[0] < 4:
             if return_kp:
-                return None, None, None, None
+                return None, None, None, None, None
             else:   
                 return None, None
-        H, _ = cv2.findHomography(kp_img, kp_wrp, cv2.RANSAC, ransacReprojThreshold)
+        H, mask = cv2.findHomography(kp_img, kp_wrp, cv2.RANSAC, ransacReprojThreshold)
         if H is None:
             if return_kp:
-                return None, None, None, None
+                return None, None, None, None, None
             else:   
                 return None, None
 
@@ -71,7 +71,7 @@ class FeatureHomographyEstimation(object):
         duv = uv_pred - uv
 
         if return_kp:
-            return H, duv, kp_img, kp_wrp
+            return H, duv, kp_img, kp_wrp, mask
         else:
             return H, duv
 
