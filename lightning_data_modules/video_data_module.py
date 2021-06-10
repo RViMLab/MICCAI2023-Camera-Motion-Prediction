@@ -118,6 +118,7 @@ class VideoDataModule(pl.LightningDataModule):
                 precomputed_metadata=self._test_metadata,
                 num_workers=self._num_workers,
                 pre_transforms=self._test_pre_transforms,
+                aug_transforms=[None for _ in range(len(self._test_video_paths))],
                 seeds=True
             )
 
