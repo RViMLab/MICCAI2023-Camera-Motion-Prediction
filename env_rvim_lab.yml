@@ -29,5 +29,5 @@ dependencies:
     - sklearn
     - efficientnet_pytorch
     - h5py
-    - git+git://github.com/facebookresearch/pycls@master # pycls
+    - git+https://github.com/facebookresearch/pycls@master # pycls
     - iopath
