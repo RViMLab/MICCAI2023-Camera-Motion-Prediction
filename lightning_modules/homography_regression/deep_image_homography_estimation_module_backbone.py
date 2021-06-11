@@ -24,7 +24,7 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
     ):
         super().__init__()
         self.save_hyperparameters('lr', 'betas', 'backbone')
-        if backbone == 'ResNet-34':
+        if backbone == 'ResNet-34' or backbone == 'resnet34':
             self._model = getattr(models, 'resnet34')(**{'pretrained': pretrained})
 
             # modify in and out layers

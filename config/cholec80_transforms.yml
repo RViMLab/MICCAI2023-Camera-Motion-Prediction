@@ -12,8 +12,8 @@ databases:
         - 142
     - Resize:
         dsize: &id001
-        - 640
-        - 480
+        - 320
+        - 240
   - - Crop:
         shape:
         - 430
