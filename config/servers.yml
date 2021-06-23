@@ -5,6 +5,13 @@ local:
         location: '/media/martin/Samsung_T5/data/endoscopic_data'
     logging:
         location: '/media/martin/Samsung_T5/logs'
+personal:
+    config:
+        location: '/home/martin/Documents/homography_imitation_learning/config'
+    database:
+        location: '/home/martin/data'
+    logging:
+        location: '/tmp'
 dgx1-1:
     config:
         location: '/workspace/homography_imitation_learning/config'
