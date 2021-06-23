@@ -17,7 +17,9 @@ class VideoDataset(Dataset):
         num_workers: int=0, 
         pre_transforms: List[Callable]=None, 
         aug_transforms: List[Callable]=None, 
-        seeds: bool=False
+        seeds: bool=False,
+        permute: bool=True,
+        convert_dtype: bool=True
     ) -> None:
         r"""Dataset to load video clips with homographies
 
@@ -31,6 +33,8 @@ class VideoDataset(Dataset):
             pre_transforms (List[Callable]): List of callable tranforms for cropping an resizing (video specific transforms)
             aug_transforms (List[Callable]): List of callable tranforms for augmentation (video specific transforms)
             seeds (bool): Seeds for deterministic output, e.g. for test set
+            permute (bool): Permute sampled sequence channels NxHxWxC -> NxCxHxW (memory intensive)
+            convert_dtype (bool): Permute sampled sequence dtype to torch.float32 (memory intensive)
         """
         if pre_transforms is not None and len(video_paths) != len(pre_transforms): 
             raise ValueError("Length of provided videos paths must equal length of provided transforms.")
@@ -43,10 +47,20 @@ class VideoDataset(Dataset):
             _precomputed_metadata=precomputed_metadata,
             num_workers=num_workers
         )
-        self._pre_transforms = pre_transforms
-        self._aug_transforms = aug_transforms
+        if pre_transforms is None:
+            self._pre_transforms = [None]*(len(video_paths))
+        else:
+            self._pre_transforms = pre_transforms
+        if aug_transforms is None:
+            self._aug_transforms = [None]*(len(video_paths))
+        else:
+            self._aug_transforms = aug_transforms
         self._seeds = seeds
-        self._dtype_trafo = ConvertImageDtype(torch.float32)
+        self._permute = permute
+
+        self._convert_dtype = convert_dtype
+        if self._convert_dtype:
+            self._dtype_trafo = ConvertImageDtype(torch.float32)
 
     @property
     def metadata(self):
@@ -55,13 +69,12 @@ class VideoDataset(Dataset):
     def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor]:
         video, audio, info, video_idx = self._video_clips.get_clip(idx)
 
-        video = video.permute(0, 3, 1, 2).contiguous()  # NxHxWxC -> NxCxHxW
+        if self._permute:
+            video = video.permute(0, 3, 1, 2).contiguous()  # NxHxWxC -> NxCxHxW
 
         # crop and resize video
         if self._pre_transforms[video_idx]:
             video = self._pre_transforms[video_idx](video)
-
-        augmented_video = video.clone()
 
         # set seed if desired
         if self._seeds:
@@ -69,13 +82,19 @@ class VideoDataset(Dataset):
         else:
             seed = random.randint(0, np.iinfo(np.int32).max)  # set random seed for numpy
 
+        augmented_video = None
+
         if self._aug_transforms[video_idx]:
+            augmented_video = video.clone()
             torch.manual_seed(seed)
             augmented_video = self._aug_transforms[video_idx](augmented_video)
+            # convert dtype and normalize -> [0., 1.]
+            if self._convert_dtype:
+                augmented_video = self._dtype_trafo(augmented_video)
 
         # convert dtype and normalize -> [0., 1.]
-        video = self._dtype_trafo(video)
-        augmented_video = self._dtype_trafo(augmented_video)
+        if self._convert_dtype:
+            video = self._dtype_trafo(video)
 
         return video, augmented_video, self._video_clips.frame_rate, self._video_clips.video_fps, video_idx, idx
 
