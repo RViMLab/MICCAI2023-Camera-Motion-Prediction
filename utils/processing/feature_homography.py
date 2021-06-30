@@ -67,8 +67,8 @@ class FeatureHomographyEstimation(object):
             else:   
                 return None, None
 
-        uv_pred = cv2.perspectiveTransform(uv.astype(np.float32).reshape(-1, 1, 2), H).squeeze()
-        duv = uv_pred - uv
+        uv_pred = cv2.perspectiveTransform(uv.astype(np.float32).reshape(-1, 1, 2)[...,::-1], H).squeeze()
+        duv = uv_pred[...,::-1] - uv
 
         if return_kp:
             return H, duv, kp_img, kp_wrp, mask
