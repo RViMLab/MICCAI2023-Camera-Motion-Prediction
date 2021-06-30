@@ -82,7 +82,7 @@ class VideoDataset(Dataset):
         else:
             seed = random.randint(0, np.iinfo(np.int32).max)  # set random seed for numpy
 
-        augmented_video = None
+        augmented_video = torch.empty_like(video)
 
         if self._aug_transforms[video_idx]:
             augmented_video = video.clone()
