@@ -24,8 +24,15 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
     ):
         super().__init__()
         self.save_hyperparameters('lr', 'betas', 'backbone')
-        if backbone == 'ResNet-34' or backbone == 'resnet34':
-            self._model = getattr(models, 'resnet34')(**{'pretrained': pretrained})
+        backbone_dict = {
+            'ResNet-18': 'resnet18',
+            'ResNet-34': 'resnet34'
+        }
+        if backbone == 'ResNet-18' or backbone == 'ResNet-34':
+            backbone = backbone_dict[backbone]
+
+        if backbone == 'resnet18' or backbone == 'resnet34':
+            self._model = getattr(models, backbone)(**{'pretrained': pretrained})
 
             # modify in and out layers
             self._model.conv1 = nn.Conv2d(
@@ -39,6 +46,10 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
                 in_features=self._model.fc.in_features,
                 out_features=8
             )
+        elif backbone == 'VGG':
+            from models import DeepHomographyRegression
+
+            self._model = DeepHomographyRegression(shape)
         else:
             if backbone not in model_zoo.get_model_list():
                 raise ValueError('Model {} not available.'.format(backbone))

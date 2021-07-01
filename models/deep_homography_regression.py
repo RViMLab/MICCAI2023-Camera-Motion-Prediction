@@ -26,7 +26,7 @@ class DeepHomographyRegression(nn.Module):
                 ('conv7', ConvBlock(128, 128)),
                 ('conv8', ConvBlock(128, 128)),
                 ('dropout', nn.Dropout2d(p=0.5)),
-                ('faltten', nn.Flatten())
+                ('flatten', nn.Flatten())
         ]))
 
         n = self._numel([1,2*shape[0],shape[1],shape[2]])
@@ -41,9 +41,8 @@ class DeepHomographyRegression(nn.Module):
         x = self.features(x)
         return x.numel()
 
-    def forward(self, img, wrp):
-        duv_pred = torch.cat([img, wrp], dim=1)
-        duv_pred = self.features(duv_pred)
+    def forward(self, cat):
+        duv_pred = self.features(cat)
         duv_pred = self.regression(duv_pred)
         duv_pred = duv_pred.view(-1,4,2)
         return duv_pred
