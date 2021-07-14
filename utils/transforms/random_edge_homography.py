@@ -80,32 +80,31 @@ class RandomEdgeHomography(object):
 
         rollouts = 0
         p0 = np.random.rand()
+
+        # Randomly find top left corner that fits crop
+        top_left = self._random_top_left(inner_shape=self._crp_shape, outer_shape=outer_shape[:2])
         
         while not feasible:
             if rollouts >= self._max_rollouts or p0 < self._p0:
-                # Step 2: Set perturbation to zero
-                duv = np.zeros([4,2], dtype=np.int)
-
-                # Randomly find top left corner that fits crop
-                top_left = self._random_top_left(inner_shape=self._crp_shape, outer_shape=outer_shape[:2])
+                # Perturb inner polygon bu duv = zero
                 inner_uv = self._shape_to_uv(self._crp_shape, top_left)
-                wrp_inner_uv = inner_uv + duv
+                wrp_inner_uv = inner_uv
 
-                # Step 3: Compute homography
-                H = cv2.getPerspectiveTransform(inner_uv[:,::-1].astype(np.float32), wrp_inner_uv[:,::-1].astype(np.float32))
+                # Set homography to identity
+                duv = np.zeros([4,2], dtype=np.int)
+                H = np.eye(3)
 
                 # Additional step: Compute outer boarder
-                wrp_outer_uv = cv2.perspectiveTransform(outer_uv.reshape(-1,1,2)[:,:,::-1], np.linalg.inv(H))
+                wrp_outer_uv = outer_uv[:,::-1]
                 feasible = True
                 break
             
-            rollouts += 1
+            rollouts += 1 
 
             # Step 2: Randomly perturb uv
             duv = np.random.randint(-self._rho, self._rho, [4,2])
 
-            # Randomly find top left corner that fits crop
-            top_left = self._random_top_left(inner_shape=self._crp_shape, outer_shape=outer_shape[:2])
+            # Perturb inner polygon by duv
             inner_uv = self._shape_to_uv(self._crp_shape, top_left)
             wrp_inner_uv = inner_uv + duv
 
@@ -247,7 +246,7 @@ if __name__ == '__main__':
 
     img = np.load(file_path)
     img = cv2.resize(img, (816, 612))
-    reh = RandomEdgeHomography(rho, crp_shape, p0=0.1, homography_return=HOMOGRAPHY_RETURN.VISUAL)
+    reh = RandomEdgeHomography(rho, crp_shape, p0=0., homography_return=HOMOGRAPHY_RETURN.VISUAL)
 
     for i in range(100):
         dic = reh(img)
