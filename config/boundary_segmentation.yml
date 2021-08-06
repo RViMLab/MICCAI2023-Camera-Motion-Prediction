@@ -1,0 +1,18 @@
+data:
+    image_transforms:
+        - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'MultiplyAndAddToBrightness', 'kwargs': {'mul': [0.5, 1.5], 'add': [30, 30]}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Grayscale',                  'kwargs': {}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'ChangeColorTemperature',     'kwargs': {'kelvin': [1100, 5000]}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters.imgcorruptlike', 'type': 'Contrast',                   'kwargs': {'severity': 1}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'GaussianBlur',               'kwargs': {}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'MotionBlur',                 'kwargs': {'k': 15, 'angle': [-45, 45]}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'AdditiveGaussianNoise',                 'kwargs': {'scale': [0, 51]}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Cutout',                 'kwargs': {'nb_iterations': [1, 5], 'cval': 0, 'squared': False}}
+    spatial_transforms:
+        - {'chance': 1.0, 'module': 'imgaug.augmenters', 'type': 'Resize',         'kwargs': {'size': {'height': 270, 'width': 480}}}
+        - {'chance': 0.5, 'module': 'imgaug.augmenters', 'type': 'HorizontalFlip', 'kwargs': {}}
+        - {'chance': 0.5, 'module': 'imgaug.augmenters', 'type': 'VerticalFlip',   'kwargs': {}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters', 'type': 'Rotate',         'kwargs': {'rotate': [-30, 30]}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters', 'type': 'TranslateX',     'kwargs': {'percent': !!python/tuple [0., 0.2]}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters', 'type': 'TranslateY',     'kwargs': {'percent': !!python/tuple [0., 0.2]}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters', 'type': 'Crop',           'kwargs': {'percent': !!python/tuple [0., 0.4]}}
