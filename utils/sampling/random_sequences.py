@@ -61,14 +61,14 @@ class RandomSequences():
             
             if self._transforms:
                 if self._verbose:
-                    return self._sample(self._video_captures[vid_idx.item(0)], frame_idx.item(0), stride, self._transforms[vid_idx.item(0)]), vid_idx.item(0), frame_idx.item(0)
+                    return self._sample(self._video_captures[vid_idx.item(0)], frame_idx, stride, self._transforms[vid_idx.item(0)]), vid_idx.item(0), frame_idx
                 else:
-                    return self._sample(self._video_captures[vid_idx.item(0)], frame_idx.item(0), stride, self._transforms[vid_idx.item(0)])
+                    return self._sample(self._video_captures[vid_idx.item(0)], frame_idx, stride, self._transforms[vid_idx.item(0)])
             else:
                 if self._verbose:
-                    return self._sample(self._video_captures[vid_idx.item(0)], frame_idx.item(0), stride), vid_idx.item(0), frame_idx.item(0)
+                    return self._sample(self._video_captures[vid_idx.item(0)], frame_idx, stride), vid_idx.item(0), frame_idx
                 else:
-                    return self._sample(self._video_captures[vid_idx.item(0)], frame_idx.item(0), stride)
+                    return self._sample(self._video_captures[vid_idx.item(0)], frame_idx, stride)
 
         self.__del__()
         raise StopIteration
