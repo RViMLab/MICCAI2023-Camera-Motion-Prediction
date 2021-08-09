@@ -65,7 +65,7 @@ if __name__ == '__main__':
     save_yaml(os.path.join(logger.log_dir, 'config.yml'), configs)
 
     # monitor
-    monitor_callback = ModelCheckpoint(monitor=configs['monitor'])
+    monitor_callback = ModelCheckpoint(**configs['model_checkpoint'])
 
     # create trainer
     trainer = pl.Trainer(
