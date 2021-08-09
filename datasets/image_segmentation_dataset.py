@@ -5,6 +5,7 @@ from numpy.lib.npyio import load
 import pandas as pd
 from typing import Callable, List
 from torch.utils.data import Dataset
+from torchvision.transforms import ToTensor
 
 
 class ImageSegmentationDataset(Dataset):
@@ -36,6 +37,7 @@ class ImageSegmentationDataset(Dataset):
         self._image_transforms = image_transforms
         self._spatial_transforms = spatial_transforms
         self._seeds = seeds
+        self._tt = ToTensor()
 
     def __getitem__(self, idx):
         # load image and segmentation
@@ -58,7 +60,7 @@ class ImageSegmentationDataset(Dataset):
             imgaug.seed(seed)
             img = self._image_transforms(img)
 
-        return img, seg
+        return self._tt(np.ascontiguousarray(img)), self._tt(np.ascontiguousarray(seg))
  
     def __len__(self):
         return len(self._df)
@@ -113,7 +115,7 @@ if __name__ == '__main__':
     # prefix = '/media/martin/Samsung_T5/data/endoscopic_data/boundary_segmentation'
 
     # df = recursive_scan2df(prefix, '.npy')
-    
+
 
     # images = [{'folder': row.folder, 'file': row.file} for _, row in df[df.folder == 'frame'].iterrows()]
     # segmentations = [{'folder': row.folder, 'file': row.file} for _, row in df[df.folder == 'segmentation'].iterrows()]
@@ -122,10 +124,12 @@ if __name__ == '__main__':
     # segmentations.sort(key=sortFunc)
 
     # log_df = pd.DataFrame({'image': images, 'segmentation': segmentations})
+
+    # # generate test set
+    # log_df['test'] = False
+    # log_df_update = log_df.sample(frac=0.2)
+    # log_df_update.test = True
+    # log_df.update(log_df_update)
+
     # log_df.to_pickle(os.path.join(prefix, 'light_log.pkl'))
     # log_df.to_csv(os.path.join(prefix, 'light_log.csv'))
-
-
-
-
-    
