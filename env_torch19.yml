@@ -1,11 +1,11 @@
-name: hil
+name: torch19
 channels:
   - pytorch
   - defaults
 dependencies:
-  - python=3.9
+  - python=3.8
   - pytorch=1.9.0
-  - cudatoolkit=11.2
+  - cudatoolkit
   - torchvision
   - matplotlib
   - numpy
@@ -20,7 +20,7 @@ dependencies:
     - kornia
     - tensorboard
     - opencv-python
-    - opencv-contrib-python==3.4.2.17
+    - opencv-contrib-python
     - pytorch-lightning
     - moviepy
     - av
