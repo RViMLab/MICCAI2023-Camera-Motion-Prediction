@@ -15,7 +15,9 @@ class ImageSegmentationModule(pl.LightningModule):
         segmentation_model: dict,
         intermediate_shape: List[int]=[256, 256],
         lr: float=1.e-4,
-        betas: List[float]=[0.9, 0.999]
+        betas: List[float]=[0.9, 0.999],
+        milestones: List[int]=[0],
+        gamma: float=1.
     ):
         super().__init__()
 
@@ -26,7 +28,9 @@ class ImageSegmentationModule(pl.LightningModule):
         self._lr = lr
         self._betas = betas
 
-        # self._criterion = torch.nn.BCEWithLogitsLoss()
+        self._milestones = milestones
+        self._gamma = gamma
+
         self._criterion = BinaryFocalLoss()
         self._iou = IoU(segmentation_model['kwargs']['classes']+1)
 
@@ -44,7 +48,9 @@ class ImageSegmentationModule(pl.LightningModule):
         return seg
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self._model.parameters(), lr=self._lr, betas=self._betas)
+        optimizer = torch.optim.Adam(self._model.parameters(), lr=self._lr, betas=self._betas)
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=self._milestones, gamma=self._gamma)
+        return [optimizer], [scheduler]
 
     def training_step(self, batch, batch_idx):
         img, seg = batch
