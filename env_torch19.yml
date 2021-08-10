@@ -1,0 +1,35 @@
+name: hil
+channels:
+  - pytorch
+  - defaults
+dependencies:
+  - python=3.9
+  - pytorch=1.9.0
+  - cudatoolkit=11.2
+  - torchvision
+  - matplotlib
+  - numpy
+  - pip
+  - pyyaml
+  - tqdm
+  - pandas
+  - shapely
+  - notebook
+  - pip:
+    - dotmap
+    - kornia
+    - tensorboard
+    - opencv-python
+    - opencv-contrib-python==3.4.2.17
+    - pytorch-lightning
+    - moviepy
+    - av
+    - imgaug
+    - imagecorruptions
+    - sklearn
+    - efficientnet_pytorch
+    - h5py
+    - git+https://github.com/facebookresearch/pycls@master # pycls
+    - iopath
+    - segmentation_models_pytorch
+    - pytorch_toolbelt
