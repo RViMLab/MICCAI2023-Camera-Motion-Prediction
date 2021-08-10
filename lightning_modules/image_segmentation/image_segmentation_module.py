@@ -1,6 +1,6 @@
 import torch
 import pytorch_lightning as pl
-from pytorch_lightning.metrics.classification.iou import IoU
+from torchmetrics.classification.iou import IoU
 from pytorch_toolbelt.losses import BinaryFocalLoss
 import segmentation_models_pytorch as smp
 from kornia import resize

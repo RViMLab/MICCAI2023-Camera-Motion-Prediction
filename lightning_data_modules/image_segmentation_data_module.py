@@ -61,7 +61,7 @@ class ImageSegmentationDataModule(pl.LightningDataModule):
             seeds = np.arange(0, len(self._test_df)).tolist() # assure test set is seeded the same for all runs
             self._test_set = ImageSegmentationDataset(self._test_df, self._prefix, image_transforms=self._test_image_transforms, spatial_transforms=self._test_spatial_transforms, seeds=seeds)
 
-    def transfer_batch_to_device(self, batch, device):
+    def transfer_batch_to_device(self, batch, device, dataloader_idx):
         batch[0], batch[1] = batch[0].to(device), batch[1].to(device)
         return batch
 

@@ -33,7 +33,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         if stage == 'test':
             pass
 
-    def transfer_batch_to_device(self, batch, device):
+    def transfer_batch_to_device(self, batch, device, dataloader_idx):
         pass
 
     def train_dataloader(self):

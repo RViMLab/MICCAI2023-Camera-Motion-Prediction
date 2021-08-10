@@ -82,7 +82,7 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
             seeds = np.arange(0, len(self._test_df)).tolist() # assure test set is seeded the same for all runs
             self._test_set = ImagePairHomographyDataset(self._test_df, self._prefix, self._rho, self._crp_shape, self._p0, self._seq_len, seeds=seeds, return_img_pair=self._unsupervised) # for final evaluation
 
-    def transfer_batch_to_device(self, batch, device):
+    def transfer_batch_to_device(self, batch, device, dataloader_idx):
         batch['img_crp'] = batch['img_crp'].to(device)
         batch['wrp_crp'] = batch['wrp_crp'].to(device)
         batch['duv'] = batch['duv'].to(device)
