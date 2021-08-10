@@ -3,6 +3,7 @@ import argparse
 import pandas as pd
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.callbacks import ModelCheckpoint
 import torch
 
 from utils.io import load_yaml, save_yaml, generate_path
@@ -67,9 +68,10 @@ if __name__ == '__main__':
     save_yaml(os.path.join(logger.log_dir, 'config.yml'), configs)
 
     # callback for homography augmentation edge deviation change
-    callbacks = None
+    callbacks = [ModelCheckpoint(**configs['model_checkpoint'])]
+
     if configs['callback'] is not None:
-        callbacks = [RhoCallback(configs['callback']['rhos'], configs['callback']['epochs'])]
+        callbacks.append([RhoCallback(configs['callback']['rhos'], configs['callback']['epochs'])])
 
     trainer = pl.Trainer(
         max_epochs=configs['trainer']['max_epochs'],

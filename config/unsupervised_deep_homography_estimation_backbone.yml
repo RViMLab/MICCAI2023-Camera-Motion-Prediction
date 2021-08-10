@@ -1,6 +1,9 @@
 experiment: 'unsupervised_deep_homography_estimation_backbone'
 lightning_module: 'UnsupervisedDeepHomographyEstimationModuleBackbone'
 lightning_data_module: 'ImagePairHomographyDataModule'
+model_checkpoint: 
+    monitor: 'val/distance'
+    mode: 'min'
 trainer:
     gpus: [1]
     max_epochs: 20
@@ -43,4 +46,4 @@ model:
     milestones: [0]
     gamma: 1.0
     log_n_steps: 1000
-    backbone: 'resnet34'
+    backbone: 'ResNet-34'
