@@ -195,7 +195,7 @@ class RandomEdgeHomography(object):
                 [top_left[0]               , top_left[1] + shape[1] - 1],
                 [top_left[0] + shape[0] - 1, top_left[1] + shape[1] - 1],
                 [top_left[0] + shape[0] - 1, top_left[1]               ],
-        ], dtype=np.float)
+        ], dtype=float)
         return uv
 
     def _random_top_left(self, inner_shape: List[int], outer_shape: List[int]):
