@@ -1,6 +1,6 @@
 runai submit hil-supervised-backbone-increase \
   -p mhuber \
-  -i 10.202.67.207:5000/mhuber:hil_01 \
+  -i 10.202.67.207:5000/mhuber:torch19 \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
   -v /nfs/home/mhuber/data:/nfs/home/mhuber/data \
   -v /nfs/home/mhuber/tresorit/homography_imitation_learning_logs:/nfs/home/mhuber/tresorit/homography_imitation_learning_logs \
