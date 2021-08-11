@@ -29,19 +29,21 @@ data:
     unsupervised: True
     train_transforms: # augmentations from imgaug https://imgaug.readthedocs.io/en/latest/source/overview_of_augmenters.html
         # - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',             'kwargs': {'size': {'height': 612, 'width': 816}}}
-        - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'ChangeColorspace',   'kwargs': {'to_colorspace': 'RGB', 'from_colorspace': 'BGR'}}
-        - {'chance': 0.1, 'module': 'imgaug.augmenters',                'type': 'Grayscale',          'kwargs': {}}
-        - {'chance': 0.5, 'module': 'imgaug.augmenters',                'type': 'HorizontalFlip',     'kwargs': {}}
-        - {'chance': 0.5, 'module': 'imgaug.augmenters',                'type': 'VerticalFlip',       'kwargs': {}}
-        - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Crop',               'kwargs': {'percent': !!python/tuple [0., 0.4]}}
-        - {'chance': 0.3, 'module': 'imgaug.augmenters',                'type': 'MultiplyBrightness', 'kwargs': {'mul': [0.5, 1.5]}}
-        - {'chance': 0.1, 'module': 'imgaug.augmenters',                'type': 'GaussianBlur',       'kwargs': {}}
-        - {'chance': 0.1, 'module': 'imgaug.augmenters.imgcorruptlike', 'type': 'Fog',                'kwargs': {'severity': 2}}
-        - {'chance': 0.2, 'module': 'imgaug.augmenters.imgcorruptlike', 'type': 'Contrast',           'kwargs': {'severity': 1}}
+        - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'ChangeColorspace',       'kwargs': {'to_colorspace': 'RGB', 'from_colorspace': 'BGR'}}
+        - {'chance': 0.1, 'module': 'imgaug.augmenters',                'type': 'Grayscale',              'kwargs': {}}
+        - {'chance': 0.5, 'module': 'imgaug.augmenters',                'type': 'HorizontalFlip',         'kwargs': {}}
+        - {'chance': 0.5, 'module': 'imgaug.augmenters',                'type': 'VerticalFlip',           'kwargs': {}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Crop',                   'kwargs': {'percent': !!python/tuple [0., 0.4]}}
+        - {'chance': 0.3, 'module': 'imgaug.augmenters',                'type': 'MultiplyBrightness',     'kwargs': {'mul': [0.5, 1.5]}}
+        - {'chance': 0.1, 'module': 'imgaug.augmenters',                'type': 'GaussianBlur',           'kwargs': {}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'ChangeColorTemperature', 'kwargs': {'kelvin': [3000, 15000]}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'AdditiveGaussianNoise',  'kwargs': {'scale': [0, 51]}}
+        - {'chance': 0.1, 'module': 'imgaug.augmenters.imgcorruptlike', 'type': 'Fog',                    'kwargs': {'severity': 2}}
+        - {'chance': 0.2, 'module': 'imgaug.augmenters.imgcorruptlike', 'type': 'Contrast',               'kwargs': {'severity': 1}}
     val_transforms:
-        - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'ChangeColorspace',   'kwargs': {'to_colorspace': 'RGB', 'from_colorspace': 'BGR'}}
+        - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'ChangeColorspace',       'kwargs': {'to_colorspace': 'RGB', 'from_colorspace': 'BGR'}}
     test_transforms:
-        - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'ChangeColorspace',   'kwargs': {'to_colorspace': 'RGB', 'from_colorspace': 'BGR'}}
+        - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'ChangeColorspace',       'kwargs': {'to_colorspace': 'RGB', 'from_colorspace': 'BGR'}}
 model:
     shape: [3, 480, 640]
     pretrained: False
