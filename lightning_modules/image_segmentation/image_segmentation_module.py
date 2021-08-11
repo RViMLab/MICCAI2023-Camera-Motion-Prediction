@@ -71,11 +71,6 @@ class ImageSegmentationModule(pl.LightningModule):
         bfl = self._criterion(seg_pred, seg)
         iou = self._iou(seg_pred, seg.int())
 
-        # log images
-        self.logger.experiment.add_images('train/seg', seg, self.global_step)
-        self.logger.experiment.add_images('train/img', img, self.global_step)
-        self.logger.experiment.add_images('train/seg_pred', seg_pred, self.global_step)
-
         self.log_dict({'val/binary_focal_loss': bfl, 'val/iou': iou})
 
     def test_step(self, batch, batch_idx):
@@ -85,5 +80,10 @@ class ImageSegmentationModule(pl.LightningModule):
         seg_pred = self(img)
         bfl = self._criterion(seg_pred, seg)
         iou = self._iou(seg_pred, seg.int())
+
+        # log images
+        self.logger.experiment.add_images('test/seg', seg, 0)
+        self.logger.experiment.add_images('test/img', img, 0)
+        self.logger.experiment.add_images('test/seg_pred', seg_pred, 0)
 
         self.log_dict({'test/binary_focal_loss': bfl, 'test/iou': iou})
