@@ -29,6 +29,7 @@ data:
     unsupervised: True
     train_transforms: # augmentations from imgaug https://imgaug.readthedocs.io/en/latest/source/overview_of_augmenters.html
         # - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',             'kwargs': {'size': {'height': 612, 'width': 816}}}
+        - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'ChangeColorspace',   'kwargs': {'to_colorspace': 'RGB', 'from_colorspace': 'BGR'}}
         - {'chance': 0.1, 'module': 'imgaug.augmenters',                'type': 'Grayscale',          'kwargs': {}}
         - {'chance': 0.5, 'module': 'imgaug.augmenters',                'type': 'HorizontalFlip',     'kwargs': {}}
         - {'chance': 0.5, 'module': 'imgaug.augmenters',                'type': 'VerticalFlip',       'kwargs': {}}
@@ -37,7 +38,10 @@ data:
         - {'chance': 0.1, 'module': 'imgaug.augmenters',                'type': 'GaussianBlur',       'kwargs': {}}
         - {'chance': 0.1, 'module': 'imgaug.augmenters.imgcorruptlike', 'type': 'Fog',                'kwargs': {'severity': 2}}
         - {'chance': 0.2, 'module': 'imgaug.augmenters.imgcorruptlike', 'type': 'Contrast',           'kwargs': {'severity': 1}}
-    val_transforms: null
+    val_transforms:
+        - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'ChangeColorspace',   'kwargs': {'to_colorspace': 'RGB', 'from_colorspace': 'BGR'}}
+    test_transforms:
+        - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'ChangeColorspace',   'kwargs': {'to_colorspace': 'RGB', 'from_colorspace': 'BGR'}}
 model:
     shape: [3, 480, 640]
     pretrained: null

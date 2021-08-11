@@ -25,6 +25,7 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
             random_state: int=42,
             train_transforms: List[dict]=None,
             val_transforms: List[dict]=None,
+            test_transforms: List[dict]=None,
             tolerance: float = 0.05
         ):
         super().__init__()
@@ -61,6 +62,7 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
 
         self._train_transforms = dictListToAugment(train_transforms)
         self._val_transforms = dictListToAugment(val_transforms)
+        self._test_transforms = dictListToAugment(test_transforms)
 
     @property
     def rho(self):
@@ -80,7 +82,7 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
             self._val_set = ImagePairHomographyDataset(self._val_df, self._prefix, self._rho, self._crp_shape, self._p0, self._seq_len, transforms=self._val_transforms, seeds=seeds, return_img_pair=True)
         if stage == 'test' or stage is None:
             seeds = np.arange(0, len(self._test_df)).tolist() # assure test set is seeded the same for all runs
-            self._test_set = ImagePairHomographyDataset(self._test_df, self._prefix, self._rho, self._crp_shape, self._p0, self._seq_len, seeds=seeds, return_img_pair=self._unsupervised) # for final evaluation
+            self._test_set = ImagePairHomographyDataset(self._test_df, self._prefix, self._rho, self._crp_shape, self._p0, self._seq_len, transforms=self._test_transforms, seeds=seeds, return_img_pair=self._unsupervised) # for final evaluation
 
     def transfer_batch_to_device(self, batch, device, dataloader_idx):
         batch['img_crp'] = batch['img_crp'].to(device)
