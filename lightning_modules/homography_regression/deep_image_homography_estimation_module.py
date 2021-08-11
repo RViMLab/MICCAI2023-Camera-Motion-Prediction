@@ -78,7 +78,6 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
             )
             self.logger.experiment.add_figure('val/wrp', figure, self._validation_step_ct)
         self._validation_step_ct += 1
-        return distance_loss
 
     def test_step(self, batch, batch_idx):
         duv_pred = self._model(batch['img_crp'], batch['wrp_crp'])
@@ -87,4 +86,3 @@ class DeepImageHomographyEstimationModule(pl.LightningModule):
             batch['duv'].to(duv_pred.dtype).view(-1, 2)
         ).mean()
         self.log('test/distance', distance_loss, on_epoch=True)
-        return distance_loss
