@@ -36,6 +36,7 @@ class VideoDataset(Dataset):
             permute (bool): Permute sampled sequence channels NxHxWxC -> NxCxHxW (memory intensive)
             convert_dtype (bool): Permute sampled sequence dtype to torch.float32 (memory intensive)
         """
+        super().__init__()
         if pre_transforms is not None and len(video_paths) != len(pre_transforms): 
             raise ValueError("Length of provided videos paths must equal length of provided transforms.")
 
@@ -71,6 +72,7 @@ class VideoDataset(Dataset):
 
         if self._permute:
             video = video.permute(0, 3, 1, 2).contiguous()  # NxHxWxC -> NxCxHxW
+            # video = video[:,[2,1,0]].contiguous()  # RGB -> BGR
 
         # crop and resize video
         if self._pre_transforms[video_idx]:

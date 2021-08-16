@@ -37,6 +37,7 @@ class VideoDataModule(pl.LightningDataModule):
             num_workers (int): Number of workers for the VideoClip init and for the Dataloader
             random_state (int): Initial random state for the train/validation split
         """
+        super().__init__()
         self._meta_df = meta_df
         self._prefix = prefix
 
