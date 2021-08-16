@@ -95,7 +95,7 @@ class RandomSequences():
             if transforms:
                 img = transforms(img)
             imgs.append(img)
-        return imgs
+        return np.array(imgs)
 
 
 if __name__ == '__main__':
