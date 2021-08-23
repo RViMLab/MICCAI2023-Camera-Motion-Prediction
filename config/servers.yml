@@ -1,6 +1,6 @@
 local: 
     config:
-        location: '/home/martin/Documents/code_snippets/homography_imitation_learning/config'
+        location: '/home/martin/Dev/homography_imitation_learning/config'
     database:
         location: '/media/martin/Samsung_T5/data/endoscopic_data'
     logging:
