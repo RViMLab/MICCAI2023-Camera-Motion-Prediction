@@ -11,7 +11,7 @@ class FeatureHomographyEstimation(object):
         fd (cv2.Feature2D): Feature detector https://docs.opencv.org/3.4/d0/d13/classcv_1_1Feature2D.html
 
     Example:
-        fd = cv2.xfeatures2d.SIFT_create()
+        fd = cv2.SIFT_create()
         fh = FeatureHomographyEstimation(fd)
 
         H, duv = fh(img, wrp)
@@ -112,7 +112,7 @@ class FeatureHomographyEstimation(object):
 
 
 if __name__ == '__main__':
-    fd = cv2.xfeatures2d.SIFT_create()
+    fd = cv2.SIFT_create()
     fh = FeatureHomographyEstimation(fd)
 
     img = np.load('utils/processing/sample.npy')

@@ -69,7 +69,7 @@ from utils.viz import yt_alpha_blend
 from utils.io import generate_path
 
 # feature-based model creationg stage
-fd = cv2.xfeatures2d.SIFT_create()
+fd = cv2.SIFT_create()
 fh = FeatureHomographyEstimation(fd)
 
 # deep creationg stage
