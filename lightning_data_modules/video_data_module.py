@@ -1,6 +1,6 @@
 import os
 import pytorch_lightning as pl
-from typing import List
+from typing import Tuple
 import pandas as pd
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
@@ -78,9 +78,11 @@ class VideoDataModule(pl.LightningDataModule):
         self._val_metadata = val_metadata
         self._test_metadata = test_metadata
 
+    @property
+    def metadata(self) -> Tuple[VideoDataset]:
+        return (self._train_metadata, self._val_metadata, self._test_metadata)
 
     def setup(self, stage=None):
-        metadata = {'train': None, 'val': None, 'test': None}
 
         if stage == 'fit' or stage is None:
             self._train_set = VideoDataset(
@@ -94,7 +96,7 @@ class VideoDataModule(pl.LightningDataModule):
                 aug_transforms=self._train_aug_transforms
             )
 
-            metadata['train'] = self._train_set.metadata
+            self._train_set = self._train_set.metadata
 
             self._val_set = VideoDataset(
                 video_paths=self._val_video_paths,
@@ -108,7 +110,7 @@ class VideoDataModule(pl.LightningDataModule):
                 seeds=True
             )
 
-            metadata['val'] = self._val_set.metadata
+            self._val_metadata = self._val_set.metadata
 
         if stage == 'test' or stage is None:
             self._test_set = VideoDataset(
@@ -123,9 +125,7 @@ class VideoDataModule(pl.LightningDataModule):
                 seeds=True
             )
 
-            metadata['test'] = self._test_set.metadata
- 
-        return (metadata['train'], metadata['val'], metadata['test'])
+            self._test_set = self._test_set.metadata
 
     def train_dataloader(self):
         return DataLoader(self._train_set, self._batch_size, shuffle=True, num_workers=self._num_workers, drop_last=True)  # shuffle train loader
@@ -178,7 +178,8 @@ if __name__ == '__main__':
         batch_size=4
     )
 
-    metadata = dm.setup('fit')
+    dm.setup('fit')
+    metadata = dm.metadata
     # save_pickle('path.pkl', metadata)  # save and load metadata
 
     # get a sample dataloader

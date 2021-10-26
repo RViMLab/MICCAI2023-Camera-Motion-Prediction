@@ -8,7 +8,7 @@ from utils.transforms import anyDictListToCompose
 from lightning_data_modules import VideoDataModule
 
 server = 'local'
-server = DotMap(load_yaml('/home/martin/Documents/code_snippets/homography_imitation_learning/config/servers.yml')[server])
+server = DotMap(load_yaml('/home/martin/Dev/homography_imitation_learning/config/servers.yml')[server])
 
 meta_df_name = 'cholec80_dummy_transforms.pkl'
 # meta_df_name = 'cholec80_retransfor ms.pkl'
