@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from typing import Tuple, Union
-from kornia import get_perspective_transform
+from kornia.geometry.transform import get_perspective_transform
 
 
 def four_point_homography_to_matrix(uv_img: torch.Tensor, duv: torch.Tensor) -> torch.Tensor:

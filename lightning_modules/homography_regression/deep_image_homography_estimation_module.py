@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 import pytorch_lightning as pl
 from typing import List
-from kornia import tensor_to_image, warp_perspective
+from kornia.geometry import warp_perspective
+from kornia import tensor_to_image
 
 from models import DeepHomographyRegression
 from utils.viz import warp_figure, yt_alpha_blend

@@ -3,7 +3,7 @@ import pytorch_lightning as pl
 from torchmetrics.classification.iou import IoU
 from pytorch_toolbelt.losses import BinaryFocalLoss
 import segmentation_models_pytorch as smp
-from kornia import resize
+from kornia.geometry import resize
 from typing import List
 
 from torchvision.transforms.functional import InterpolationMode

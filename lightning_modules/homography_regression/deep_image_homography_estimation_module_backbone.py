@@ -3,7 +3,8 @@ import torch.nn as nn
 import torchvision.models as models
 import pytorch_lightning as pl
 from typing import List
-from kornia import tensor_to_image, warp_perspective
+from kornia.geometry import warp_perspective
+from kornia import tensor_to_image
 from pycls.models import model_zoo
 
 from utils.viz import warp_figure, yt_alpha_blend

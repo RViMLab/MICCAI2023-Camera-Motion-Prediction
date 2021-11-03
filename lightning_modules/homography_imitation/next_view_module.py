@@ -4,7 +4,7 @@ import torch.nn as nn
 import torchvision.models as models
 import pytorch_lightning as pl
 from typing import List
-from kornia import warp_perspective
+from kornia.geometry import warp_perspective
 
 import lightning_modules
 from utils.processing import frame_pairs, image_edges, four_point_homography_to_matrix

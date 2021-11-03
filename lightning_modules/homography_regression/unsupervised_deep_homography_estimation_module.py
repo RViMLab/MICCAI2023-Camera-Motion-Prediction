@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
 import pytorch_lightning as pl
-from kornia import warp_perspective, get_perspective_transform, crop_and_resize, tensor_to_image
+from kornia.geometry import warp_perspective, get_perspective_transform, crop_and_resize
+from kornia import tensor_to_image
 from typing import List
 
 from models import DeepHomographyRegression
