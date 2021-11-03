@@ -5,13 +5,14 @@ from skimage.draw import ellipse
 
 class EndoscopyEllipsoid(object):
     def movingCenterPipeline(self, 
-        img: np.array, 
-        wrp: np.array, 
-        c_off_scale: List[float]=[0.125, 0.125], 
-        min_scale: List[float]=[0.4, 0.4], max_scale: List[float]=[0.8, 0.8], 
-        min_rot: float=0., max_rot: float=2*np.pi,
-
-        dc_scale: List[float]=[0.1, 0.1], dori: List[float]=[-np.pi*0.1, np.pi*0.1], update_chance: float=1.0,  seed: np.int32=None):
+            img: np.array, 
+            wrp: np.array, 
+            c_off_scale: List[float]=[0.125, 0.125], 
+            min_scale: List[float]=[0.3, 0.3], max_scale: List[float]=[1.0, 1.0], 
+            min_rot: float=0., max_rot: float=2*np.pi,
+            dc_scale: List[float]=[0.1, 0.1], dori: List[float]=[-np.pi*0.1, np.pi*0.1], update_chance: float=1.0,
+            seed: np.int32=None
+        ):
         r"""Builds a pipeline that simulates a moving camera on the endoscope. Adds noise
         around endoscopic view.
 
@@ -93,7 +94,7 @@ class EndoscopyEllipsoid(object):
         return center
 
     @staticmethod
-    def randomHalfAxes(shape: Tuple[int], min_scale: List[float]=[0.4, 0.4], max_scale: List[float]=[0.8, 0.8], seed: np.int32=None) -> np.array:
+    def randomHalfAxes(shape: Tuple[int], min_scale: List[float]=[0.3, 0.3], max_scale: List[float]=[1.0, 1.0], seed: np.int32=None) -> np.array:
         r"""Compute random half axes. Returns uniformly sampled half axes in [min_scale, max_scale]*shape[:2].
 
         Args:
