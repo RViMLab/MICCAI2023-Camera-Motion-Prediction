@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 from torchvision.transforms import ToTensor
 from typing import List, Callable
 
-from utils.transforms import RandomEdgeHomography, HOMOGRAPHY_RETURN, EndoscopyCircle
+from utils.transforms import RandomEdgeHomography, HOMOGRAPHY_RETURN
 
 
 class ImagePairHomographyDataset(Dataset):
