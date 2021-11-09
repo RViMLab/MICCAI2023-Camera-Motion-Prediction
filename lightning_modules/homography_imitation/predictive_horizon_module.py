@@ -1,31 +1,49 @@
 import os
+import pytorchvideo
+from pytorchvideo.models import r2plus1d
 import torch
 import torch.nn as nn
-import torchvision.models as models
+# import torchvision.models as models
 import pytorch_lightning as pl
 from typing import List
-from kornia import warp_perspective
-
+from kornia.geometry import warp_perspective
 import lightning_modules
 from utils.processing import frame_pairs, image_edges, four_point_homography_to_matrix
 from utils.viz import yt_alpha_blend, duv_mean_pairwise_distance_figure
 
 
+
+from pytorchvideo.models import r2plus1d, resnet, slowfast, vision_transformers, head
+
+
+
+
+# - create both feature and standard forward model
+# - have both forward M time steps, and predict the following N
+# - state_buffer, preview horizon
+# - M, N
+
+
 class PredictiveHorizonModule(pl.LightningModule):
-    def __init__(self, shape: List[int], lr: float=1e-4, betas: List[float]=[0.9, 0.999], log_n_steps: int=1000, backbone: str='resnet34', preview_horizon: int=4, frame_stride: int=1):
+    def __init__(self, backbone: dict, lr: float=1e-4, betas: List[float]=[0.9, 0.999], log_n_steps: int=1000, recall_horizon: int=4, preview_horizon: int=4, frame_stride: int=1):
         super().__init__()
         self.save_hyperparameters('lr', 'betas', 'backbone')
 
         self._homography_regression = None
 
         # load model
-        self._model = getattr(models, backbone)(**{'pretrained': False})
-
-        # modify out layers
-        self._model.fc = nn.Linear(
-            in_features=self._model.fc.in_features,
-            out_features=8*preview_horizon
+        self._model = getattr(globals()[backbone['module']], backbone['function']['name'])(**backbone['function']['kwargs'], model_num_class=8*preview_horizon)
+        self._model.blocks[-1] = head.ResNetBasicHead(
+            pool=self._model.blocks[-1].pool,
+            proj=self._model.blocks[-1].proj,
+            output_pool=self._model.blocks[-1].output_pool
         )
+
+        # # modify out layers
+        # self._model.fc = nn.Linear(
+        #     in_features=self._model.fc.in_features,
+        #     out_features=8*preview_horizon
+        # )
 
         self._distance_loss = nn.PairwiseDistance()
 
@@ -34,6 +52,7 @@ class PredictiveHorizonModule(pl.LightningModule):
         self._validation_step_ct = 0
         self._log_n_steps = log_n_steps
 
+        self._recall_horizon = recall_horizon
         self._preview_horizon = preview_horizon
         self._frame_stride = frame_stride
 
@@ -61,9 +80,9 @@ class PredictiveHorizonModule(pl.LightningModule):
         if self._homography_regression is None:
             raise ValueError('Homography regression model required in training step.')
         videos, transformed_videos, frame_rate, vid_fps, vid_idc, clip_idc = batch
-        frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
-        frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxHxW
-        frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
+        frames_i, frames_ips = frame_pairs(videos[:,-(self._preview_horizon+1):], self._frame_stride)  # re-sort images
+        frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxCxHxW
+        frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxCxHxW
 
         with torch.no_grad():
             duvs_reg = self._homography_regression(frames_i, frames_ips)
@@ -82,8 +101,11 @@ class PredictiveHorizonModule(pl.LightningModule):
                 # visualize duv mean pairwise distance to zero
                 duv_mpd_seq_figure = duv_mean_pairwise_distance_figure(duvs_reg[0].cpu().numpy(), re_fps=frame_rate[0].item(), fps=vid_fps[vid_idc[0]][0].item())  # get vid_idc of zeroth batch
                 self.logger.experiment.add_figure('verify/duv_mean_pairwise_distance', duv_mpd_seq_figure, self.global_step)
+        
+        recall_horizon = transformed_videos[:,:self._recall_horizon]
+        recall_horizon = recall_horizon.permute(0,2,1,3,4)  # BxNxCxHxW -> BxCxNxHxW
 
-        duvs = self(transformed_videos[:,0].squeeze())  # forward batch of first images
+        duvs = self(recall_horizon)  # forward recall horizon
 
         # distance loss
         distance_loss = self._distance_loss(
@@ -99,13 +121,18 @@ class PredictiveHorizonModule(pl.LightningModule):
             raise ValueError('Homography regression model required in validation step.')
         # by default without grad (torch.set_grad_enabled(False))
         videos, transformed_videos, frame_rate, vid_fps, vid_idc, clip_idc = batch
-        frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
-        frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*N  xHxW
-        frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxHxW
+        frames_i, frames_ips = frame_pairs(videos[:,-(self._preview_horizon+1):], self._frame_stride)  # re-sort images
+        frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxCxHxW
+        frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxCxHxW
 
         duvs_reg = self._homography_regression(frames_i, frames_ips)
         duvs_reg = duvs_reg.view(videos.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
-        duvs = self(transformed_videos[:,0].squeeze())       # forward batch of first images
+
+        # only need to sample recall_horizon transformed videos, preview_horizon videos, unless want to forward duv to motion prediction, then sample clip_length_in_frames videos
+        recall_horizon = transformed_videos[:,:self._recall_horizon]
+        recall_horizon = recall_horizon.permute(0,2,1,3,4)  # BxNxCxHxW -> BxCxNxHxW
+
+        duvs = self(recall_horizon)  # forward recall horizon
         
         # distance loss
         distance_loss = self._distance_loss(
