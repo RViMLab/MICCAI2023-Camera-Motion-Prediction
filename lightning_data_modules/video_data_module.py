@@ -80,7 +80,7 @@ class VideoDataModule(pl.LightningDataModule):
 
     @property
     def metadata(self) -> Tuple[VideoDataset]:
-        return (self._train_metadata, self._val_metadata, self._test_metadata)
+        return self._train_metadata, self._val_metadata, self._test_metadata
 
     def setup(self, stage=None):
 
@@ -96,7 +96,7 @@ class VideoDataModule(pl.LightningDataModule):
                 aug_transforms=self._train_aug_transforms
             )
 
-            self._train_set = self._train_set.metadata
+            self._train_metadata = self._train_set.metadata
 
             self._val_set = VideoDataset(
                 video_paths=self._val_video_paths,
@@ -125,7 +125,7 @@ class VideoDataModule(pl.LightningDataModule):
                 seeds=True
             )
 
-            self._test_set = self._test_set.metadata
+            self._test_metadata = self._test_set.metadata
 
     def train_dataloader(self):
         return DataLoader(self._train_set, self._batch_size, shuffle=True, num_workers=self._num_workers, drop_last=True)  # shuffle train loader

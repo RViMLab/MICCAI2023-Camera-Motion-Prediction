@@ -42,9 +42,15 @@ if __name__ == '__main__':
     meta_df = pd.read_pickle(os.path.join(config_path, configs['data']['meta_df']))[:configs['data']['subset_length']]
 
     # load video meta data if existing, returns None if none existent
-    train_md = load_pickle(os.path.join(server['config']['location'], configs['data']['train_metadata']))
-    val_md = load_pickle(os.path.join(server['config']['location'], configs['data']['val_metadata']))
-    test_md = load_pickle(os.path.join(server['config']['location'], configs['data']['test_metadata']))
+    train_md = None
+    val_md = None
+    test_md = None
+    if os.path.exists(os.path.join(server['config']['location'], configs['data']['train_metadata'])): 
+        train_md = load_pickle(os.path.join(server['config']['location'], configs['data']['train_metadata']))
+    if os.path.exists(os.path.join(server['config']['location'], configs['data']['val_metadata'])):
+        val_md = load_pickle(os.path.join(server['config']['location'], configs['data']['val_metadata']))
+    if os.path.exists(os.path.join(server['config']['location'], configs['data']['test_metadata'])):
+        test_md = load_pickle(os.path.join(server['config']['location'], configs['data']['test_metadata']))
 
     # load specific data module
     kwargs = {
@@ -65,7 +71,8 @@ if __name__ == '__main__':
     dm = getattr(lightning_data_modules, configs['lightning_data_module'])(**kwargs)
     dm.prepare_data()
 
-    train_md, val_md, test_md = dm.setup()
+    dm.setup()
+    train_md, val_md, test_md = dm.metadata
 
     save_pickle(os.path.join(server['config']['location'], configs['data']['train_metadata']), train_md)
     save_pickle(os.path.join(server['config']['location'], configs['data']['val_metadata']), val_md)
