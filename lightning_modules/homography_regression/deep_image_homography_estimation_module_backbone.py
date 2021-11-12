@@ -88,21 +88,49 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
         return [optimizer], [scheduler]
 
     def training_step(self, batch, batch_idx):
-        duv_pred = self(batch['img_crp'], batch['wrp_crp'])
+        duv_fw_pred = self(batch['img_crp'], batch['wrp_crp'])
+        duv_bw_pred = self(batch['wrp_crp'], batch['img_crp'])
         distance_loss = self._distance_loss(
-            duv_pred.view(-1, 2), 
-            batch['duv'].to(duv_pred.dtype).view(-1, 2)
+            duv_fw_pred.view(-1, 2), 
+            batch['duv'].to(duv_fw_pred.dtype).view(-1, 2)
         ).mean()
-        self.log('train/distance', distance_loss) # logs all log_every_n_steps https://pytorch-lightning.readthedocs.io/en/latest/logging.html#control-logging-frequency
-        return distance_loss    
+        distance_loss += self._distance_loss(
+            duv_bw_pred.view(-1, 2), 
+            -batch['duv'].to(duv_bw_pred.dtype).view(-1, 2)
+        ).mean()
+        consistency_loss = self._distance_loss(
+            duv_fw_pred.view(-1, 2),
+            -duv_bw_pred.view(-1,2)
+        ).mean()
+
+        accumulated_loss = distance_loss + consistency_loss
+
+        self.log('train/distance_loss', distance_loss) # logs all log_every_n_steps https://pytorch-lightning.readthedocs.io/en/latest/logging.html#control-logging-frequency
+        self.log('train/consistency_loss', consistency_loss)
+        self.log('train/accumulated_loss', accumulated_loss)
+        return accumulated_loss
 
     def validation_step(self, batch, batch_idx):
-        duv_pred = self(batch['img_crp'], batch['wrp_crp'])
+        duv_fw_pred = self(batch['img_crp'], batch['wrp_crp'])
+        duv_bw_pred = self(batch['wrp_crp'], batch['img_crp'])
         distance_loss = self._distance_loss(
-            duv_pred.view(-1, 2), 
-            batch['duv'].to(duv_pred.dtype).view(-1, 2)
+            duv_fw_pred.view(-1, 2), 
+            batch['duv'].to(duv_fw_pred.dtype).view(-1, 2)
         ).mean()
-        self.log('val/distance', distance_loss, on_epoch=True)
+        distance_loss += self._distance_loss(
+            duv_bw_pred.view(-1, 2), 
+            -batch['duv'].to(duv_bw_pred.dtype).view(-1, 2)
+        ).mean()
+        consistency_loss = self._distance_loss(
+            duv_fw_pred.view(-1, 2),
+            -duv_bw_pred.view(-1,2)
+        ).mean()
+
+        accumulated_loss = distance_loss + consistency_loss
+
+        self.log('train/distance_loss', distance_loss) # logs all log_every_n_steps https://pytorch-lightning.readthedocs.io/en/latest/logging.html#control-logging-frequency
+        self.log('train/consistency_loss', consistency_loss)
+        self.log('train/accumulated_loss', accumulated_loss)
 
         if self._validation_step_ct % self._log_n_steps == 0:
             # uv = image_edges(batch['img_crp'])
@@ -120,16 +148,16 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
                 img=tensor_to_image(batch['img_pair'][0][0]), 
                 uv=batch['uv'][0].squeeze().cpu().numpy(), 
                 duv=batch['duv'][0].squeeze().cpu().numpy(), 
-                duv_pred=duv_pred[0].squeeze().cpu().numpy(), 
+                duv_pred=duv_fw_pred[0].squeeze().cpu().numpy(), 
                 H=batch['H'][0].squeeze().cpu().numpy()
             )
             self.logger.experiment.add_figure('val/wrp', figure, self._validation_step_ct)
         self._validation_step_ct += 1
 
     def test_step(self, batch, batch_idx):
-        duv_pred = self(batch['img_crp'], batch['wrp_crp'])
+        duv_fw_pred = self(batch['img_crp'], batch['wrp_crp'])
         distance_loss = self._distance_loss(
-            duv_pred.view(-1, 2), 
-            batch['duv'].to(duv_pred.dtype).view(-1, 2)
+            duv_fw_pred.view(-1, 2), 
+            batch['duv'].to(duv_fw_pred.dtype).view(-1, 2)
         ).mean()
-        self.log('test/distance', distance_loss, on_epoch=True)
+        self.log('test/distance_loss', distance_loss, on_epoch=True)
