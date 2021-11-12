@@ -128,9 +128,9 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
 
         accumulated_loss = distance_loss + consistency_loss
 
-        self.log('train/distance_loss', distance_loss) # logs all log_every_n_steps https://pytorch-lightning.readthedocs.io/en/latest/logging.html#control-logging-frequency
-        self.log('train/consistency_loss', consistency_loss)
-        self.log('train/accumulated_loss', accumulated_loss)
+        self.log('val/distance_loss', distance_loss) # logs all log_every_n_steps https://pytorch-lightning.readthedocs.io/en/latest/logging.html#control-logging-frequency
+        self.log('val/consistency_loss', consistency_loss)
+        self.log('val/accumulated_loss', accumulated_loss)
 
         if self._validation_step_ct % self._log_n_steps == 0:
             # uv = image_edges(batch['img_crp'])
