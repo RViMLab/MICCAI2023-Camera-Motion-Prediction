@@ -84,7 +84,7 @@ if __name__ == '__main__':
         gpus=configs['trainer']['gpus'],
         fast_dev_run=configs['trainer']['fast_dev_run'],
         profiler=configs['trainer']['profiler'],
-        distributed_backend=configs['trainer']['distributed_backend']
+        strategy=configs['trainer']['strategy']
     )
 
     # find learning rate
