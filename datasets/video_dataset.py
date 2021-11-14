@@ -84,19 +84,16 @@ class VideoDataset(Dataset):
         else:
             seed = random.randint(0, np.iinfo(np.int32).max)  # set random seed for numpy
 
-        augmented_video = torch.empty_like(video)
+        augmented_video = video.clone()
 
         if self._aug_transforms[video_idx]:
-            augmented_video = video.clone()
             torch.manual_seed(seed)
             augmented_video = self._aug_transforms[video_idx](augmented_video)
-            # convert dtype and normalize -> [0., 1.]
-            if self._convert_dtype:
-                augmented_video = self._dtype_trafo(augmented_video)
 
         # convert dtype and normalize -> [0., 1.]
         if self._convert_dtype:
             video = self._dtype_trafo(video)
+            augmented_video = self._dtype_trafo(augmented_video)
 
         return video, augmented_video, self._video_clips.frame_rate, self._video_clips.video_fps, video_idx, idx
 
