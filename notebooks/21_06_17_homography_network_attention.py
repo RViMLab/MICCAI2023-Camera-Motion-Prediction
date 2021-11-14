@@ -59,7 +59,7 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 import torch
-from kornia import warp_perspective, tensor_to_image
+from kornia.geometry import warp_perspective, tensor_to_image
 import matplotlib.pyplot as plt
 
 from lightning_modules import DeepImageHomographyEstimationModuleBackbone

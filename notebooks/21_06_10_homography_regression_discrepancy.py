@@ -64,7 +64,7 @@ if test_md:
 import cv2
 import numpy as np
 import torch
-from kornia import warp_perspective, tensor_to_image
+from kornia.geometry import warp_perspective, tensor_to_image
 
 from lightning_modules import DeepImageHomographyEstimationModuleBackbone
 from utils.processing import four_point_homography_to_matrix, image_edges
@@ -158,7 +158,7 @@ plt.show()
 # %%
 import cv2
 import torch
-from kornia import warp_perspective, tensor_to_image
+from kornia.geometry import warp_perspective, tensor_to_image
 
 from lightning_modules import DeepImageHomographyEstimationModuleBackbone
 from utils.processing import four_point_homography_to_matrix, image_edges
