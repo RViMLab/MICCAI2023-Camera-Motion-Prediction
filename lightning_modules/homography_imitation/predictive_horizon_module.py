@@ -80,38 +80,40 @@ class PredictiveHorizonModule(pl.LightningModule):
         if self._homography_regression is None:
             raise ValueError('Homography regression model required in training step.')
         videos, transformed_videos, frame_rate, vid_fps, vid_idc, clip_idc = batch
-        frames_i, frames_ips = frame_pairs(videos[:,-(self._preview_horizon+1):], self._frame_stride)  # re-sort images
+        # frames_i, frames_ips = frame_pairs(videos[:,-(self._preview_horizon+1):], self._frame_stride)  # re-sort images
+        frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
         frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxCxHxW
         frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxCxHxW
 
         with torch.no_grad():
             duvs_reg = self._homography_regression(frames_i, frames_ips)
             duvs_reg = duvs_reg.view(videos.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
+            duvs_preview_horizon_reg = duvs_reg[:,-self._preview_horizon:]
 
-            # logging
-            if self.global_step % self._log_n_steps == 0:
-                frames_i   = frames_i.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])   # reshape B*NxCxHxW -> BxNxCxHxW
-                frames_ips = frames_ips.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1]) # reshape B*NxCxHxW -> BxNxCxHxW
-
-                # visualize sequence N in zeroth batch
-                blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
-
-                self.logger.experiment.add_images('verify/blend_train', blends, self.global_step)
-
-                # visualize duv mean pairwise distance to zero
-                duv_mpd_seq_figure = duv_mean_pairwise_distance_figure(duvs_reg[0].cpu().numpy(), re_fps=frame_rate[0].item(), fps=vid_fps[vid_idc[0]][0].item())  # get vid_idc of zeroth batch
-                self.logger.experiment.add_figure('verify/duv_mean_pairwise_distance', duv_mpd_seq_figure, self.global_step)
-        
         recall_horizon = transformed_videos[:,:self._recall_horizon]
         recall_horizon = recall_horizon.permute(0,2,1,3,4)  # BxNxCxHxW -> BxCxNxHxW
 
-        duvs = self(recall_horizon)  # forward recall horizon
+        duvs_preview_horizon_pred = self(recall_horizon)  # forward recall horizon
 
         # distance loss
         distance_loss = self._distance_loss(
-            duvs.view(-1, 2),
-            duvs_reg.view(-1, 2)
+            duvs_preview_horizon_pred.view(-1, 2),
+            duvs_preview_horizon_reg.reshape(-1, 2)
         ).mean()
+
+        # logging
+        if self.global_step % self._log_n_steps == 0:
+            frames_i   = frames_i.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])   # reshape B*NxCxHxW -> BxNxCxHxW
+            frames_ips = frames_ips.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1]) # reshape B*NxCxHxW -> BxNxCxHxW
+
+            # visualize sequence N in zeroth batch
+            blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
+
+            self.logger.experiment.add_images('verify/blend_train', blends, self.global_step)
+
+            # visualize duv mean pairwise distance to zero
+            duv_mpd_seq_figure = duv_mean_pairwise_distance_figure(duvs_reg[0].cpu().numpy(), duvs_preview_horizon_pred[0].detach().cpu().numpy(), re_fps=frame_rate[0].item(), fps=vid_fps[vid_idc[0]][0].item())  # get vid_idc of zeroth batch
+            self.logger.experiment.add_figure('verify/duv_mean_pairwise_distance', duv_mpd_seq_figure, self.global_step)
 
         self.log('train/distance', distance_loss)
         return distance_loss
@@ -121,23 +123,25 @@ class PredictiveHorizonModule(pl.LightningModule):
             raise ValueError('Homography regression model required in validation step.')
         # by default without grad (torch.set_grad_enabled(False))
         videos, transformed_videos, frame_rate, vid_fps, vid_idc, clip_idc = batch
-        frames_i, frames_ips = frame_pairs(videos[:,-(self._preview_horizon+1):], self._frame_stride)  # re-sort images
+        # frames_i, frames_ips = frame_pairs(videos[:,-(self._preview_horizon+1):], self._frame_stride)  # re-sort images
+        frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
         frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxCxHxW
         frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxCxHxW
 
         duvs_reg = self._homography_regression(frames_i, frames_ips)
         duvs_reg = duvs_reg.view(videos.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
+        duvs_preview_horizon_reg = duvs_reg[:,-self._preview_horizon:]
 
         # only need to sample recall_horizon transformed videos, preview_horizon videos, unless want to forward duv to motion prediction, then sample clip_length_in_frames videos
         recall_horizon = transformed_videos[:,:self._recall_horizon]
         recall_horizon = recall_horizon.permute(0,2,1,3,4)  # BxNxCxHxW -> BxCxNxHxW
 
-        duvs = self(recall_horizon)  # forward recall horizon
-        
+        duvs_preview_horizon_pred = self(recall_horizon)  # forward recall horizon
+
         # distance loss
         distance_loss = self._distance_loss(
-            duvs.view(-1, 2),
-            duvs_reg.view(-1, 2)
+            duvs_preview_horizon_pred.view(-1, 2),
+            duvs_preview_horizon_reg.reshape(-1, 2)
         ).mean()
 
         self.log('val/distance', distance_loss, on_epoch=True)
