@@ -164,6 +164,9 @@ class PredictiveHorizonModule(pl.LightningModule):
         """
         uvs = image_edges(frames_i)         
         Hs = four_point_homography_to_matrix(uvs, duvs)
-        wrps = warp_perspective(frames_i, torch.inverse(Hs), frames_i.shape[-2:])
-        blends = yt_alpha_blend(frames_ips, wrps)
+        try:  # handle inversion error
+            wrps = warp_perspective(frames_i, torch.inverse(Hs), frames_i.shape[-2:])
+            blends = yt_alpha_blend(frames_ips, wrps)
+        except:
+            return frames_i
         return blends

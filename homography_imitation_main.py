@@ -84,6 +84,7 @@ if __name__ == '__main__':
     module = getattr(lightning_modules, configs['lightning_module'])(**kwargs)
 
     # inject homography regression into module
+    configs['model']['homography_regression']['model']['pretrained'] = False  # set to false, as loaded anyways
     module.inject_homography_regression(homography_regression=configs['model']['homography_regression'], homography_regression_prefix=server['logging']['location'])
 
     logger = TensorBoardLogger(
