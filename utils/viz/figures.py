@@ -39,11 +39,12 @@ def warp_figure(img: np.array, uv: np.array, duv: np.array, duv_pred: np.array, 
     return figure
 
 
-def duv_mean_pairwise_distance_figure(duvs: np.ndarray, re_fps: int, fps: int, dpi: int=200) -> plt.Figure:
+def duv_mean_pairwise_distance_figure(duvs: np.ndarray, duvs_pred: np.ndarray, re_fps: int, fps: int, dpi: int=200) -> plt.Figure:
     r"""Helper function to plot the severity of a motion described by a homography.
 
     Args:
         duvs (np.ndarray): Edge delta of shape Nx4x2
+        duvs_pred (np.ndarray): Edge prediction delta of shape Nx4x2
         re_fps (int): Frame rate of re-sampled video
         fps (int): Frame rate of initial video
         dpi (int): Figure resolution
@@ -55,12 +56,18 @@ def duv_mean_pairwise_distance_figure(duvs: np.ndarray, re_fps: int, fps: int, d
 
     # Mean pairwise distance
     duvs_mpd = np.linalg.norm(duvs, axis=2).mean(axis=1)
+    duvs_pred_mpd = np.linalg.norm(duvs_pred, axis=2).mean(axis=1)
 
-    plt.title('Camera Motion')
+    plt.title('Camera Motion: Resampled frame rate {} at {} fps'.format(re_fps, int(fps)))
     plt.plot(
-        np.arange(start=0, stop=re_fps*duvs_mpd.size, step=re_fps)/fps, 
+        np.arange(start=0, stop=duvs_mpd.size)/re_fps, 
         duvs_mpd, 
-        label='Resampled frame rate {} at {} fps'.format(re_fps, int(fps))
+        label='Estimation'
+    )
+    plt.plot(
+        np.arange(start=duvs_mpd.size - duvs_pred_mpd.size, stop=duvs_mpd.size)/re_fps, 
+        duvs_pred_mpd, 
+        label='Prediction'
     )
     plt.xlabel('Time / s')
     plt.ylabel('Mean Pairwise Distance / pixel')
