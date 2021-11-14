@@ -3,6 +3,7 @@ import argparse
 import pandas as pd
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 from utils.io import load_yaml, save_yaml, load_pickle, save_pickle, generate_path, scan2df, natural_keys
 import lightning_data_modules
@@ -102,9 +103,13 @@ if __name__ == '__main__':
     save_pickle(os.path.join(logger.log_dir, configs['data']['val_metadata']), val_md)
     save_pickle(os.path.join(logger.log_dir, configs['data']['test_metadata']), test_md)
 
+    # callbacks
+    callbacks = [ModelCheckpoint(**configs['model_checkpoint'])]
+
     trainer = pl.Trainer(
         max_epochs=configs['trainer']['max_epochs'],
         logger=logger,
+        callbacks=callbacks,
         log_every_n_steps=configs['trainer']['log_every_n_steps'],
         limit_train_batches=configs['trainer']['limit_train_batches'],
         limit_val_batches=configs['trainer']['limit_val_batches'],
