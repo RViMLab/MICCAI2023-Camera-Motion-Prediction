@@ -1,7 +1,9 @@
 import numpy as np
+import pandas as pd
 import torch
 from typing import Tuple, Union
 from kornia.geometry.transform import get_perspective_transform
+from sklearn.model_selection import train_test_split
 
 
 def four_point_homography_to_matrix(uv_img: torch.Tensor, duv: torch.Tensor) -> torch.Tensor:
@@ -85,6 +87,38 @@ def forward_backward_sequence(video: Union[np.ndarray, torch.Tensor], step: int=
         raise ValueError('Unsupported type: {}'.format(type(video)))
 
     return forward, backward
+
+
+def unique_video_train_test(df: pd.DataFrame, train_split: float=0.8, tolerance: float=0.05, random_state: int=42):
+    r"""Splits videos into train and test set.
+
+    Args:
+        df (pd.DataFrame): Pandas dataframe, must contain {'folder': , 'file': , 'vid': , 'frame': }
+        train_split (float): Fraction of train data, default 0.8
+        tolerance (float): Split tolerance, train_split + tolerance <= len(df[df.train] == False)/len(df) <= train_split + tolerance
+        random_state (int): Random state for deterministic splitting
+    Return:
+        df (pd.DataFrame): Pandas dataframe, contain {'folder': , 'file': , 'vid': , 'frame': , 'train': }
+    """
+    # find unique videos
+    unique_vid = df.vid.unique()
+
+    _, test_vid = train_test_split(
+        unique_vid,
+        train_size=train_split,
+        random_state=random_state
+    )
+
+    df['train'] = True
+    df[df.vid.isin(test_vid)] = False
+
+    # assert if fraction off
+    fraction = len(df[df.train == False])/len(df)
+    assert np.isclose(
+        fraction, 1 - train_split, atol=tolerance
+    ), 'Train set fraction {:.3f} not close enough to train_split {} at tolerance {}'.format(fraction, train_split, tolerance)
+
+    return df
 
 
 if __name__ == '__main__':

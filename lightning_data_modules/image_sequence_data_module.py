@@ -1,46 +1,116 @@
 import pandas as pd
+import numpy as np
 import pytorch_lightning as pl
 from typing import Callable
-# from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
 from datasets import ImageSequenceDataset
 
 
-
-# vid_to_png for single video
-# fit lstm model to single video
-
-# maybe add dataset that read from videos torch.io/opencv/nvidia dataloader/decord?
-# find transforms for all cholec80 videos via processing.ipynb
-# identify test sets -> update cholec80_transforms.yml with transforms and test flag
-# convert whole cholec80 dataset into pngs ~2.6 TB
-# use sequence_dataframe.ipynb to generate sequence dataframe, also include tool and phase annotation 
-# train model on full dataset
-# 
 class ImageSequenceDataModule(pl.LightningDataModule):
-    def __init__(self, df: pd.DataFrame, prefix: str, train_split: float, batch_size: int, num_workers: int=2, random_state: int=42, train_transforms: Callable=None, val_transforms: Callable=None):
-        self.df = df
-        self.prefix = prefix
-        self.batch_size = batch_size
-        self.num_workers = num_workers
+    def __init__(self,
+        df: pd.DataFrame, 
+        prefix: str,
+        train_split: float, 
+        batch_size: int, 
+        num_workers: int=2,
+        random_state: int=42,
+        tolerance: float = 0.05,
+        seq_len: int=10,
+        train_transforms: Callable=None, 
+        val_transforms: Callable=None, 
+        test_transforms: Callable=None
+    ):
+        super().__init__()
 
-        self.train_transforms = train_transforms
+        # train/test
+        self._train_df = df[df.train == True]
+        self._test_df = df[df.train == False]
 
-    def setup(self, stage):
-        if stage == 'fit':
-            self.train_set = ImageSequenceDataset(df=self.df, prefix=self.prefix, transforms=self.train_transforms)
+        # further split train into train and validation set
+        unique_vid = self._train_df.vid.unique()
+
+        train_vid, val_vid = train_test_split(
+            unique_vid,
+            train_size=train_split,
+            random_state=random_state
+        )
+
+        self._val_df = self._train_df[self._train_df.vid.apply(lambda x: x in val_vid)].reset_index()
+        self._train_df = self._train_df[self._train_df.vid.apply(lambda x: x in train_vid)].reset_index()
+
+        # assert if fraction off
+        fraction = len(self._val_df)/(len(self._train_df) + len(self._val_df))
+        assert np.isclose(
+            fraction, 1 - train_split, atol=tolerance
+        ), 'Train set fraction {:.3f} not close enough to train_split {} at tolerance {}'.format(fraction, train_split, tolerance)
+
+
+        self._prefix = prefix
+        self._batch_size = batch_size
+        self._num_workers = num_workers
+
+        self._seq_len = seq_len
+        self._train_tranforms = train_transforms
+        self._val_transforms = val_transforms
+        self._test_transforms = test_transforms
+
+    def setup(self, stage: str=None) -> None:
+        if stage == 'fit' or stage is None:
+            self._train_set = ImageSequenceDataset(
+                df=self._train_df,
+                prefix=self._prefix,
+                seq_len=self._seq_len,
+                transforms=self._train_tranforms, 
+                seeds=False
+            )
+            self._val_set = ImageSequenceDataset(
+                df=self._val_df,
+                prefix=self._prefix,
+                seq_len=self._seq_len,
+                transforms=self._val_transforms,
+                seeds=True
+            )
         if stage == 'test':
-            pass
+            self._test_set = ImageSequenceDataset(
+                df=self._test_df,
+                prefix=self._prefix,
+                seq_len=self._seq_len,
+                transforms=self._test_transforms, 
+                seeds=True
+            )
 
-    def transfer_batch_to_device(self, batch, device, dataloader_idx):
-        pass
+    # def transfer_batch_to_device(self, batch, device, dataloader_idx):
+    #     pass
 
     def train_dataloader(self):
-        return DataLoader(self.train_set, batch_size=self.batch_size, num_workers=self.num_workers)
+        return DataLoader(self._train_set, batch_size=self._batch_size, shuffle=True, num_workers=self._num_workers, drop_last=True, pin_memory=True)
 
     def val_dataloader(self):
-        pass
+        return DataLoader(self._val_set, batch_size=self._batch_size, num_workers=self._num_workers, drop_last=True, pin_memory=True)
 
     def test_dataloader(self):
-        pass
+        return DataLoader(self._test_set, batch_size=self._batch_size, num_workers=self._num_workers, drop_last=True, pin_memory=True)
+
+
+if __name__ == "__main__":
+    from kornia import tensor_to_image
+    import cv2
+    from utils.processing import unique_video_train_test
+        
+    df = pd.read_pickle("/media/martin/Samsung_T5/data/endoscopic_data/cholec80_frames/log.pkl")
+    df = unique_video_train_test(df)
+    prefix = "/media/martin/Samsung_T5/data/endoscopic_data/cholec80_frames"
+
+    dm = ImageSequenceDataModule(
+        df, prefix, train_split=0.8, batch_size=10, tolerance=0.2, seq_len=10
+    )
+    dm.setup()
+
+    for frames, idcs, vid_idx in dm.train_dataloader():
+        print(idcs)
+        for frame in frames[0]:
+            frame = tensor_to_image(frame, False)
+            cv2.imshow('frame', frame)
+            cv2.waitKey()

@@ -46,7 +46,7 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
         self._train_df = self._train_df[self._train_df.vid.apply(lambda x: x in train_vid)].reset_index()
 
         # assert if fraction off
-        fraction = len(self._val_df)/len(self._train_df)
+        fraction = len(self._val_df)/(len(self._train_df) + len(self._val_df))
         assert np.isclose(
             fraction, 1 - train_split, atol=tolerance
         ), 'Train set fraction {:.3f} not close enough to train_split {} at tolerance {}'.format(fraction, train_split, tolerance)
