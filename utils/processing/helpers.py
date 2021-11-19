@@ -110,13 +110,13 @@ def unique_video_train_test(df: pd.DataFrame, train_split: float=0.8, tolerance:
     )
 
     df['train'] = True
-    df[df.vid.isin(test_vid)] = False
+    df.loc[df.vid.isin(test_vid), 'train'] = False
 
     # assert if fraction off
     fraction = len(df[df.train == False])/len(df)
     assert np.isclose(
         fraction, 1 - train_split, atol=tolerance
-    ), 'Train set fraction {:.3f} not close enough to train_split {} at tolerance {}'.format(fraction, train_split, tolerance)
+    ), 'Train set fraction {:.3f} not close enough to (1 - train_split) {} at tolerance {}'.format(fraction, 1 - train_split, tolerance)
 
     return df
 
