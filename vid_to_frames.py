@@ -24,5 +24,7 @@ if __name__ == "__main__":
         shape=(240, 320)
     )
 
-    output_prefix = os.path.join(server["database"]["location"], "cholec80_frames")
+    output_prefix = os.path.join(server["database"]["location"], args.output_folder)
+    print("Writing files to {}...".format(output_prefix))
     vs.start(output_prefix=output_prefix, processes=args.processes)
+    print("\nDone.")
