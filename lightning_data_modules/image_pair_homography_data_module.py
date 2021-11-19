@@ -49,7 +49,7 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
         fraction = len(self._val_df)/(len(self._train_df) + len(self._val_df))
         assert np.isclose(
             fraction, 1 - train_split, atol=tolerance
-        ), 'Train set fraction {:.3f} not close enough to train_split {} at tolerance {}'.format(fraction, train_split, tolerance)
+        ), 'Train set fraction {:.3f} not close enough to (1 - train_split) {} at tolerance {}'.format(fraction, 1 - train_split, tolerance)
 
         self._prefix = prefix
         self._batch_size = batch_size

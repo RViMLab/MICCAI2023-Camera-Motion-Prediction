@@ -1,27 +1,14 @@
 import os
-import pytorchvideo
-from pytorchvideo.models import r2plus1d
 import torch
 import torch.nn as nn
-# import torchvision.models as models
 import pytorch_lightning as pl
 from typing import List
 from kornia.geometry import warp_perspective
+from pytorchvideo.models import r2plus1d, resnet, slowfast, vision_transformers, head
+
 import lightning_modules
 from utils.processing import frame_pairs, image_edges, four_point_homography_to_matrix
 from utils.viz import yt_alpha_blend, duv_mean_pairwise_distance_figure
-
-
-
-from pytorchvideo.models import r2plus1d, resnet, slowfast, vision_transformers, head
-
-
-
-
-# - create both feature and standard forward model
-# - have both forward M time steps, and predict the following N
-# - state_buffer, preview horizon
-# - M, N
 
 
 class PredictiveHorizonModule(pl.LightningModule):
@@ -38,12 +25,6 @@ class PredictiveHorizonModule(pl.LightningModule):
             proj=self._model.blocks[-1].proj,
             output_pool=self._model.blocks[-1].output_pool
         )
-
-        # # modify out layers
-        # self._model.fc = nn.Linear(
-        #     in_features=self._model.fc.in_features,
-        #     out_features=8*preview_horizon
-        # )
 
         self._distance_loss = nn.PairwiseDistance()
 
@@ -79,8 +60,10 @@ class PredictiveHorizonModule(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         if self._homography_regression is None:
             raise ValueError('Homography regression model required in training step.')
-        videos, transformed_videos, frame_rate, vid_fps, vid_idc, clip_idc = batch
-        # frames_i, frames_ips = frame_pairs(videos[:,-(self._preview_horizon+1):], self._frame_stride)  # re-sort images
+        # videos, transformed_videos, frame_rate, vid_fps, vid_idc, clip_idc = batch # video dataset
+        videos, transformed_videos, frame_idcs, vid_idcs = batch
+        videos, transformed_videos = videos.float()/255., transformed_videos.float()/255.
+
         frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
         frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxCxHxW
         frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxCxHxW
@@ -112,8 +95,9 @@ class PredictiveHorizonModule(pl.LightningModule):
             self.logger.experiment.add_images('verify/blend_train', blends, self.global_step)
 
             # visualize duv mean pairwise distance to zero
-            duv_mpd_seq_figure = duv_mean_pairwise_distance_figure(duvs_reg[0].cpu().numpy(), duvs_preview_horizon_pred[0].detach().cpu().numpy(), re_fps=frame_rate[0].item(), fps=vid_fps[vid_idc[0]][0].item())  # get vid_idc of zeroth batch
-            self.logger.experiment.add_figure('verify/duv_mean_pairwise_distance', duv_mpd_seq_figure, self.global_step)
+            # TODO: fix this plot with frame rate?
+            # duv_mpd_seq_figure = duv_mean_pairwise_distance_figure(duvs_reg[0].cpu().numpy(), duvs_preview_horizon_pred[0].detach().cpu().numpy(), re_fps=frame_rate[0].item(), fps=vid_fps[vid_idc[0]][0].item())  # get vid_idc of zeroth batch
+            # self.logger.experiment.add_figure('verify/duv_mean_pairwise_distance', duv_mpd_seq_figure, self.global_step)
 
         self.log('train/distance', distance_loss)
         return distance_loss
@@ -122,8 +106,10 @@ class PredictiveHorizonModule(pl.LightningModule):
         if self._homography_regression is None:
             raise ValueError('Homography regression model required in validation step.')
         # by default without grad (torch.set_grad_enabled(False))
-        videos, transformed_videos, frame_rate, vid_fps, vid_idc, clip_idc = batch
-        # frames_i, frames_ips = frame_pairs(videos[:,-(self._preview_horizon+1):], self._frame_stride)  # re-sort images
+        # videos, transformed_videos, frame_rate, vid_fps, vid_idc, clip_idc = batch # video dataset
+        videos, transformed_videos, frame_idcs, vid_idcs = batch
+        videos, transformed_videos = videos.float()/255., transformed_videos.float()/255.
+
         frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
         frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxCxHxW
         frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxCxHxW

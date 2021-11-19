@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
 import pytorch_lightning as pl
-from typing import Callable
+from typing import List
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
 from datasets import ImageSequenceDataset
+from utils.transforms import anyDictListToCompose
 
 
 class ImageSequenceDataModule(pl.LightningDataModule):
@@ -18,9 +19,10 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         random_state: int=42,
         tolerance: float = 0.05,
         seq_len: int=10,
-        train_transforms: Callable=None, 
-        val_transforms: Callable=None, 
-        test_transforms: Callable=None
+        frame_increment: int=1,
+        train_transforms: List[dict]=None, 
+        val_transforms: List[dict]=None, 
+        test_transforms: List[dict]=None
     ):
         super().__init__()
 
@@ -44,7 +46,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         fraction = len(self._val_df)/(len(self._train_df) + len(self._val_df))
         assert np.isclose(
             fraction, 1 - train_split, atol=tolerance
-        ), 'Train set fraction {:.3f} not close enough to train_split {} at tolerance {}'.format(fraction, train_split, tolerance)
+        ), 'Train set fraction {:.3f} not close enough to (1 - train_split) {} at tolerance {}'.format(fraction, 1 - train_split, tolerance)
 
 
         self._prefix = prefix
@@ -52,9 +54,11 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         self._num_workers = num_workers
 
         self._seq_len = seq_len
-        self._train_tranforms = train_transforms
-        self._val_transforms = val_transforms
-        self._test_transforms = test_transforms
+        self._frame_increment = frame_increment
+
+        self._train_tranforms = anyDictListToCompose(train_transforms)
+        self._val_transforms = anyDictListToCompose(val_transforms)
+        self._test_transforms = anyDictListToCompose(test_transforms)
 
     def setup(self, stage: str=None) -> None:
         if stage == 'fit' or stage is None:
@@ -62,6 +66,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 df=self._train_df,
                 prefix=self._prefix,
                 seq_len=self._seq_len,
+                frame_increment=self._frame_increment,
                 transforms=self._train_tranforms, 
                 seeds=False
             )
@@ -69,6 +74,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 df=self._val_df,
                 prefix=self._prefix,
                 seq_len=self._seq_len,
+                frame_increment=self._frame_increment,
                 transforms=self._val_transforms,
                 seeds=True
             )
@@ -77,6 +83,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 df=self._test_df,
                 prefix=self._prefix,
                 seq_len=self._seq_len,
+                frame_increment=self._frame_increment,
                 transforms=self._test_transforms, 
                 seeds=True
             )
@@ -108,7 +115,7 @@ if __name__ == "__main__":
     )
     dm.setup()
 
-    for frames, idcs, vid_idx in dm.train_dataloader():
+    for frames, frames_transformed, idcs, vid_idx in dm.train_dataloader():
         print(idcs)
         for frame in frames[0]:
             frame = tensor_to_image(frame, False)

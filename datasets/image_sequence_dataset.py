@@ -74,13 +74,14 @@ class ImageSequenceDataset(Dataset):
 
         img_seq = np.stack(img_seq).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
         img_seq = torch.from_numpy(img_seq)
+        img_seq_transformed = img_seq.clone()
 
         # transform image sequences
         if self._transforms:
             imgaug.seed(seed)
-            img_seq = self._transforms(img_seq)
+            img_seq = self._transforms(img_seq_transformed)
 
-        return img_seq, idcs, file_seq.vid.iloc[0]
+        return img_seq, img_seq_transformed, idcs, file_seq.vid.iloc[0]
 
     def __len__(self):
         return len(self._idcs)
