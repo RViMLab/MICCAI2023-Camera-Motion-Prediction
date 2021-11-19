@@ -20,6 +20,7 @@ class VideoSequencer(object):
         self._interpolation = interpolation
 
         self._df = recursive_scan2df(self._prefix, postfix=self._postfix)
+        self._df = self._df.sort_values("file").reset_index()
         print("Loaded videos:\n", self._df)
 
     def start(self, output_prefix: str, processes: int=2) -> None:
