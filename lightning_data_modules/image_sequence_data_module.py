@@ -48,7 +48,6 @@ class ImageSequenceDataModule(pl.LightningDataModule):
             fraction, 1 - train_split, atol=tolerance
         ), 'Train set fraction {:.3f} not close enough to (1 - train_split) {} at tolerance {}'.format(fraction, 1 - train_split, tolerance)
 
-
         self._prefix = prefix
         self._batch_size = batch_size
         self._num_workers = num_workers

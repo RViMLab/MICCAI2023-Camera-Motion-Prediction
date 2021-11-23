@@ -16,6 +16,7 @@ class ImageSequenceDataset(Dataset):
         prefix (str): Path to database e.g. </path/to/database>/df.folder/df.file
         seq_len (int): Sequence length to sample images from, sequence length of 1 corresponds to static images, sequence length of 2 corresponds to neighboring images
         frame_increment (int): Sample every nth frame.
+        frames_between_clips (int): Offset between initial frames of subsequent clips.
         transforms (Callable): Callable tranforms for augmenting sequences
         seeds (bool): Seeds for deterministic output, e.g. for test set
 
@@ -29,6 +30,7 @@ class ImageSequenceDataset(Dataset):
         prefix: str,
         seq_len: int=1,
         frame_increment: int=5,
+        frames_between_clips: int=1,
         transforms: List[Callable]=None, 
         seeds: bool=False
     ):
@@ -36,6 +38,7 @@ class ImageSequenceDataset(Dataset):
         self._prefix = prefix
         self._seq_len = seq_len
         self._frame_increment = frame_increment
+        self._frames_between_clips = frames_between_clips
         self._transforms = transforms
         self._seeds = seeds
         self._idcs = self._filterFeasibleSequenceIndices(self._df, col='vid', seq_len=self._seq_len)
@@ -93,7 +96,7 @@ class ImageSequenceDataset(Dataset):
     ) -> pd.DataFrame:
         grouped_df = df.groupby(col)
         return grouped_df.apply(
-            lambda x: x.iloc[:len(x) - (seq_len - 1)*self._frame_increment]  # get indices [0, length - (seq_len - 1)]
+            lambda x: x.iloc[:len(x) - (seq_len - 1)*self._frame_increment:self._frames_between_clips]  # get indices [0, length - (seq_len - 1)]
         ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
 
 
