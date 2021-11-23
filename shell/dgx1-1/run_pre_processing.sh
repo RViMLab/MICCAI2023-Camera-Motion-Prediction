@@ -11,5 +11,5 @@ python /workspace/homography_imitation_learning/pre_processing_main.py \
   --data_prefix cholec80_frames \
   --in_pkl log.pkl \
   --out_pkl pre_processed_log.pkl \
-  --num_workers 12 \
+  --num_workers 20 \
   --batch_size 400

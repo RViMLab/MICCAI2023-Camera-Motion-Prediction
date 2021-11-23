@@ -35,6 +35,7 @@ if __name__ == "__main__":
 
     backbone_path = os.path.join(server["logging"]["location"], args.backbone_path)
     backbone_configs = load_yaml(os.path.join(server["logging"]["location"], args.backbone_path, "config.yml"))
+    backbone_configs["model"]["pretrained"] = False  # set to false, as loaded anyways
     df = scan2df(os.path.join(server["logging"]["location"], args.backbone_path, "checkpoints"), ".ckpt")
     ckpts = sorted(list(df["file"]), key=natural_keys)
 
