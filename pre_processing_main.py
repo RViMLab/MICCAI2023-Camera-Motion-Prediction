@@ -1,9 +1,3 @@
-import sys
-
-from pytorch_lightning.utilities.cloud_io import load
-from torch.utils import data
-sys.path.append("/home/martin/Dev/homography_imitation_learning")
-
 import os
 import torch
 import argparse
