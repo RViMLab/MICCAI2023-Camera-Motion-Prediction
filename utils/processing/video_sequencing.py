@@ -22,6 +22,8 @@ class VideoSequencer(object):
         self._df = recursive_scan2df(self._prefix, postfix=self._postfix)
         self._df = self._df.sort_values("file").reset_index(drop=True)
         print("Loaded videos:\n", self._df)
+        for _, row in self._df.iterrows():
+            print(row.file)
 
     def start(self, output_prefix: str, processes: int=2) -> None:
  
@@ -32,6 +34,8 @@ class VideoSequencer(object):
                 "output_prefix": output_prefix
             } for idx, row in self._df.iterrows()
         ]
+        for args in kwargs_list:
+            print(args)
 
         p = Pool(processes=processes)
         log_df_list = p.map(
@@ -39,7 +43,7 @@ class VideoSequencer(object):
         )
 
         log_df = pd.concat(log_df_list)
-        log_df = log_df.sort_values(["vid", "frame"])
+        log_df = log_df.sort_values(["vid", "frame"]).reset_index(drop=True)
         log_df.to_pickle("{}/log.pkl".format(output_prefix))
         log_df.to_csv("{}/log.csv".format(output_prefix))
 
