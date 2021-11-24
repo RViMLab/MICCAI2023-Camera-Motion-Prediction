@@ -79,7 +79,7 @@ if __name__ == "__main__":
     df["duv"] = duv_df.duv
 
     # Compute mean motion
-    df['mpd_duv'] = df.duv.apply(lambda x:
+    df['duv_mpd'] = df.duv.apply(lambda x:
         x if np.isnan(x).any() else
         np.linalg.norm(x, axis=1).mean()
     )
