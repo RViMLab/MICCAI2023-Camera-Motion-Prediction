@@ -23,6 +23,7 @@ if __name__ == "__main__":
     parser.add_argument("--out_pkl", type=str, default="pre_processed_log.pkl", help="Pickle file with preprocessed information.")
     parser.add_argument("--num_workers", type=int, default=0, help="Number of workers for data loading.")
     parser.add_argument("--batch_size", type=int, default=16, help="Batch size for data loading.")
+    parser.add_argument("--nth_frame", type=int, default=1, help="Process every nth frame.")
     args = parser.parse_args()
 
     servers = load_yaml(args.servers_file)
@@ -51,7 +52,7 @@ if __name__ == "__main__":
     df = pd.read_pickle(os.path.join(data_prefix, args.in_pkl))
 
     ds = ImageSequenceDataset(
-        df, data_prefix, seq_len=2, frame_increment=1, frames_between_clips=1
+        df, data_prefix, seq_len=2, frame_increment=args.nth_frame, frames_between_clips=args.nth_frame
     )
     ds._df = ds._df.astype(object)
     dl = DataLoader(ds, num_workers=args.num_workers, batch_size=args.batch_size, drop_last=False)
