@@ -165,6 +165,7 @@ class SingleProcessInferenceVideoSequencer():
 
         for element in buffer:
             file = "frame_{}.npy".format(element["frame_cnt"])
+            element["img"] = (element["img"]*255).astype(np.uint8)
             np.save(os.path.join(element["path"], file), element["img"])
 
             # log
