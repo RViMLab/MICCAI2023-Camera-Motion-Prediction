@@ -201,6 +201,7 @@ class SingleProcessInferenceVideoSequencer():
             buffer = []
 
             while success:
+                img = np.ascontiguousarray(img[...,::-1])
                 buffer.append({
                     "img": img,
                     "path": path,
