@@ -2,7 +2,7 @@
 
 # activate conda environment
 eval "$(conda shell.bash hook)"
-conda env update -f /workspace/homography_imitation_learning/env_110.yml
+conda env update -f /workspace/homography_imitation_learning/env_torch110.yml
 conda activate torch110
 
 python /workspace/homography_imitation_learning/homography_imitation_seq_main.py \
