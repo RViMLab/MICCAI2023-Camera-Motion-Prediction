@@ -4,12 +4,14 @@ import torch
 import pathlib
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 from typing import Dict, Tuple, List
 from multiprocessing import Pool, Value
 from kornia import tensor_to_image, image_to_tensor
 from kornia.geometry import crop_and_resize
 
 from utils.io import recursive_scan2df
+from utils.processing import image_edges
 from endoscopy import BoundingCircleDetector, max_rectangle_in_circle
 
 
@@ -116,11 +118,10 @@ class MultiProcessVideoSequencer(object):
 
 
 class SingleProcessInferenceVideoSequencer():
-    def __init__(self, prefix: str, postfix: str=".mp4", shape: Tuple[int]=(240, 320), seq_len: int=25, buffer_size: int=10) -> None:
+    def __init__(self, prefix: str, postfix: str=".mp4", shape: Tuple[int]=(240, 320), buffer_size: int=10) -> None:
         self._prefix = prefix
         self._postfix = postfix
         self._shape = shape
-        self._seq_len = seq_len
         self._buffer_size = buffer_size
         self._detector = BoundingCircleDetector()
 
@@ -138,13 +139,24 @@ class SingleProcessInferenceVideoSequencer():
         imgs = imgs.float()/255.
 
         # inference
-        center, radius = self._detector(imgs, N=1000)
-        box = max_rectangle_in_circle(imgs.shape, center, radius)
+        try:
+            center, radius = self._detector(imgs, N=1000, reduction="mean")
+            box = max_rectangle_in_circle(imgs.shape, center, radius)
+        except:
+            center = np.nan
+            radius = np.nan
+            box = image_edges(imgs).flip(-1)  # kornia expects xy definition
         imgs = crop_and_resize(imgs, box, self._shape)
 
         # update buffer
         for idx, img in enumerate(imgs):
             buffer[idx]["img"] = tensor_to_image(img, False)
+            if center is not np.nan:
+                buffer[idx]["center"] = center.squeeze().cpu().numpy()
+                buffer[idx]["radius"] = radius.squeeze().cpu().numpy()
+            else:
+                buffer[idx]["center"] = center
+                buffer[idx]["radius"] = radius
 
         return buffer
 
@@ -160,17 +172,19 @@ class SingleProcessInferenceVideoSequencer():
                 "folder": element["folder"],
                 "file": file,
                 "vid": element["vid_idx"],
-                "frame": element["frame_cnt"]
+                "frame": element["frame_cnt"],
+                "center": element["center"],
+                "radius": element["radius"]
             }, ignore_index=True)
 
         buffer.clear()
         return log_df
 
     def start(self, output_prefix: str) -> None:
-        log_df = pd.DataFrame(columns=["folder", "file", "vid", "frame"])
+        log_df = pd.DataFrame(columns=["folder", "file", "vid", "frame", "center", "radius"])
 
         # for each video
-        for idx, row in self._df.iterrows():
+        for idx, row in tqdm(self._df.iterrows()):
             vid_idx = idx
             video_path = os.path.join(self._prefix, row.folder, row.file)
 
