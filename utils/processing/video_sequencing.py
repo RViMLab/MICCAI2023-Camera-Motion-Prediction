@@ -201,7 +201,7 @@ class SingleProcessInferenceVideoSequencer():
             buffer = []
 
             while success:
-                img = np.ascontiguousarray(img[...,::-1])
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                 buffer.append({
                     "img": img,
                     "path": path,
