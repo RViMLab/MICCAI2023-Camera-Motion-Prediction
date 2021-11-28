@@ -147,6 +147,7 @@ class SingleProcessInferenceVideoSequencer():
             radius = np.nan
             box = image_edges(imgs).flip(-1)  # kornia expects xy definition
         imgs = crop_and_resize(imgs, box, self._shape)
+        imgs = (imgs*255.).to(torch.uint8)
 
         # update buffer
         for idx, img in enumerate(imgs):
@@ -165,7 +166,6 @@ class SingleProcessInferenceVideoSequencer():
 
         for element in buffer:
             file = "frame_{}.npy".format(element["frame_cnt"])
-            element["img"] = (element["img"]*255).astype(np.uint8)
             np.save(os.path.join(element["path"], file), element["img"])
 
             # log
