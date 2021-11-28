@@ -10,4 +10,4 @@ python /workspace/homography_imitation_learning/vid_to_frames.py \
   --server dgx1-1 \
   --recursive_folder cholec80/videos \
   --output_folder cholec80_frames \
-  --processes 10
+  --processes 20
