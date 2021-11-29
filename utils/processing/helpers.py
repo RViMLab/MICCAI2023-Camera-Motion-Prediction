@@ -29,8 +29,10 @@ def image_edges(img: torch.Tensor) -> torch.Tensor:
         img (torch.Tensor): Image of shape BxCxHxW
 
     Returns:
-        uv (torch.Tensor): Image edges of shape 1x4x2
+        uv (torch.Tensor): Image edges of shape Bx4x2
     """
+    if len(img.shape) != 4:
+        raise ValueError("Expected 4 dimensional input, got {} dimensions.".format(len(img.shape)))
     shape = img.shape[-2:]
     uv = torch.tensor(
         [
@@ -38,7 +40,7 @@ def image_edges(img: torch.Tensor) -> torch.Tensor:
             [       0, shape[1]],
             [shape[0], shape[1]],
             [shape[0],        0]
-        ], device=img.device, dtype=img.dtype
+        ], device=img.device, dtype=torch.float32
     )
     return uv.unsqueeze(0).repeat(img.shape[0], 1, 1)
 

@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from matplotlib import cm
+from matplotlib.lines import Line2D
 
 
 def warp_figure(img: np.array, uv: np.array, duv: np.array, duv_pred: np.array, H: np.array) -> plt.Figure:
@@ -52,7 +54,7 @@ def duv_mean_pairwise_distance_figure(duvs: np.ndarray, duvs_pred: np.ndarray, r
     Return:
         figure (plt.Figure): Matplotlib figure that shows homography norm over the course of the sequence
     """
-    figure = plt.figure(dpi=200)
+    figure = plt.figure(dpi=dpi)
 
     # Mean pairwise distance
     duvs_mpd = np.linalg.norm(duvs, axis=2).mean(axis=1)
@@ -76,3 +78,41 @@ def duv_mean_pairwise_distance_figure(duvs: np.ndarray, duvs_pred: np.ndarray, r
 
     return figure
 
+
+def uv_trajectory_figure(uv: np.ndarray, uv_pred: np.ndarray, cmap_name: str="cool", dpi: int=200) -> plt.Figure:
+    r"""Plots the image edge trajectory.
+
+    Args:
+        uv (np.ndarray): Ground truth image edge trajectory of shape Nx4x2.
+        uv_pred (np.ndarray): Predicted image edge trajectory of shape Nx4x2.
+        cmap_name (str): Color map name, see https://matplotlib.org/stable/tutorials/colors/colormaps.html.
+        dpi (int): Figure resolution.
+    Return:
+        figure (plt.Figure): Figure with trajectories.
+    """
+
+    if len(uv.shape) is not 3:
+        raise ValueError("Expected 3 dimensional input for uv, got {} dimensional.".format(len(uv.shape)))
+    if len(uv_pred.shape) is not 3:
+        raise ValueError("Expected 3 dimensional input for uv_pred, got {} dimensional.".format(len(uv_pred.shape)))
+
+    map = cm.get_cmap(cmap_name)
+    color = np.linspace(0,1,4)
+
+    figure = plt.figure(dpi=dpi)
+
+    for i in range(4):
+        plt.plot(uv[:,i,1], uv[:,i,0], linestyle="--", marker="o", fillstyle="none", color=map(color[i]))
+        plt.plot(uv_pred[:,i,1], uv_pred[:,i,0], linestyle="--", marker="o", color=map(color[i]))
+
+
+    plt.title("Camera motion")
+    plt.xlabel("x / pixels")
+    plt.ylabel("y / pixels")
+    colors = [("black", "none"), ("gray", "full")]
+    lines = [Line2D([0], [0], color=c, linestyle="--", marker="o", fillstyle=style) for c, style in colors]
+    labels = ["Image edges", "Image edges predicted"]
+    plt.legend(lines, labels)
+    plt.grid()
+
+    return figure
