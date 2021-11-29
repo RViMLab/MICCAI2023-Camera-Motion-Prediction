@@ -7,8 +7,8 @@ from kornia.geometry import warp_perspective
 from pytorchvideo.models import r2plus1d, resnet, slowfast, vision_transformers, head
 
 import lightning_modules
-from utils.processing import frame_pairs, image_edges, four_point_homography_to_matrix
-from utils.viz import yt_alpha_blend, duv_mean_pairwise_distance_figure
+from utils.processing import frame_pairs, image_edges, four_point_homography_to_matrix, integrate_duv
+from utils.viz import yt_alpha_blend, duv_mean_pairwise_distance_figure, uv_trajectory_figure
 
 
 class PredictiveHorizonModule(pl.LightningModule):
@@ -70,7 +70,7 @@ class PredictiveHorizonModule(pl.LightningModule):
 
         with torch.no_grad():
             duvs_reg = self._homography_regression(frames_i, frames_ips)
-            duvs_reg = duvs_reg.view(videos.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
+            duvs_reg = duvs_reg.view(videos.shape[0], -1, 4, 2)
             duvs_preview_horizon_reg = duvs_reg[:,-self._preview_horizon:]
 
         recall_horizon = transformed_videos[:,:self._recall_horizon]
@@ -93,6 +93,12 @@ class PredictiveHorizonModule(pl.LightningModule):
             blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
 
             self.logger.experiment.add_images('verify/blend_train', blends, self.global_step)
+
+            uv = image_edges(frames_i[0,0].unsqueeze(0))
+            uv_reg = integrate_duv(uv, duvs_preview_horizon_reg[0])  # batch 0
+            uv_pred = integrate_duv(uv, duvs_preview_horizon_pred[0])  # batch 0
+            uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
+            self.logger.experiment.add_figure('verify/uv_traj_fig', uv_traj_fig, self.global_step)
 
             # visualize duv mean pairwise distance to zero
             # TODO: fix this plot with frame rate?

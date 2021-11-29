@@ -12,6 +12,8 @@ def four_point_homography_to_matrix(uv_img: torch.Tensor, duv: torch.Tensor) -> 
     Args:
         uv_img (torch.Tensor): Image edges in image coordinates
         duv (torch.Tensor): Deviation from edges in image coordinates
+    Return:
+        h (torch.Tensor): Homography of shape 3x3.
 
     Example:
 
@@ -20,6 +22,22 @@ def four_point_homography_to_matrix(uv_img: torch.Tensor, duv: torch.Tensor) -> 
     uv_wrp = uv_img + duv
     h = get_perspective_transform(uv_img.flip(-1), uv_wrp.flip(-1))
     return h
+
+
+def integrate_duv(uv: torch.Tensor, duv: torch.Tensor) -> torch.Tensor:
+    r"""Sum duv to obtain trajectory.
+    
+    Args:
+        uv (torch.Tensor): Image edges in image coordinates of shape Bx4x2
+        duv (torch.Tensor): Deviation from edges in image coordinates of shape Bx4x2
+    Return:
+        uv_int (torch.Tensor): Integrated duv with uv as starting point of shape Bx4x2
+    """
+    if len(uv.size()) != 3:
+        raise ValueError("Expected 3 dimensional input for uv, got {} dimensional.".format(len(uv.size())))
+    if len(duv.size()) != 3:
+        raise ValueError("Expected 3 dimensional input for duv, got {} dimensional.".format(len(duv.size())))
+    return uv + torch.cumsum(duv, dim=0)
 
 
 def image_edges(img: torch.Tensor) -> torch.Tensor:
