@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
 from datasets import ImageSequenceDataset
-from utils.transforms import anyDictListToCompose
+from utils.transforms import dictListToAugment
 
 
 class ImageSequenceDataModule(pl.LightningDataModule):
@@ -55,9 +55,9 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         self._seq_len = seq_len
         self._frame_increment = frame_increment
 
-        self._train_tranforms = anyDictListToCompose(train_transforms)
-        self._val_transforms = anyDictListToCompose(val_transforms)
-        self._test_transforms = anyDictListToCompose(test_transforms)
+        self._train_tranforms = dictListToAugment(train_transforms)
+        self._val_transforms = dictListToAugment(val_transforms)
+        self._test_transforms = dictListToAugment(test_transforms)
 
     def setup(self, stage: str=None) -> None:
         if stage == 'fit' or stage is None:

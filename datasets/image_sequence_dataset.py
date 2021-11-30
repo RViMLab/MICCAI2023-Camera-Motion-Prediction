@@ -67,6 +67,7 @@ class ImageSequenceDataset(Dataset):
             seed = random.randint(0, np.iinfo(np.int32).max)  # set random seed for numpy
 
         img_seq = []
+        img_seq_transformed = []
 
         idcs = self._idcs[idx] + np.arange(self._seq_len)*self._frame_increment
 
@@ -75,14 +76,18 @@ class ImageSequenceDataset(Dataset):
             img = np.load(os.path.join(self._prefix, row.folder, row.file))
             img_seq.append(img)
 
-        img_seq = np.stack(img_seq).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
-        img_seq = torch.from_numpy(img_seq)
-        img_seq_transformed = img_seq.clone()
+            # transform image sequences
+            if self._transforms:
+                imgaug.seed(seed)
+                img_seq_transformed.append(self._transforms(img))
+            else:
+                img_seq_transformed.append(img)
 
-        # transform image sequences
-        if self._transforms:
-            imgaug.seed(seed)
-            img_seq = self._transforms(img_seq_transformed)
+        img_seq = np.stack(img_seq).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
+        img_seq_transformed = np.stack(img_seq_transformed).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
+        img_seq = torch.from_numpy(img_seq)
+        img_seq_transformed = torch.from_numpy(img_seq_transformed)
+
 
         return img_seq, img_seq_transformed, idcs, file_seq.vid.iloc[0]
 
