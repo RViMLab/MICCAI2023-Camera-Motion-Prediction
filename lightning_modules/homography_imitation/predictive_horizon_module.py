@@ -92,13 +92,13 @@ class PredictiveHorizonModule(pl.LightningModule):
             # visualize sequence N in zeroth batch
             blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
 
-            self.logger.experiment.add_images('verify/blend_train', blends, self.global_step)
+            self.logger.experiment.add_images('train/blend_train', blends, self.global_step)
 
             uv = image_edges(frames_i[0,0].unsqueeze(0))
             uv_reg = integrate_duv(uv, duvs_preview_horizon_reg[0])  # batch 0
             uv_pred = integrate_duv(uv, duvs_preview_horizon_pred[0])  # batch 0
             uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
-            self.logger.experiment.add_figure('verify/uv_traj_fig', uv_traj_fig, self.global_step)
+            self.logger.experiment.add_figure('train/uv_traj_fig', uv_traj_fig, self.global_step)
 
             # visualize duv mean pairwise distance to zero
             # TODO: fix this plot with frame rate?
@@ -144,13 +144,13 @@ class PredictiveHorizonModule(pl.LightningModule):
             # visualize sequence N in zeroth batch
             blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
 
-            self.logger.experiment.add_images('verify/blend_train', blends, self.global_step)
+            self.logger.experiment.add_images('val/blend_train', blends, self.global_step)
 
             uv = image_edges(frames_i[0,0].unsqueeze(0))
             uv_reg = integrate_duv(uv, duvs_preview_horizon_reg[0])  # batch 0
             uv_pred = integrate_duv(uv, duvs_preview_horizon_pred[0])  # batch 0
             uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
-            self.logger.experiment.add_figure('verify/uv_traj_fig', uv_traj_fig, self.global_step)
+            self.logger.experiment.add_figure('val/uv_traj_fig', uv_traj_fig, self.global_step)
 
         self.log('val/distance', distance_loss, on_epoch=True)
         return distance_loss
