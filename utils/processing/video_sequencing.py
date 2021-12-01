@@ -118,76 +118,74 @@ class MultiProcessVideoSequencer(object):
 
 
 class SingleProcessInferenceVideoSequencer():
-    def __init__(self, prefix: str, postfix: str=".mp4", shape: Tuple[int]=(240, 320), buffer_size: int=10) -> None:
+    def __init__(self, prefix: str, postfix: str=".mp4", shape: Tuple[int]=(240, 320), batch_size: int=10, sequence_length: int=10) -> None:
         self._prefix = prefix
         self._postfix = postfix
         self._shape = shape
-        self._buffer_size = buffer_size
+        self._batch_size = batch_size
+        self._sequence_length = sequence_length
         self._detector = BoundingCircleDetector()
 
         self._df = recursive_scan2df(self._prefix, postfix=self._postfix)
         self._df = self._df.sort_values("file").reset_index(drop=True)
         print("Loaded videos:\n", self._df)
 
-    def process_buffer(self, buffer: List[Dict]):
-        imgs = []
-        for element in buffer:
-            imgs.append(image_to_tensor(element["img"], True))
-        imgs = torch.stack(imgs, axis=0)
+    def process_batch(self, batch: List[Dict], log_df: pd.DataFrame) -> pd.DataFrame:
+        for sequence in batch:
+            imgs = []
+            for element in sequence:
+                imgs.append(image_to_tensor(element["img"], True))
+            imgs = torch.stack(imgs, axis=0)
         
-        # normalize
-        imgs = imgs.float()/255.
+            # normalize
+            imgs = imgs.float()/255.
 
-        # inference
-        try:
-            center, radius = self._detector(imgs, N=1000, reduction="mean")
-            box = max_rectangle_in_circle(imgs.shape, center, radius)
-        except:
-            center = np.nan
-            radius = np.nan
-            box = image_edges(imgs).flip(-1)  # kornia expects xy definition
-        imgs = crop_and_resize(imgs, box, self._shape)
-        imgs = (imgs*255.).to(torch.uint8)
+            # inference
+            try:
+                center, radius = self._detector(imgs, N=1000, reduction="mean")
+                box = max_rectangle_in_circle(imgs.shape, center, radius)
+            except:
+                center = np.nan
+                radius = np.nan
+                box = image_edges(imgs).flip(-1)  # kornia expects xy definition
+            imgs = crop_and_resize(imgs, box, self._shape)
+            imgs = (imgs*255.).to(torch.uint8)
 
-        # update buffer
-        for idx, img in enumerate(imgs):
-            buffer[idx]["img"] = tensor_to_image(img, False)
-            if center is not np.nan:
-                buffer[idx]["center"] = center.squeeze().cpu().numpy()
-                buffer[idx]["radius"] = radius.squeeze().cpu().numpy()
-            else:
-                buffer[idx]["center"] = center
-                buffer[idx]["radius"] = radius
+            # safe resutls
+            for idx, element in enumerate(sequence):
+                file = "frame_{}.npy".format(element["frame_cnt"])
+                np.save(os.path.join(element["path"], file), tensor_to_image(imgs[idx], False))
 
-        return buffer
+                # log
+                if center is not np.nan:
+                    log_df = log_df.append({
+                        "folder": element["folder"],
+                        "file": file,
+                        "vid": element["vid_idx"],
+                        "frame": element["frame_cnt"],
+                        "center": center.squeeze().cpu().numpy(),
+                        "radius": radius.squeeze().cpu().numpy()
+                    }, ignore_index=True)
+                else:
+                    log_df = log_df.append({
+                        "folder": element["folder"],
+                        "file": file,
+                        "vid": element["vid_idx"],
+                        "frame": element["frame_cnt"],
+                        "center": center,
+                        "radius": radius
+                    }, ignore_index=True)
 
-    def empty_buffer(self, buffer: List[Dict], log_df: pd.DataFrame) -> pd.DataFrame:
-        buffer = self.process_buffer(buffer)
-
-        for element in buffer:
-            file = "frame_{}.npy".format(element["frame_cnt"])
-            np.save(os.path.join(element["path"], file), element["img"])
-
-            # log
-            log_df = log_df.append({
-                "folder": element["folder"],
-                "file": file,
-                "vid": element["vid_idx"],
-                "frame": element["frame_cnt"],
-                "center": element["center"],
-                "radius": element["radius"]
-            }, ignore_index=True)
-
-        buffer.clear()
+        batch.clear()
         return log_df
 
     def start(self, output_prefix: str) -> None:
-        log_df = pd.DataFrame(columns=["folder", "file", "vid", "frame", "center", "radius"])
 
         # for each video
         for idx, row in tqdm(self._df.iterrows()):
             vid_idx = idx
             video_path = os.path.join(self._prefix, row.folder, row.file)
+            log_df = pd.DataFrame(columns=["folder", "file", "vid", "frame", "center", "radius"])
 
             vc = cv2.VideoCapture(video_path)
 
@@ -198,11 +196,13 @@ class SingleProcessInferenceVideoSequencer():
 
             success, img = vc.read()
             frame_cnt = 0
-            buffer = []
+            batch = []
+            sequence = []
 
             while success:
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                buffer.append({
+
+                sequence.append({
                     "img": img,
                     "path": path,
                     "folder": folder,
@@ -210,19 +210,23 @@ class SingleProcessInferenceVideoSequencer():
                     "frame_cnt": frame_cnt
                 })
 
-                if len(buffer) >= self._buffer_size:
-                    log_df = self.empty_buffer(buffer, log_df)
+                if len(sequence) >= self._sequence_length:        
+                    batch.append(sequence.copy())
+                    sequence.clear()
+
+                if len(batch) >= self._batch_size:
+                    log_df = self.process_batch(batch, log_df)
                 success, img = vc.read()
                 frame_cnt += 1
 
             vc.release()
 
             # empty at end
-            log_df = self.empty_buffer(buffer, log_df)   
+            log_df = self.process_batch(batch, log_df)   
 
-        log_df = log_df.sort_values(["vid", "frame"]).reset_index(drop=True)
-        log_df.to_pickle("{}/log.pkl".format(output_prefix))
-        log_df.to_csv("{}/log.csv".format(output_prefix))
+            log_df = log_df.sort_values(["vid", "frame"]).reset_index(drop=True)
+            log_df.to_pickle("{}/log_vid_{}.pkl".format(output_prefix, vid_idx))
+            log_df.to_csv("{}/log_vid_{}.csv".format(output_prefix, vid_idx))
 
 
 if __name__ == "__main__":

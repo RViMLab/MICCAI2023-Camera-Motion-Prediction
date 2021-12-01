@@ -31,7 +31,8 @@ if __name__ == "__main__":
             prefix=prefix,
             postfix=".mp4",
             shape=(240, 320),
-            buffer_size=25
+            batch_size=20,
+            sequence_length=25
         )
 
     output_prefix = os.path.join(server["database"]["location"], args.output_folder)
