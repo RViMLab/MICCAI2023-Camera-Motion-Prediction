@@ -36,3 +36,4 @@ dependencies:
     - segmentation_models_pytorch
     - pytorch_toolbelt
     - endoscopy
+    - decord

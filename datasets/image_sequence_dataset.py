@@ -41,7 +41,12 @@ class ImageSequenceDataset(Dataset):
         self._frames_between_clips = frames_between_clips
         self._transforms = transforms
         self._seeds = seeds
-        self._idcs = self._filterFeasibleSequenceIndices(self._df, col='vid', seq_len=self._seq_len)
+        self._idcs = self._filterFeasibleSequenceIndices(
+            self._df, col='vid',
+            seq_len=self._seq_len,
+            frame_increment=self._frame_increment,
+            frames_between_clips=self._frames_between_clips
+        )
 
     @property
     def seq_len(self):
@@ -88,7 +93,6 @@ class ImageSequenceDataset(Dataset):
         img_seq = torch.from_numpy(img_seq)
         img_seq_transformed = torch.from_numpy(img_seq_transformed)
 
-
         return img_seq, img_seq_transformed, idcs, file_seq.vid.iloc[0]
 
     def __len__(self):
@@ -98,10 +102,12 @@ class ImageSequenceDataset(Dataset):
         df: pd.DataFrame,
         col: str='vid',
         seq_len: int=2,
+        frame_increment: int=1,
+        frames_between_clips: int=1
     ) -> pd.DataFrame:
         grouped_df = df.groupby(col)
         return grouped_df.apply(
-            lambda x: x.iloc[:len(x) - (seq_len - 1)*self._frame_increment:self._frames_between_clips]  # get indices [0, length - (seq_len - 1)]
+            lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment:frames_between_clips]  # get indices [0, length - (seq_len - 1)]
         ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
 
 
