@@ -91,9 +91,9 @@ def uv_trajectory_figure(uv: np.ndarray, uv_pred: np.ndarray, cmap_name: str="co
         figure (plt.Figure): Figure with trajectories.
     """
 
-    if len(uv.shape) is not 3:
+    if len(uv.shape) != 3:
         raise ValueError("Expected 3 dimensional input for uv, got {} dimensional.".format(len(uv.shape)))
-    if len(uv_pred.shape) is not 3:
+    if len(uv_pred.shape) != 3:
         raise ValueError("Expected 3 dimensional input for uv_pred, got {} dimensional.".format(len(uv_pred.shape)))
 
     map = cm.get_cmap(cmap_name)
