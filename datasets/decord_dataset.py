@@ -1,14 +1,11 @@
 import os
 import random
+import torch
 import pandas as pd
 import numpy as np
 from decord import VideoReader
 from typing import Callable
-from torch.utils import data
 from torch.utils.data import Dataset
-
-import sys
-sys.path.append("/home/martin/Dev/homography_imitation_learning")
 
 
 class DecordDataset(Dataset):
@@ -96,12 +93,13 @@ class DecordDataset(Dataset):
 
 if __name__ == "__main__":
     import torch
-    import kornia
     import endoscopy
+    from tqdm import tqdm
+
     from torch.utils.data import DataLoader
     from utils.io import recursive_scan2df
 
-    prefix = "/media/martin/Samsung_T5/data/endoscopic_data/cholec80/videos"
+    prefix = "/media/martin/Samsung_T5/data/endoscopic_data/cholec80/sample_videos"
     data_df = recursive_scan2df(prefix, ".mp4")
 
     device = "cpu"
@@ -115,13 +113,13 @@ if __name__ == "__main__":
         prefix=prefix,
         seq_len=100,
         frame_increment=1,
-        frames_between_clips=100,
+        frames_between_clips=150,
         num_threads=1
     )
     dl = DataLoader(ds, batch_size=1, num_workers=0)
     log_df = pd.DataFrame(columns=["vid", "frame", "center", "radius"])
 
-    for batch in dl:
+    for batch in tqdm(dl):
         imgs, frame_idcs, vid_idcs = batch
         imgs = imgs[0].to(device).float().permute(0, 3, 1, 2)/255.
         center, radius = detector(imgs, reduction="max")
@@ -140,4 +138,5 @@ if __name__ == "__main__":
             seq_df, ignore_index=True
         )
 
-        print(log_df)
+    log_df.to_pickle("/media/martin/Samsung_T5/data/endoscopic_data/cholec80_circle_tracking/circle_log.pkl")
+    log_df.to_csv("/media/martin/Samsung_T5/data/endoscopic_data/cholec80_circle_tracking/circle_log.csv")
