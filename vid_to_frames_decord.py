@@ -18,9 +18,7 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--server", type=str, default="local", help="Specify server.")
     parser.add_argument("-rf", "--recursive_folder", type=str, default="cholec80/videos", help="Folder to be recursively searched, relative to server['database']['location'].")
     parser.add_argument("-of", "--output_folder", type=str, default="cholec80_circle_tracking", help="Output folder, relative to server['database']['location'].")
-    parser.add_argument("--seq_len", type=int, default=100, help="Set sequence length used for segmentation reduction.")
-    parser.add_argument("--num_threads", type=int, default=8, help="Decord threads for loading frames from video.")
-    parser.add_argument("--shape", nargs="+", default=[100, 320, 640, 3], help="Reshaped image shape.")
+    parser.add_argument("--shape", nargs="+", default=[100, 480, 640, 3], help="Reshaped image shape BxHxWxC, C=3.")
     args = parser.parse_args()
 
     server = args.server
