@@ -35,37 +35,40 @@ if __name__ == "__main__":
     detector = endoscopy.BoundingCircleDetector(device=device)
 
     # Create video loader
-    paths = [os.path.join(prefix, row.folder, row.file) for _, row in data_df.iterrows()]   
+    paths = [os.path.join(prefix, row.folder, row.file) for _, row in data_df.iterrows()]
     bridge.set_bridge("torch")
-    dl = VideoLoader(
-        uris=paths,
-        ctx=cpu(0),
-        shape=args.shape,
-        interval=0,
-        skip=0,
-        shuffle=0
-    )
-    log_df = pd.DataFrame(columns=["vid", "frame", "center", "radius", "shape"])
 
-    for batch in tqdm(dl):
-        imgs, idcs = batch
-        vid_idcs, frame_idcs = idcs[:,0], idcs[:,1]
-        imgs = imgs.to(device).float().permute(0, 3, 1, 2)/255.
-        center, radius = detector(imgs, reduction="max")
-
-        seq_data = {
-            "vid": vid_idcs[0].numpy().tolist(),
-            "frame": frame_idcs[0].numpy().tolist(),
-            "center": center.cpu().tolist()*len(frame_idcs),
-            "radius": radius.cpu().tolist()*len(frame_idcs),
-            "shape": [args.shape]*len(frame_idcs)
-        }
-
-        seq_df = pd.DataFrame(seq_data)
-        log_df = log_df.append(
-            seq_df, ignore_index=True
+    for vid_idx, path in enumerate(paths):
+        dl = VideoLoader(
+            uris=[path],
+            ctx=cpu(0),
+            shape=args.shape,
+            interval=0,
+            skip=0,
+            shuffle=0
         )
+        log_df = pd.DataFrame(columns=["vid", "frame", "center", "radius", "shape"])
 
-    output_prefix = os.path.join(server["database"]["location"], args.output_folder)
-    log_df.to_pickle(os.path.join(output_prefix, "circle_log.pkl"))
-    log_df.to_csv(os.path.join(output_prefix, "circle_log.csv"))
+        for batch in tqdm(dl):
+            imgs, idcs = batch
+            vid_idcs, frame_idcs = idcs[:,0], idcs[:,1]
+            imgs = imgs.to(device).float().permute(0, 3, 1, 2)/255.
+            center, radius = detector(imgs, reduction="max")
+
+            seq_data = {
+                "vid": [vid_idx]*len(frame_idcs),
+                "frame": frame_idcs[0].numpy().tolist(),
+                "center": center.cpu().tolist()*len(frame_idcs),
+                "radius": radius.cpu().tolist()*len(frame_idcs),
+                "shape": [args.shape]*len(frame_idcs)
+            }
+
+            seq_df = pd.DataFrame(seq_data)
+            log_df = log_df.append(
+                seq_df, ignore_index=True
+            )
+
+        output_prefix = os.path.join(server["database"]["location"], args.output_folder)
+        log_df.to_pickle(os.path.join(output_prefix, "circle_log_{}.pkl".format(vid_idx)))
+        log_df.to_csv(os.path.join(output_prefix, "circle_log_{}.csv".format(vid_idx)))
+
