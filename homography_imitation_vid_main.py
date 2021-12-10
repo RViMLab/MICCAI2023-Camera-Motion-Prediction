@@ -119,6 +119,8 @@ if __name__ == '__main__':
         profiler=configs['trainer']['profiler']
     )
 
+    # fit and validation
     trainer.fit(module, dm)
 
-    # trainer.test()
+    # # test
+    # trainer.test(datamodule=dm)

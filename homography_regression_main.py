@@ -101,4 +101,4 @@ if __name__ == '__main__':
         trainer.fit(module, dm)
 
         # test
-        trainer.test()
+        trainer.test(datamodule=dm)
