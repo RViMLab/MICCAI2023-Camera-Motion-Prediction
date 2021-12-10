@@ -60,15 +60,12 @@ if __name__ == '__main__':
         name=configs['experiment']
     )
 
-    # save configs
-    generate_path(logger.log_dir)
-    save_yaml(os.path.join(logger.log_dir, 'config.yml'), configs)
-
     # monitor
     monitor_callback = ModelCheckpoint(**configs['model_checkpoint'])
 
     # create trainer
     trainer = pl.Trainer(
+        auto_lr_find=configs['trainer']['auto_lr_find'],
         max_epochs=configs['trainer']['max_epochs'],
         logger=logger,
         log_every_n_steps=configs['trainer']['log_every_n_steps'],
@@ -80,6 +77,16 @@ if __name__ == '__main__':
         profiler=configs['trainer']['profiler'],
         callbacks=[monitor_callback]
     )
+
+    if configs['trainer']['auto_lr_find']:
+        lr_finder = trainer.tuner.lr_find(module, dm)
+        new_lr = lr_finder.suggestion()
+        configs['model']['lr'] = new_lr
+        module.lr = new_lr
+
+    # save configs
+    generate_path(logger.log_dir)
+    save_yaml(os.path.join(logger.log_dir, 'config.yml'), configs)
 
     # fit and validation
     trainer.fit(module, dm)

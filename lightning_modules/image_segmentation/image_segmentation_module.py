@@ -25,7 +25,7 @@ class ImageSegmentationModule(pl.LightningModule):
 
         self._intermediate_shape = intermediate_shape
 
-        self._lr = lr
+        self.lr = lr  # https://pytorch-lightning.readthedocs.io/en/latest/advanced/lr_finder.html#using-lightning-s-built-in-lr-finder
         self._betas = betas
 
         self._milestones = milestones
@@ -48,7 +48,7 @@ class ImageSegmentationModule(pl.LightningModule):
         return seg
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self._model.parameters(), lr=self._lr, betas=self._betas)
+        optimizer = torch.optim.Adam(self._model.parameters(), lr=self.lr, betas=self._betas)
         scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=self._milestones, gamma=self._gamma)
         return [optimizer], [scheduler]
 
