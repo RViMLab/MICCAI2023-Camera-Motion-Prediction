@@ -32,13 +32,16 @@ if __name__ == "__main__":
     if torch.cuda.is_available():
         device = "cuda"
 
-    detector = endoscopy.BoundingCircleDetector(device=device)
+    detector = endoscopy.BoundingCircleDetector(device=device, model_enum=endoscopy.SEGMENTATION_MODEL.UNET_RESNET_34)
 
     # Create video loader
     paths = [os.path.join(prefix, row.folder, row.file) for _, row in data_df.iterrows()]
     bridge.set_bridge("torch")
 
-    for vid_idx, path in enumerate(paths):
+    for path in paths:
+        vid_idx = int(path.split("/")[-1].split(".")[0][-2:]) - 1
+        print(vid_idx)
+        
         dl = VideoLoader(
             uris=[path],
             ctx=cpu(0),
@@ -53,7 +56,7 @@ if __name__ == "__main__":
             imgs, idcs = batch
             vid_idcs, frame_idcs = idcs[:,0], idcs[:,1]
             imgs = imgs.to(device).float().permute(0, 3, 1, 2)/255.
-            center, radius = detector(imgs, reduction="max")
+            center, radius = detector(imgs, reduction="mean")
 
             seq_data = {
                 "vid": [vid_idx]*len(frame_idcs),
@@ -71,4 +74,3 @@ if __name__ == "__main__":
         output_prefix = os.path.join(server["database"]["location"], args.output_folder)
         log_df.to_pickle(os.path.join(output_prefix, "circle_log_{}.pkl".format(vid_idx)))
         log_df.to_csv(os.path.join(output_prefix, "circle_log_{}.csv".format(vid_idx)))
-
