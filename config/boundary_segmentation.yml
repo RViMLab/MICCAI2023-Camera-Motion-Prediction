@@ -1,4 +1,4 @@
-experiment: 'boundary_image_segmentation'
+experiment: 'boundary_image_segmentation/unet/resnet/34'
 lightning_module: 'ImageSegmentationModule'
 lightning_data_module: 'ImageSegmentationDataModule'
 model_checkpoint: 
@@ -6,7 +6,7 @@ model_checkpoint:
     mode: 'max'
 trainer:
     gpus: 1
-    max_epochs: 20
+    max_epochs: 200
     log_every_n_steps: 10
     limit_train_batches: 1.0
     limit_val_batches: 1.0
@@ -18,8 +18,8 @@ data:
     pkl_path: 'boundary_segmentation'
     pkl_name: 'light_log.pkl'
     train_split: 0.8
-    batch_size: 16
-    num_workers: 6
+    batch_size: 128
+    num_workers: 8
     random_state: 42
     train_image_transforms:
         - {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'ChangeColorspace',           'kwargs': {'to_colorspace': 'RGB', 'from_colorspace': 'BGR'}}
@@ -52,12 +52,12 @@ model:
         name: 'Unet'
         kwargs:
             encoder_name: 'resnet34'
-            encoder_depth: 4
-            decoder_channels: [128, 64, 32, 16]
+            encoder_depth: 5
+            decoder_channels: [256, 128, 64, 32, 16]
             in_channels: 3
             classes: 1
     intermediate_shape: [256, 256]
     lr: 1.e-4
     betas: [0.9, 0.999]
-    milestones: [0]
-    gamma: 1.0
+    milestones: [99, 149]
+    gamma: 0.1
