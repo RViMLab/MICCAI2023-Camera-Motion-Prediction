@@ -17,7 +17,8 @@ if __name__ == "__main__":
     parser.add_argument("-sf", "--servers_file", type=str, default="config/servers.yml", help="Servers file.")
     parser.add_argument("-s", "--server", type=str, default="local", help="Specify server.")
     parser.add_argument("-rf", "--recursive_folder", type=str, default="cholec80/videos", help="Folder to be recursively searched, relative to server['database']['location'].")
-    parser.add_argument("-of", "--output_folder", type=str, default="cholec80_circle_tracking", help="Output folder, relative to server['database']['location'].")
+    parser.add_argument("-of", "--output_folder", type=str, default="cholec80_circle_tracking_individual", help="Output folder, relative to server['database']['location'].")
+    parser.add_argument("-r", "--reduction", type=str, default=None, help="Reduction to be applied to segmented image sequence.")
     parser.add_argument("--shape", nargs="+", default=[100, 480, 640, 3], help="Reshaped image shape BxHxWxC, C=3.")
     args = parser.parse_args()
 
@@ -27,12 +28,13 @@ if __name__ == "__main__":
 
     data_df = recursive_scan2df(prefix, ".mp4")
     data_df = data_df.sort_values(["folder", "file"]).reset_index(drop=True)
+    data_df = data_df[78:]
 
     device = "cpu"
     if torch.cuda.is_available():
         device = "cuda"
 
-    detector = endoscopy.BoundingCircleDetector(device=device, model_enum=endoscopy.SEGMENTATION_MODEL.UNET_RESNET_34)
+    detector = endoscopy.BoundingCircleDetector(device=device, model_enum=endoscopy.SEGMENTATION_MODEL.UNET_RESNET_34_TINY)
 
     # Create video loader
     paths = [os.path.join(prefix, row.folder, row.file) for _, row in data_df.iterrows()]
@@ -56,20 +58,34 @@ if __name__ == "__main__":
             imgs, idcs = batch
             vid_idcs, frame_idcs = idcs[:,0], idcs[:,1]
             imgs = imgs.to(device).float().permute(0, 3, 1, 2)/255.
-            center, radius = detector(imgs, reduction="mean")
+            try:
+                center, radius = detector(imgs, reduction=args.reduction)
+            except:
+                center, radius = torch.full([len(frame_idcs), 2], float('nan')), torch.full([len(frame_idcs)], float('nan'))
 
-            seq_data = {
-                "vid": [vid_idx]*len(frame_idcs),
-                "frame": frame_idcs[0].numpy().tolist(),
-                "center": center.cpu().tolist()*len(frame_idcs),
-                "radius": radius.cpu().tolist()*len(frame_idcs),
-                "shape": [args.shape]*len(frame_idcs)
-            }
+            if args.reduction is not None:
+                seq_data = {
+                    "vid": [vid_idx]*len(frame_idcs),
+                    "frame": frame_idcs.numpy().tolist(),
+                    "center": center.cpu().tolist()*len(frame_idcs),
+                    "radius": radius.cpu().tolist()*len(frame_idcs),
+                    "shape": [args.shape]*len(frame_idcs)
+                }
+            else:
+                seq_data = {
+                    "vid": [vid_idx]*len(frame_idcs),
+                    "frame": frame_idcs.numpy().tolist(),
+                    "center": center.cpu().tolist(),
+                    "radius": radius.cpu().tolist(),
+                    "shape": [args.shape]*len(frame_idcs)
+                }
 
             seq_df = pd.DataFrame(seq_data)
             log_df = log_df.append(
                 seq_df, ignore_index=True
             )
+
+        del dl
 
         output_prefix = os.path.join(server["database"]["location"], args.output_folder)
         log_df.to_pickle(os.path.join(output_prefix, "circle_log_{}.pkl".format(vid_idx)))
