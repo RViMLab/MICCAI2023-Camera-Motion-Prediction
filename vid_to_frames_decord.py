@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--server", type=str, default="local", help="Specify server.")
     parser.add_argument("-rf", "--recursive_folder", type=str, default="cholec80/videos", help="Folder to be recursively searched, relative to server['database']['location'].")
     parser.add_argument("-of", "--output_folder", type=str, default="cholec80_circle_tracking_mean_reduction", help="Output folder, relative to server['database']['location'].")
-    parser.add_argument("-r", "--reduction", type=str, default="mean", help="Reduction to be applied to segmented image sequence.")
+    parser.add_argument("-r", "--reduction", type=str, default=None, help="Reduction to be applied to segmented image sequence.")
     parser.add_argument("--shape", nargs="+", default=[100, 480, 640, 3], help="Reshaped image shape BxHxWxC, C=3.")
     args = parser.parse_args()
 

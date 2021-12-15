@@ -117,6 +117,56 @@ class MultiProcessVideoSequencer(object):
         return log_df
 
 
+class MultiProcessVideoSequencerPlusCircleCropping(MultiProcessVideoSequencer):
+    def __init__(self, prefix: str, circle_df: pd.DataFrame, postfix: str = ".mp4", shape: Tuple[int, int] = (240, 320), buffer_size: int = 10, radius_col: str="radius_running_average_50", center_col: str="center_running_average_50") -> None:
+        super().__init__(prefix, postfix=postfix, shape=shape, buffer_size=buffer_size)
+
+        self._circle_df = circle_df
+        self._radius_col = radius_col
+        self._center_col = center_col
+
+        # discard videos that don't exist in circle_df
+        unique_vids = pd.unique(self._circle_df.vid)  # sorted videos
+        self._df = self._df[self._df.index.isin(unique_vids)]
+
+    def process_buffer(self, buffer: List[Dict]):
+        # accumulate transforms from dict
+        center, radius, shape, img = [], [], [], []
+        vid_idx = buffer[0]["vid_idx"]
+
+        for element in buffer:
+            if vid_idx != element["vid_idx"]:
+                raise RuntimeError("Wrong video index encountered. Expected {}, found {}.".format(vid_idx, element["vid_idx"]))
+            row = self._circle_df.loc[(self._circle_df.frame == element["frame_cnt"]) & (self._circle_df.vid == vid_idx)]
+
+            center.append(
+                row[self._center_col].values[0]
+            )
+            radius.append(
+                row[self._radius_col].values[0]
+            )
+            shape.append(
+                row["shape"].values[0]
+            )
+            img.append(
+                cv2.resize(element["img"], (shape[-1][1], shape[-1][0]), interpolation=cv2.INTER_CUBIC)[...,::-1]
+            )
+
+        # compute boxes
+        center, radius, shape = torch.tensor(center), torch.tensor(radius), torch.Size([len(shape), shape[0][2], shape[0][0], shape[0][1]])
+        box = max_rectangle_in_circle(shape, center, radius)
+        
+        # apply transforms
+        img = torch.from_numpy(np.stack(img)).permute(0,3,1,2)  # BxHxWxC -> BxCxHxW
+        img = crop_and_resize(img.float(), box, self._shape)
+        img = img.permute(0,2,3,1).numpy().astype(np.uint8)  # BxCxHxW -> BxHxWxC
+
+        for idx, element in enumerate(buffer):
+            element["img"] = img[idx]
+        
+        return buffer
+
+
 class SingleProcessInferenceVideoSequencer():
     def __init__(self, prefix: str, postfix: str=".mp4", shape: Tuple[int]=(240, 320), batch_size: int=10, sequence_length: int=10) -> None:
         self._prefix = prefix
