@@ -133,11 +133,17 @@ class MultiProcessVideoSequencerPlusCircleCropping(MultiProcessVideoSequencer):
         # accumulate transforms from dict
         center, radius, shape, img = [], [], [], []
         vid_idx = buffer[0]["vid_idx"]
+        vid_sub_df = self._circle_df[self._circle_df.vid == vid_idx]
 
-        for element in buffer:
+        for idx, element in enumerate(buffer):
+            if element["frame_cnt"] >  vid_sub_df.iloc[-1].frame:
+                buffer = buffer[:idx]
+                break
+
             if vid_idx != element["vid_idx"]:
                 raise RuntimeError("Wrong video index encountered. Expected {}, found {}.".format(vid_idx, element["vid_idx"]))
-            row = self._circle_df.loc[(self._circle_df.frame == element["frame_cnt"]) & (self._circle_df.vid == vid_idx)]
+            # row = self._circle_df.loc[(self._circle_df.frame == element["frame_cnt"]) & (self._circle_df.vid == vid_idx)]
+            row = vid_sub_df.loc[vid_sub_df.frame == element["frame_cnt"]]
 
             center.append(
                 row[self._center_col].values[0]
@@ -152,17 +158,18 @@ class MultiProcessVideoSequencerPlusCircleCropping(MultiProcessVideoSequencer):
                 cv2.resize(element["img"], (shape[-1][1], shape[-1][0]), interpolation=cv2.INTER_CUBIC)[...,::-1]
             )
 
-        # compute boxes
-        center, radius, shape = torch.tensor(center), torch.tensor(radius), torch.Size([len(shape), shape[0][2], shape[0][0], shape[0][1]])
-        box = max_rectangle_in_circle(shape, center, radius)
-        
-        # apply transforms
-        img = torch.from_numpy(np.stack(img)).permute(0,3,1,2)  # BxHxWxC -> BxCxHxW
-        img = crop_and_resize(img.float(), box, self._shape)
-        img = img.permute(0,2,3,1).numpy().astype(np.uint8)  # BxCxHxW -> BxHxWxC
+        if len(buffer) > 0:
+            # compute boxes
+            center, radius, shape = torch.tensor(center), torch.tensor(radius), torch.Size([len(shape), shape[0][2], shape[0][0], shape[0][1]])
+            box = max_rectangle_in_circle(shape, center, radius)
+            
+            # apply transforms
+            img = torch.from_numpy(np.stack(img)).permute(0,3,1,2)  # BxHxWxC -> BxCxHxW
+            img = crop_and_resize(img.float(), box, self._shape)
+            img = img.permute(0,2,3,1).numpy().astype(np.uint8)  # BxCxHxW -> BxHxWxC
 
-        for idx, element in enumerate(buffer):
-            element["img"] = img[idx]
+            for idx, element in enumerate(buffer):
+                element["img"] = img[idx]
         
         return buffer
 
