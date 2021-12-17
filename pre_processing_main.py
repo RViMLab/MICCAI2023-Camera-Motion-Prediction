@@ -17,11 +17,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--server", type=str, default="local", help="Server to be used.")
     parser.add_argument("--servers_file", type=str, default="config/servers.yml", help="Server configuration file.")
-    parser.add_argument("--backbone_path", type=str, default="endoscopy_view/resnet/34/version_0", help="Path to log folders, relative to server logging location.")
-    parser.add_argument("--data_prefix", type=str, default="cholec80_frames", help="Relative path to data from database location.")
+    parser.add_argument("--backbone_path", type=str, default="ae_cai/resnet/48/25/34/version_0", help="Path to log folders, relative to server logging location.")
+    parser.add_argument("--data_prefix", type=str, default="cholec80_single_frames_cropped", help="Relative path to data from database location.")
     parser.add_argument("--in_pkl", type=str, default="log.pkl", help="Pickle file with database information.")
     parser.add_argument("--out_pkl", type=str, default="pre_processed_log.pkl", help="Pickle file with preprocessed information.")
-    parser.add_argument("--num_workers", type=int, default=0, help="Number of workers for data loading.")
+    parser.add_argument("--num_workers", type=int, default=8, help="Number of workers for data loading.")
     parser.add_argument("--batch_size", type=int, default=16, help="Batch size for data loading.")
     parser.add_argument("--nth_frame", type=int, default=1, help="Process every nth frame.")
     args = parser.parse_args()
@@ -55,14 +55,14 @@ if __name__ == "__main__":
         df, data_prefix, seq_len=2, frame_increment=args.nth_frame, frames_between_clips=args.nth_frame
     )
     ds._df = ds._df.astype(object)
-    dl = DataLoader(ds, num_workers=args.num_workers, batch_size=args.batch_size, drop_last=False)
+    dl = DataLoader(ds, num_workers=args.num_workers, batch_size=args.batch_size, drop_last=False, shuffle=False)
 
     # Prepase logging data frame
     duv_df = pd.DataFrame({"duv": np.full(len(df), np.nan)})
     duv_df = duv_df.astype(object)
 
     for vid, tf_vid, idcs, vid_idcs in tqdm(dl):
-        vid = vid.to(device=device, dtype=torch.float)/255.
+        vid = vid.to(device=device, dtype=torch.float)/255.  # without shuffling, average circle detection over whole video
 
         frames_i, frames_ips = frame_pairs(vid, 1)  # re-sort images
         frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxCxHxW
