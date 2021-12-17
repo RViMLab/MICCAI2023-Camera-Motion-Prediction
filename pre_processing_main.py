@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument("--server", type=str, default="local", help="Server to be used.")
     parser.add_argument("--servers_file", type=str, default="config/servers.yml", help="Server configuration file.")
     parser.add_argument("--backbone_path", type=str, default="ae_cai/resnet/48/25/34/version_0", help="Path to log folders, relative to server logging location.")
-    parser.add_argument("--data_prefix", type=str, default="cholec80_single_frames_cropped", help="Relative path to data from database location.")
+    parser.add_argument("--data_prefix", type=str, default="cholec80_single_video_frames_cropped", help="Relative path to data from database location.")
     parser.add_argument("--in_pkl", type=str, default="log.pkl", help="Pickle file with database information.")
     parser.add_argument("--out_pkl", type=str, default="pre_processed_log.pkl", help="Pickle file with preprocessed information.")
     parser.add_argument("--num_workers", type=int, default=8, help="Number of workers for data loading.")
