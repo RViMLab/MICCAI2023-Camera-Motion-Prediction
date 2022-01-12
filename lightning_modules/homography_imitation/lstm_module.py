@@ -38,7 +38,6 @@ class DuvLSTMModule(pl.LightningModule):
         })
 
         self._distance_loss = nn.PairwiseDistance()
-        self._mse_loss = nn.MSELoss()
 
         self.lr = lr
         self._betas = betas
