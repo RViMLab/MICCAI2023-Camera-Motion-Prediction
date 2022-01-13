@@ -43,10 +43,12 @@ class PredictiveHorizonModule(pl.LightningModule):
             checkpoint_path=os.path.join(homography_regression_prefix, homography_regression['path'], homography_regression['checkpoint']),
             **homography_regression['model']
         )
-        self._homography_regression.eval()
+        self._homography_regression = self._homography_regression.eval()
+        self._homography_regression.freeze()
 
     def on_train_epoch_start(self):
-        self._homography_regression.eval()
+        self._homography_regression = self._homography_regression.eval()
+        self._homography_regression.freeze()
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self._model.parameters(), lr=self._lr, betas=self._betas)
