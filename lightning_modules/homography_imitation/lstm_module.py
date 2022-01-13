@@ -138,7 +138,7 @@ class DuvLSTMModule(pl.LightningModule):
         ).mean()
 
         # logging
-        if self.global_step % self._log_n_steps == 0:
+        if self._validation_step_ct % self._log_n_steps == 0:
             frames_i   = frames_i.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])   # reshape B*NxCxHxW -> BxNxCxHxW
             frames_ips = frames_ips.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1]) # reshape B*NxCxHxW -> BxNxCxHxW
 
