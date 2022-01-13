@@ -52,7 +52,7 @@ if __name__ == "__main__":
     df = pd.read_pickle(os.path.join(data_prefix, args.in_pkl))
 
     ds = ImageSequenceDataset(
-        df, data_prefix, seq_len=2, frame_increment=args.nth_frame, frames_between_clips=args.nth_frame
+        df, data_prefix, seq_len=2, frame_increment=args.nth_frame, frames_between_clips=1
     )
     ds._df = ds._df.astype(object)
     dl = DataLoader(ds, num_workers=args.num_workers, batch_size=args.batch_size, drop_last=False, shuffle=False)
