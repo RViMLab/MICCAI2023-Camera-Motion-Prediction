@@ -95,6 +95,11 @@ class DuvLSTMModule(pl.LightningModule):
             duvs_reg[:,1:].reshape(-1, 2) # note that the first value is skipped
         ).mean()
 
+        cum_distance_loss = self._distance_loss(
+            torch.cumsum(duvs_pred, dim=1).reshape(-1, 2),
+            torch.cumsum(duvs_reg[:,1:], dim=1).reshape(-1, 2)
+        ).mean()
+
         # logging
         if self.global_step % self._log_n_steps == 0:
             frames_i   = frames_i.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])   # reshape B*NxCxHxW -> BxNxCxHxW
@@ -112,7 +117,8 @@ class DuvLSTMModule(pl.LightningModule):
             self.logger.experiment.add_figure('train/uv_traj_fig', uv_traj_fig, self.global_step)
 
         self.log('train/distance', distance_loss)
-        return distance_loss
+        self.log('train/cum_distance', cum_distance_loss)
+        return distance_loss + cum_distance_loss
 
     def validation_step(self, batch, batch_idx):
         if self._homography_regression is None:
@@ -137,6 +143,11 @@ class DuvLSTMModule(pl.LightningModule):
             duvs_reg[:,1:].reshape(-1, 2) # note that the first value is skipped
         ).mean()
 
+        cum_distance_loss = self._distance_loss(
+            torch.cumsum(duvs_pred, dim=1).reshape(-1, 2),
+            torch.cumsum(duvs_reg[:,1:], dim=1).reshape(-1, 2)
+        ).mean()
+
         # logging
         if self._validation_step_ct % self._log_n_steps == 0:
             frames_i   = frames_i.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])   # reshape B*NxCxHxW -> BxNxCxHxW
@@ -154,6 +165,7 @@ class DuvLSTMModule(pl.LightningModule):
             self.logger.experiment.add_figure('val/uv_traj_fig', uv_traj_fig, self.global_step)
 
         self.log('val/distance', distance_loss)
+        self.log('val/cum_distance', cum_distance_loss)
         self._validation_step_ct += 1
 
     def test_step(self, batch, batch_idx):
