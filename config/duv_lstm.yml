@@ -1,6 +1,6 @@
 experiment: 'miccai/duv_lstm'
-lightning_module: 'DuvLSTMModule'
-lightning_data_module: 'ImageSequenceDataModule'
+lightning_module: 'LSTMModule'
+lightning_data_module: 'ImageSequenceDuvDataModule'
 model_checkpoint: 
     monitor: 'val/distance'
     mode: 'min'
@@ -15,11 +15,11 @@ trainer:
     profiler: False
     reload_dataloaders_every_n_epochs: 0
 data:
-    pkl_name: 'test_train_log.pkl'
+    pkl_name: 'pre_processed_5th_frame_log_test_train_no_nan.pkl'
     pkl_path: '21_11_25_first_test_data_frames'
     train_split: 0.8
-    batch_size: 64
-    num_workers: 8
+    batch_size: 2
+    num_workers: 2
     random_state: 42
     tolerance: 0.2 # change this tolerance
     seq_len: 20
@@ -39,4 +39,4 @@ model:
     lstm_hidden_size: 32
     lr: 1.e-3
     betas: [0.9, 0.999]
-    log_n_steps: 100
+    log_n_steps: 1

@@ -16,7 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('-sf', '--servers_file', type=str, default='config/servers.yml', help='Servers file.')
     parser.add_argument('-s', '--server', type=str, default='local', help='Specify server.')
     parser.add_argument('-c', '--config', type=str, required=True, help='Path to configuration file.')
-    parser.add_argument('-bp', '--backbone_path', type=str, required=True, help='Path to log folders, relative to server logging location.')
+    parser.add_argument('-bp', '--backbone_path', type=str, help='Path to log folders, relative to server logging location.')
     args = parser.parse_args()
 
     servers = load_yaml(args.servers_file)
@@ -27,16 +27,17 @@ if __name__ == '__main__':
     configs = load_yaml(args.config)
 
     # append configs by backbone
-    backbone_configs = load_yaml(os.path.join(server['logging']['location'], args.backbone_path, 'config.yml'))
-    df = scan2df(os.path.join(server['logging']['location'], args.backbone_path, 'checkpoints'), '.ckpt')
-    ckpts = sorted(list(df['file']), key=natural_keys)
-    configs['model']['homography_regression'] = {
-        'lightning_module': backbone_configs['lightning_module'],
-        'model': backbone_configs['model'],
-        'path': args.backbone_path,
-        'checkpoint': 'checkpoints/{}'.format(ckpts[-1]),
-        'experiment': backbone_configs['experiment']
-    }
+    if args.backbone_path:
+        backbone_configs = load_yaml(os.path.join(server['logging']['location'], args.backbone_path, 'config.yml'))
+        df = scan2df(os.path.join(server['logging']['location'], args.backbone_path, 'checkpoints'), '.ckpt')
+        ckpts = sorted(list(df['file']), key=natural_keys)
+        configs['model']['homography_regression'] = {
+            'lightning_module': backbone_configs['lightning_module'],
+            'model': backbone_configs['model'],
+            'path': args.backbone_path,
+            'checkpoint': 'checkpoints/{}'.format(ckpts[-1]),
+            'experiment': backbone_configs['experiment']
+        }
 
     # prepare data
     prefix = os.path.join(server['database']['location'], configs['data']['pkl_path'])
@@ -72,8 +73,9 @@ if __name__ == '__main__':
     module = getattr(lightning_modules, configs['lightning_module'])(**kwargs)
 
     # inject homography regression into module
-    configs['model']['homography_regression']['model']['pretrained'] = False  # set to false, as loaded anyways
-    module.inject_homography_regression(homography_regression=configs['model']['homography_regression'], homography_regression_prefix=server['logging']['location'])
+    if args.backbone_path:
+        configs['model']['homography_regression']['model']['pretrained'] = False  # set to false, as loaded anyways
+        module.inject_homography_regression(homography_regression=configs['model']['homography_regression'], homography_regression_prefix=server['logging']['location'])
 
     logger = TensorBoardLogger(
         save_dir=server['logging']['location'],

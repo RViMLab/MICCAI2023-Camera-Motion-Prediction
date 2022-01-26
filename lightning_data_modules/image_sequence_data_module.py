@@ -100,7 +100,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         return DataLoader(self._test_set, batch_size=self._batch_size, num_workers=self._num_workers, drop_last=True, pin_memory=True)
 
 
-class ImageSequenceDataDuvModule(pl.LightningDataModule):
+class ImageSequenceDuvDataModule(pl.LightningDataModule):
     def __init__(self,
         df: pd.DataFrame, 
         prefix: str,
