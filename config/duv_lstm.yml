@@ -24,6 +24,7 @@ data:
     tolerance: 0.2 # change this tolerance
     seq_len: 20
     frame_increment: 5
+    frames_between_clips: 100 # seq_len*frame_increment
     train_transforms: null
     val_transforms: null
     test_transforms: null

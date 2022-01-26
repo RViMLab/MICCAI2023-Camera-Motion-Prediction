@@ -20,6 +20,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         tolerance: float = 0.05,
         seq_len: int=10,
         frame_increment: int=1,
+        frames_between_clips: int=1,
         train_transforms: List[dict]=None, 
         val_transforms: List[dict]=None, 
         test_transforms: List[dict]=None
@@ -54,6 +55,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
 
         self._seq_len = seq_len
         self._frame_increment = frame_increment
+        self._frames_between_clips = frames_between_clips
 
         self._train_tranforms = dictListToAugment(train_transforms)
         self._val_transforms = dictListToAugment(val_transforms)
@@ -66,6 +68,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 prefix=self._prefix,
                 seq_len=self._seq_len,
                 frame_increment=self._frame_increment,
+                frames_between_clips=self._frames_between_clips,
                 transforms=self._train_tranforms, 
                 seeds=False
             )
@@ -74,6 +77,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 prefix=self._prefix,
                 seq_len=self._seq_len,
                 frame_increment=self._frame_increment,
+                frames_between_clips=self._frames_between_clips,
                 transforms=self._val_transforms,
                 seeds=True
             )
@@ -83,6 +87,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 prefix=self._prefix,
                 seq_len=self._seq_len,
                 frame_increment=self._frame_increment,
+                frames_between_clips=self._frames_between_clips,
                 transforms=self._test_transforms, 
                 seeds=True
             )
@@ -111,6 +116,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
         tolerance: float = 0.05,
         seq_len: int=10,
         frame_increment: int=1,
+        frames_between_clips: int=1,
         train_transforms: List[dict]=None, 
         val_transforms: List[dict]=None, 
         test_transforms: List[dict]=None
@@ -145,6 +151,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
 
         self._seq_len = seq_len
         self._frame_increment = frame_increment
+        self._frames_between_clips = frames_between_clips
 
         self._train_tranforms = dictListToAugment(train_transforms)
         self._val_transforms = dictListToAugment(val_transforms)
@@ -157,6 +164,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
                 prefix=self._prefix,
                 seq_len=self._seq_len,
                 frame_increment=self._frame_increment,
+                frames_between_clips=self._frames_between_clips,
                 transforms=self._train_tranforms, 
                 seeds=False
             )
@@ -165,6 +173,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
                 prefix=self._prefix,
                 seq_len=self._seq_len,
                 frame_increment=self._frame_increment,
+                frames_between_clips=self._frames_between_clips,
                 transforms=self._val_transforms,
                 seeds=True
             )
@@ -174,7 +183,8 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
                 prefix=self._prefix,
                 seq_len=self._seq_len,
                 frame_increment=self._frame_increment,
-                transforms=self._test_transforms, 
+                frames_between_clips=self._frames_between_clips,
+                transforms=self._test_transforms,
                 seeds=True
             )
 
