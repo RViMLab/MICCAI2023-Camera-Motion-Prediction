@@ -95,10 +95,10 @@ class DuvLSTMModule(pl.LightningModule):
             duvs_reg[:,1:].reshape(-1, 2) # note that the first value is skipped
         ).mean()
 
-        cum_distance_loss = self._distance_loss(
-            torch.cumsum(duvs_pred, dim=1).reshape(-1, 2),
-            torch.cumsum(duvs_reg[:,1:], dim=1).reshape(-1, 2)
-        ).mean()
+        # cum_distance_loss = self._distance_loss(
+        #     torch.cumsum(duvs_pred, dim=1).reshape(-1, 2),
+        #     torch.cumsum(duvs_reg[:,1:], dim=1).reshape(-1, 2)
+        # ).mean()
 
         # logging
         if self.global_step % self._log_n_steps == 0:
@@ -117,8 +117,8 @@ class DuvLSTMModule(pl.LightningModule):
             self.logger.experiment.add_figure('train/uv_traj_fig', uv_traj_fig, self.global_step)
 
         self.log('train/distance', distance_loss)
-        self.log('train/cum_distance', cum_distance_loss)
-        return distance_loss + cum_distance_loss
+        # self.log('train/cum_distance', cum_distance_loss)
+        return distance_loss # + cum_distance_loss
 
     def validation_step(self, batch, batch_idx):
         if self._homography_regression is None:
@@ -143,10 +143,10 @@ class DuvLSTMModule(pl.LightningModule):
             duvs_reg[:,1:].reshape(-1, 2) # note that the first value is skipped
         ).mean()
 
-        cum_distance_loss = self._distance_loss(
-            torch.cumsum(duvs_pred, dim=1).reshape(-1, 2),
-            torch.cumsum(duvs_reg[:,1:], dim=1).reshape(-1, 2)
-        ).mean()
+        # cum_distance_loss = self._distance_loss(
+        #     torch.cumsum(duvs_pred, dim=1).reshape(-1, 2),
+        #     torch.cumsum(duvs_reg[:,1:], dim=1).reshape(-1, 2)
+        # ).mean()
 
         # logging
         if self._validation_step_ct % self._log_n_steps == 0:
@@ -165,7 +165,7 @@ class DuvLSTMModule(pl.LightningModule):
             self.logger.experiment.add_figure('val/uv_traj_fig', uv_traj_fig, self._validation_step_ct)
 
         self.log('val/distance', distance_loss)
-        self.log('val/cum_distance', cum_distance_loss)
+        # self.log('val/cum_distance', cum_distance_loss)
         self._validation_step_ct += 1
 
     def test_step(self, batch, batch_idx):
@@ -251,20 +251,20 @@ class LSTMModule(pl.LightningModule):
             duvs_reg[:,1:].reshape(-1, 2) # note that the first value is skipped
         ).mean()
 
-        # logging
-        if self.global_step % self._log_n_steps == 0:
-            frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
+        # # logging
+        # if self.global_step % self._log_n_steps == 0:
+        #     frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
 
-            # visualize sequence N in zeroth batch
-            blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0,:-1])
+        #     # visualize sequence N in zeroth batch
+        #     blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0,:-1])
 
-            self.logger.experiment.add_images('train/blend_train', blends, self.global_step)
+        #     self.logger.experiment.add_images('train/blend_train', blends, self.global_step)
 
-            uv = image_edges(frames_i[0,0].unsqueeze(0))
-            uv_reg = integrate_duv(uv, duvs_reg[0,1:])  # batch 0, note that first value is skipped
-            uv_pred = integrate_duv(uv, duvs_pred[0])  # batch 0
-            uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
-            self.logger.experiment.add_figure('train/uv_traj_fig', uv_traj_fig, self.global_step)
+        #     uv = image_edges(frames_i[0,0].unsqueeze(0))
+        #     uv_reg = integrate_duv(uv, duvs_reg[0,1:])  # batch 0, note that first value is skipped
+        #     uv_pred = integrate_duv(uv, duvs_pred[0])  # batch 0
+        #     uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
+        #     self.logger.experiment.add_figure('train/uv_traj_fig', uv_traj_fig, self.global_step)
 
         self.log('train/distance', distance_loss)
         return distance_loss  # + cum_distance_loss
