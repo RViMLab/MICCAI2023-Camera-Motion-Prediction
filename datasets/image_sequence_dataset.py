@@ -22,6 +22,7 @@ class ImageSequenceDataset(Dataset):
 
     Returns:
         img_seq (torch.Tensor): Images shape NxCxHxW
+        img_seq_transformed (torch.Tensor): Transformed images shape NxCxHxW
         idcs (List[int]): Frame indices
         vid_idx (int): Video index
     """
@@ -94,6 +95,110 @@ class ImageSequenceDataset(Dataset):
         img_seq_transformed = torch.from_numpy(img_seq_transformed)
 
         return img_seq, img_seq_transformed, idcs, file_seq.vid.iloc[0]
+
+    def __len__(self):
+        return len(self._idcs)
+
+    def _filterFeasibleSequenceIndices(self, 
+        df: pd.DataFrame,
+        col: str='vid',
+        seq_len: int=2,
+        frame_increment: int=1,
+        frames_between_clips: int=1
+    ) -> pd.DataFrame:
+        grouped_df = df.groupby(col)
+        return grouped_df.apply(
+            lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment:frames_between_clips]  # get indices [0, length - (seq_len - 1)]
+        ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
+
+
+class ImageSequenceDuvDataset(Dataset):
+    r"""Reads an images sequence from a image database.
+
+    Args:
+        df (pd.DataFrame): Pandas dataframe, must contain {'folder': , 'file': , 'vid': , 'frame': , 'duv': }
+        prefix (str): Path to database e.g. </path/to/database>/df.folder/df.file
+        seq_len (int): Sequence length to sample images from, sequence length of 1 corresponds to static images, sequence length of 2 corresponds to neighboring images
+        frame_increment (int): Sample every nth frame. Careful! Has to equal frame increment in df.
+        frames_between_clips (int): Offset between initial frames of subsequent clips.
+        transforms (Callable): Callable tranforms for augmenting sequences
+        seeds (bool): Seeds for deterministic output, e.g. for test set
+
+    Returns:
+        img_seq (torch.Tensor): Images shape NxCxHxW
+        duv_seq (torch.Tensor): Duvs shape Nx4x2
+        idcs (List[int]): Frame indices
+        vid_idx (int): Video index
+    """
+    def __init__(self,
+        df: pd.DataFrame,
+        prefix: str,
+        seq_len: int=1,
+        frame_increment: int=5,
+        frames_between_clips: int=1,
+        transforms: List[Callable]=None, 
+        seeds: bool=False
+    ):
+        self._df = df.sort_values(['vid', 'frame']).reset_index(drop=True)
+        self._prefix = prefix
+        self._seq_len = seq_len
+        self._frame_increment = frame_increment
+        self._frames_between_clips = frames_between_clips
+        self._transforms = transforms
+        self._seeds = seeds
+        self._idcs = self._filterFeasibleSequenceIndices(
+            self._df, col='vid',
+            seq_len=self._seq_len,
+            frame_increment=self._frame_increment,
+            frames_between_clips=self._frames_between_clips
+        )
+
+    @property
+    def seq_len(self):
+        return self._seq_len
+    
+    @seq_len.setter
+    def seq_len(self, seq_len: int):
+        self._seq_len = seq_len
+
+    @property
+    def frame_increment(self):
+        return self._frame_increment
+
+    frame_increment.setter
+    def frame_increment(self, frame_increment: int):
+        self.frame_increment = frame_increment
+
+    def __getitem__(self, idx):
+        # set seed if desired
+        if self._seeds:
+            seed = idx
+        else:
+            seed = random.randint(0, np.iinfo(np.int32).max)  # set random seed for numpy
+
+        img_seq = []
+        duv_seq = []
+
+        idcs = self._idcs[idx] + np.arange(self._seq_len)*self._frame_increment
+
+        file_seq = self._df.loc[idcs]
+        for _, row in file_seq.iterrows():
+            img = np.load(os.path.join(self._prefix, row.folder, row.file))
+
+            # transform image sequences
+            if self._transforms:
+                imgaug.seed(seed)
+                img_seq.append(self._transforms(img))
+            else:
+                img_seq.append(img)
+
+            duv_seq.append(np.array(row.duv))
+
+        img_seq = np.stack(img_seq).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
+        img_seq = torch.from_numpy(img_seq)
+        duv_seq = torch.from_numpy(np.stack(duv_seq))
+
+        return img_seq, duv_seq, idcs, file_seq.vid.iloc[0]
 
     def __len__(self):
         return len(self._idcs)
