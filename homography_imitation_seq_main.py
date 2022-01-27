@@ -60,7 +60,8 @@ if __name__ == '__main__':
         'frames_between_clips': configs['data']['frames_between_clips'],
         'train_transforms': configs['data']['train_transforms'],
         'val_transforms': configs['data']['val_transforms'],
-        'test_transforms': configs['data']['test_transforms']
+        'test_transforms': configs['data']['test_transforms'],
+        'load_images': configs['data']['load_images']
     }
 
     dm = getattr(lightning_data_modules, configs['lightning_data_module'])(**kwargs)

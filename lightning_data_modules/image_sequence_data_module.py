@@ -23,7 +23,8 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         frames_between_clips: int=1,
         train_transforms: List[dict]=None, 
         val_transforms: List[dict]=None, 
-        test_transforms: List[dict]=None
+        test_transforms: List[dict]=None,
+        load_images: bool=True
     ):
         super().__init__()
 
@@ -61,6 +62,8 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         self._val_transforms = dictListToAugment(val_transforms)
         self._test_transforms = dictListToAugment(test_transforms)
 
+        self._load_images = load_images
+
     def setup(self, stage: str=None) -> None:
         if stage == 'fit' or stage is None:
             self._train_set = ImageSequenceDataset(
@@ -70,6 +73,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
                 transforms=self._train_tranforms, 
+                load_images=self._load_images,
                 seeds=False
             )
             self._val_set = ImageSequenceDataset(
@@ -79,6 +83,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
                 transforms=self._val_transforms,
+                load_images=self._load_images,
                 seeds=True
             )
         if stage == 'test':
@@ -89,6 +94,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
                 transforms=self._test_transforms, 
+                load_images=self._load_images,
                 seeds=True
             )
 
@@ -119,7 +125,8 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
         frames_between_clips: int=1,
         train_transforms: List[dict]=None, 
         val_transforms: List[dict]=None, 
-        test_transforms: List[dict]=None
+        test_transforms: List[dict]=None,
+        load_images: bool=True
     ):
         super().__init__()
 
@@ -157,6 +164,8 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
         self._val_transforms = dictListToAugment(val_transforms)
         self._test_transforms = dictListToAugment(test_transforms)
 
+        self._load_images = load_images
+
     def setup(self, stage: str=None) -> None:
         if stage == 'fit' or stage is None:
             self._train_set = ImageSequenceDuvDataset(
@@ -166,6 +175,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
                 transforms=self._train_tranforms, 
+                load_images=self._load_images,
                 seeds=False
             )
             self._val_set = ImageSequenceDuvDataset(
@@ -175,6 +185,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
                 transforms=self._val_transforms,
+                load_images=self._load_images,
                 seeds=True
             )
         if stage == 'test':
@@ -185,6 +196,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
                 transforms=self._test_transforms,
+                load_images=self._load_images,
                 seeds=True
             )
 

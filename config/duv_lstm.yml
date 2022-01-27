@@ -1,4 +1,4 @@
-experiment: 'miccai/duv_lstm/cholec80'
+experiment: 'test/miccai/duv_lstm/cholec80'
 lightning_module: 'LSTMModule'
 lightning_data_module: 'ImageSequenceDuvDataModule'
 model_checkpoint: 
@@ -7,10 +7,10 @@ model_checkpoint:
 trainer:
     gpus: 1
     max_epochs: 50
-    log_every_n_steps: 400
-    limit_train_batches: 0.05
-    limit_val_batches: 0.05
-    limit_test_batches: 0.05
+    log_every_n_steps: 66
+    limit_train_batches: 1.0
+    limit_val_batches: 1.0
+    limit_test_batches: 1.0
     fast_dev_run: False
     profiler: False
     reload_dataloaders_every_n_epochs: 0
@@ -18,8 +18,8 @@ data:
     pkl_name: 'pre_processed_5th_frame_log_new_test_train_no_nan_compressed.pkl' # 'pre_processed_5th_frame_log_test_train_no_nan.pkl'
     pkl_path: 'cholec80_single_video_frames_cropped' # '21_11_25_first_test_data_frames'
     train_split: 0.8
-    batch_size: 2
-    num_workers: 2
+    batch_size: 512
+    num_workers: 8
     random_state: 42
     tolerance: 0.2 # change this tolerance
     seq_len: 20
@@ -28,8 +28,9 @@ data:
     train_transforms: null
     val_transforms: null
     test_transforms: null
+    load_images: False
 model:
     lstm_hidden_size: 32
-    lr: 1.e-4
+    lr: 1.e-3
     betas: [0.9, 0.999]
-    log_n_steps: 400
+    log_n_steps: 66

@@ -18,6 +18,7 @@ class ImageSequenceDataset(Dataset):
         frame_increment (int): Sample every nth frame.
         frames_between_clips (int): Offset between initial frames of subsequent clips.
         transforms (Callable): Callable tranforms for augmenting sequences
+        load_images (bool): Whether to return untransformed images
         seeds (bool): Seeds for deterministic output, e.g. for test set
 
     Returns:
@@ -33,6 +34,7 @@ class ImageSequenceDataset(Dataset):
         frame_increment: int=5,
         frames_between_clips: int=1,
         transforms: List[Callable]=None, 
+        load_images: bool=True,
         seeds: bool=False
     ):
         self._df = df.sort_values(['vid', 'frame']).reset_index(drop=True)
@@ -41,6 +43,7 @@ class ImageSequenceDataset(Dataset):
         self._frame_increment = frame_increment
         self._frames_between_clips = frames_between_clips
         self._transforms = transforms
+        self._load_images = load_images
         self._seeds = seeds
         self._idcs = self._filterFeasibleSequenceIndices(
             self._df, col='vid',
@@ -80,7 +83,9 @@ class ImageSequenceDataset(Dataset):
         file_seq = self._df.loc[idcs]
         for _, row in file_seq.iterrows():
             img = np.load(os.path.join(self._prefix, row.folder, row.file))
-            img_seq.append(img)
+
+            if self._load_images:
+                img_seq.append(img)
 
             # transform image sequences
             if self._transforms:
@@ -89,12 +94,15 @@ class ImageSequenceDataset(Dataset):
             else:
                 img_seq_transformed.append(img)
 
-        img_seq = np.stack(img_seq).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
-        img_seq_transformed = np.stack(img_seq_transformed).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
-        img_seq = torch.from_numpy(img_seq)
+        if self._load_images:
+            img_seq = torch.from_numpy(img_seq)
+            img_seq = np.stack(img_seq).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
         img_seq_transformed = torch.from_numpy(img_seq_transformed)
+        img_seq_transformed = np.stack(img_seq_transformed).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
 
-        return img_seq, img_seq_transformed, idcs, file_seq.vid.iloc[0]
+        if self._load_images:
+            return img_seq, img_seq_transformed, idcs, file_seq.vid.iloc[0]
+        return img_seq_transformed, idcs, file_seq.vid.iloc[0]
 
     def __len__(self):
         return len(self._idcs)
@@ -122,10 +130,11 @@ class ImageSequenceDuvDataset(Dataset):
         frame_increment (int): Sample every nth frame. Careful! Has to equal frame increment in df.
         frames_between_clips (int): Offset between initial frames of subsequent clips.
         transforms (Callable): Callable tranforms for augmenting sequences
+        load_images (bool): Whether to load images
         seeds (bool): Seeds for deterministic output, e.g. for test set
 
     Returns:
-        img_seq (torch.Tensor): Images shape NxCxHxW
+        img_seq (torch.Tensor): Images shape NxCxHxW (if load_images)
         duv_seq (torch.Tensor): Duvs shape Nx4x2
         idcs (List[int]): Frame indices
         vid_idx (int): Video index
@@ -137,6 +146,7 @@ class ImageSequenceDuvDataset(Dataset):
         frame_increment: int=5,
         frames_between_clips: int=1,
         transforms: List[Callable]=None, 
+        load_images: bool=True,
         seeds: bool=False
     ):
         self._df = df.sort_values(['vid', 'frame']).reset_index(drop=True)
@@ -145,6 +155,7 @@ class ImageSequenceDuvDataset(Dataset):
         self._frame_increment = frame_increment
         self._frames_between_clips = frames_between_clips
         self._transforms = transforms
+        self._load_images = load_images
         self._seeds = seeds
         self._idcs = self._filterFeasibleSequenceIndices(
             self._df, col='vid',
@@ -183,22 +194,26 @@ class ImageSequenceDuvDataset(Dataset):
 
         file_seq = self._df.loc[idcs]
         for _, row in file_seq.iterrows():
-            img = np.load(os.path.join(self._prefix, row.folder, row.file))
+            if self._load_images:
+                img = np.load(os.path.join(self._prefix, row.folder, row.file))
 
-            # transform image sequences
-            if self._transforms:
-                imgaug.seed(seed)
-                img_seq.append(self._transforms(img))
-            else:
-                img_seq.append(img)
+                # transform image sequences
+                if self._transforms:
+                    imgaug.seed(seed)
+                    img_seq.append(self._transforms(img))
+                else:
+                    img_seq.append(img)
 
             duv_seq.append(np.array(row.duv))
 
-        img_seq = np.stack(img_seq).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
-        img_seq = torch.from_numpy(img_seq)
+        if self._load_images:
+            img_seq = np.stack(img_seq).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
+            img_seq = torch.from_numpy(img_seq)
         duv_seq = torch.from_numpy(np.stack(duv_seq))
 
-        return img_seq, duv_seq, idcs, file_seq.vid.iloc[0]
+        if self._load_images:
+            return img_seq, duv_seq, idcs, file_seq.vid.iloc[0]
+        return duv_seq, idcs, file_seq.vid.iloc[0]
 
     def __len__(self):
         return len(self._idcs)
