@@ -363,13 +363,6 @@ class FeatureLSTMModule(pl.LightningModule):
             out_features=8  # duv
         )
 
-        self._lstm_head = torch.nn.ModuleDict({
-            # "bn": torch.nn.BatchNorm1d(head['kwargs']['input_size'] + 8),
-            # "relu": torch.nn.ReLU(),
-            "lstm": self._lstm,
-            "fc": self._fc
-        })
-
         self._homography_regression = None
 
         self._distance_loss = nn.PairwiseDistance()
@@ -400,34 +393,69 @@ class FeatureLSTMModule(pl.LightningModule):
 
     def forward(self, imgs: torch.Tensor, duvs: torch.Tensor) -> torch.Tensor:
         r"""Forward past images and past motion to predict future motion.
+
+        Args:
+            imgs (torch.Tensor): Images of shape BxTxCxHxW, where T is the sequence length
+            duvs (torch.Tensor): Four point homographies of shape BxTx4x2 
         """
-        # x =  # T*BxCxHxW (@inference TxCxHxW)
-        x = self._encoder(imgs)
+        features = self._encoder(imgs.reshape((-1,) + imgs.shape[-3:])) # B*(T-1)xCxHxW, where N == sequence -> returns B*(T-1)x backbone_features (512)
+        features = features.reshape(duvs.shape[:2] + (-1,))
+        features = features.permute(1,0,2) # BxTxbackbone_features -> TxBxbackbone_features
 
-        # predict motion on past images (concatenate with image features)
+        # concatenate
+        duvs = duvs.permute(1,0,2,3) # BxTx4x2 -> TxBx4x2
+        duvs = duvs.view(duvs.shape[:2] + (-1,)) # TxBx4x2 -> TxBx8
+        features = torch.concat([features, duvs], dim=-1)
 
-        # regress homographies
-        # encode features
-        # concatenate features and homographies (absolute/cumsum/joint)
-        # predict homographies (lstm head) (delta/absolute)
+        # forward lstm head
+        duvs_pred, (hn, cn) = self._lstm(features) # duvs_pred gives access to all hidden states in the sequence
+        duvs_pred = self._fc(duvs_pred)
+        duvs_pred = duvs_pred.view(duvs_pred.shape[:2] + (4, 2,)) # TxBx8 -> TxBx4x2
+        duvs_pred = duvs_pred.permute(1,0,2,3) # TxBx4x2 -> BxTx4x2
+        return duvs_pred
 
-    
+    def training_step(self, batch, batch_idx):
+        if self._homography_regression is None:
+            raise ValueError('Homography regression model required in training step.')
+        # by default without grad (torch.set_grad_enabled(False))
+        videos, transformed_videos, frame_idcs, vid_idcs = batch
+        videos, transformed_videos = videos.float()/255., transformed_videos.float()/255.
 
+        frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
+        frames_i   = frames_i.reshape((-1,) + frames_i.shape[-3:])      # reshape BxNxCxHxW -> B*NxCxHxW
+        frames_ips = frames_ips.reshape((-1,) + frames_ips.shape[-3:])  # reshape BxNxCxHxW -> B*NxCxHxW
 
-        # TxBxCxHxW
-        # Backbone (TxB -> T*B)
-        # TxBxF (T*B -> TxB), concat cummulative duv
-        # LSTM
-        # TxBx8, 8 <-> duv or cummulative
+        with torch.no_grad():
+            duvs_reg = self._homography_regression(frames_i, frames_ips)
+            duvs_reg = duvs_reg.view(videos.shape[0], -1, 4, 2) # BxTx4x2
 
-        pass
+        # forward
+        duvs_pred = self(frames_i.reshape(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])[:,:-1], duvs_reg[:,:-1])  # note that last duv value is skipped
 
-    def training_step(self):
-        ## backbone
-        ## lstm
-        ## conditioning
-        ## cumulative motion?
-        pass
+        # compute distance loss
+        distance_loss = self._distance_loss(
+            duvs_pred.reshape(-1, 2),
+            duvs_reg[:,1:].reshape(-1, 2) # note that the first value is skipped
+        ).mean()
+
+        # logging
+        if self.global_step % self._log_n_steps == 0:
+            frames_i   = frames_i.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])   # reshape B*NxCxHxW -> BxNxCxHxW
+            frames_ips = frames_ips.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1]) # reshape B*NxCxHxW -> BxNxCxHxW
+
+            # visualize sequence N in zeroth batch
+            blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
+
+            self.logger.experiment.add_images('train/blend_train', blends, self.global_step)
+
+            uv = image_edges(frames_i[0,0].unsqueeze(0))
+            uv_reg = integrate_duv(uv, duvs_reg[0,1:])  # batch 0, note that first value is skipped
+            uv_pred = integrate_duv(uv, duvs_pred[0])  # batch 0
+            uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
+            self.logger.experiment.add_figure('train/uv_traj_fig', uv_traj_fig, self.global_step)
+
+        self.log('train/distance', distance_loss)
+        return distance_loss
 
     def validation_step(self, batch, batch_idx):
         if self._homography_regression is None:
@@ -444,7 +472,7 @@ class FeatureLSTMModule(pl.LightningModule):
         duvs_reg = duvs_reg.view(videos.shape[0], -1, 4, 2) # BxTx4x2
 
         # forward
-        duvs_pred = self(duvs_reg[:,:-1])
+        duvs_pred = self(frames_i.reshape(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])[:,:-1], duvs_reg[:,:-1])  # note that last duv value is skipped
 
         # compute distance loss
         distance_loss = self._distance_loss(

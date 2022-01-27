@@ -95,10 +95,10 @@ class ImageSequenceDataset(Dataset):
                 img_seq_transformed.append(img)
 
         if self._load_images:
-            img_seq = torch.from_numpy(img_seq)
             img_seq = np.stack(img_seq).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
-        img_seq_transformed = torch.from_numpy(img_seq_transformed)
+            img_seq = torch.from_numpy(img_seq)
         img_seq_transformed = np.stack(img_seq_transformed).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
+        img_seq_transformed = torch.from_numpy(img_seq_transformed)
 
         if self._load_images:
             return img_seq, img_seq_transformed, idcs, file_seq.vid.iloc[0]
