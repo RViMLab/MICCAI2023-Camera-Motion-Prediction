@@ -60,7 +60,7 @@ class DuvLSTMModule(pl.LightningModule):
         self._homography_regression.freeze()
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self._model.parameters(), lr=self.lr, betas=self._betas)
+        optimizer = torch.optim.Adam(self._model.parameters(), lr=self.lr, betas=self._betas)
         return optimizer
 
     def forward(self, duvs):
@@ -225,7 +225,7 @@ class LSTMModule(pl.LightningModule):
         self._frame_stride = frame_stride
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self._model.parameters(), lr=self.lr, betas=self._betas)
+        optimizer = torch.optim.Adam(self._model.parameters(), lr=self.lr, betas=self._betas)
         return optimizer
 
     def forward(self, duvs):
@@ -238,8 +238,7 @@ class LSTMModule(pl.LightningModule):
         return duvs_pred
     
     def training_step(self, batch, batch_idx):
-        videos, duvs_reg, frame_idcs, vid_idcs = batch
-        videos = videos.float()/255.
+        duvs_reg, frame_idcs, vid_idcs = batch
         duvs_reg = duvs_reg.float()
 
         # forward
@@ -270,8 +269,7 @@ class LSTMModule(pl.LightningModule):
         return distance_loss  # + cum_distance_loss
 
     def validation_step(self, batch, batch_idx):
-        videos, duvs_reg, frame_idcs, vid_idcs = batch
-        videos = videos.float()/255.
+        duvs_reg, frame_idcs, vid_idcs = batch
         duvs_reg = duvs_reg.float()
 
         # forward
@@ -283,20 +281,20 @@ class LSTMModule(pl.LightningModule):
             duvs_reg[:,1:].reshape(-1, 2) # note that the first value is skipped
         ).mean()
 
-        # logging
-        if self._validation_step_ct % self._log_n_steps == 0:
-            frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
+        # # logging
+        # if self._validation_step_ct % self._log_n_steps == 0:
+        #     frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
 
-            # visualize sequence N in zeroth batch
-            blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0,:-1])
+        #     # visualize sequence N in zeroth batch
+        #     blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0,:-1])
 
-            self.logger.experiment.add_images('val/blend_train', blends, self._validation_step_ct)
+        #     self.logger.experiment.add_images('val/blend_train', blends, self._validation_step_ct)
 
-            uv = image_edges(frames_i[0,0].unsqueeze(0))
-            uv_reg = integrate_duv(uv, duvs_reg[0,1:])  # batch 0, note that first value is skipped
-            uv_pred = integrate_duv(uv, duvs_pred[0])  # batch 0
-            uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
-            self.logger.experiment.add_figure('val/uv_traj_fig', uv_traj_fig, self._validation_step_ct)
+        #     uv = image_edges(frames_i[0,0].unsqueeze(0))
+        #     uv_reg = integrate_duv(uv, duvs_reg[0,1:])  # batch 0, note that first value is skipped
+        #     uv_pred = integrate_duv(uv, duvs_pred[0])  # batch 0
+        #     uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
+        #     self.logger.experiment.add_figure('val/uv_traj_fig', uv_traj_fig, self._validation_step_ct)
 
         self.log('val/distance', distance_loss)
         self._validation_step_ct += 1
@@ -398,7 +396,7 @@ class FeatureLSTMModule(pl.LightningModule):
         self._homography_regression.freeze()
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self._encoder.parameters(), lr=self.lr, betas=self._betas)
+        optimizer = torch.optim.Adam(self._encoder.parameters(), lr=self.lr, betas=self._betas)
         return optimizer
 
     def forward(self, imgs: torch.Tensor, duvs: torch.Tensor) -> torch.Tensor:
