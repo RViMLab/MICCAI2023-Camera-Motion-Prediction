@@ -1,4 +1,4 @@
-experiment: 'feature_lstm'
+experiment: 'test/miccai/feature_lstm/cholec80'
 lightning_module: 'FeatureLSTMModule'
 lightning_data_module: 'ImageSequenceDataModule'
 model_checkpoint: 
@@ -8,22 +8,23 @@ trainer:
     gpus: 1
     max_epochs: 20
     log_every_n_steps: 1
-    limit_train_batches: 0.01
-    limit_val_batches: 0.01
-    limit_test_batches: 0.01
+    limit_train_batches: 0.005
+    limit_val_batches: 0.005
+    limit_test_batches: 0.005
     fast_dev_run: False
     profiler: False
     reload_dataloaders_every_n_epochs: 0
 data:
-    pkl_name: 'test_train_log.pkl'
+    pkl_name: 'pre_processed_5th_frame_log_test_train_no_nan.pkl'
     pkl_path: '21_11_25_first_test_data_frames'
     train_split: 0.8
-    batch_size: 1
-    num_workers: 0
+    batch_size: 2
+    num_workers: 1
     random_state: 42
     tolerance: 0.2 # change this tolerance
     seq_len: 20
-    frame_increment: 10
+    frame_increment: 5
+    frames_between_clips: 1 # seq_len*frame_increment
     train_transforms:
         - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'MultiplyAndAddToBrightness', 'kwargs': {'mul': [0.5, 1.5], 'add': [30, 30]}}
         - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Grayscale',                  'kwargs': {}}
@@ -35,20 +36,21 @@ data:
         - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Cutout',                 'kwargs': {'nb_iterations': [1, 5], 'cval': 0, 'squared': False}}
     val_transforms: null
     test_transforms: null
+    load_images: True
 model:
     backbone: {
-        'name': 'ResNet-50',
+        'name': 'ResNet-34',
         'kwargs': {
-            'pretrained': False
-        }
+            'pretrained': False,
+        },
+        'backbone_features': 512
     }
     head: {
         'kwargs': {
-            'input_size': 512,
             'hidden_size': 512, 
             'batch_first': False  # seq x batch x....
         }
     }
-    lr: 1.e-4
+    lr: 1.e-2
     betas: [0.9, 0.999]
     log_n_steps: 500
