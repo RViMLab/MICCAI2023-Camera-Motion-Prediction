@@ -78,7 +78,9 @@ class ImageSequenceDataset(Dataset):
         img_seq = []
         img_seq_transformed = []
 
-        idcs = self._idcs[idx] + np.arange(self._seq_len)*self._frame_increment
+        random.seed(seed)
+        idcs = self._idcs[idx] + np.arange(self._seq_len)*self._frame_increment + random.randint(0, self._frame_increment - 2)
+        random.seed(None)
 
         file_seq = self._df.loc[idcs]
         for _, row in file_seq.iterrows():
@@ -116,7 +118,7 @@ class ImageSequenceDataset(Dataset):
     ) -> pd.DataFrame:
         grouped_df = df.groupby(col)
         return grouped_df.apply(
-            lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment:frames_between_clips]  # get indices [0, length - (seq_len - 1)]
+            lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment - (frame_increment-1):frames_between_clips]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)], minus (frame_increment-1) for random offset
         ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
 
 
@@ -190,7 +192,9 @@ class ImageSequenceDuvDataset(Dataset):
         img_seq = []
         duv_seq = []
 
-        idcs = self._idcs[idx] + np.arange(self._seq_len)*self._frame_increment
+        random.seed(seed)
+        idcs = self._idcs[idx] + np.arange(self._seq_len)*self._frame_increment + random.randint(0, self._frame_increment - 2)
+        random.seed(None)
 
         file_seq = self._df.loc[idcs]
         for _, row in file_seq.iterrows():
@@ -227,7 +231,7 @@ class ImageSequenceDuvDataset(Dataset):
     ) -> pd.DataFrame:
         grouped_df = df.groupby(col)
         return grouped_df.apply(
-            lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment:frames_between_clips]  # get indices [0, length - (seq_len - 1)]
+            lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment - (frame_increment-1):frames_between_clips]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)], minus (frame_increment-1) for random offset
         ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
 
 
