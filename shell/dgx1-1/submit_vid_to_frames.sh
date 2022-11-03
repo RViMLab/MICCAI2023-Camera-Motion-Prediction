@@ -9,5 +9,6 @@ runai submit vid2frames \
   --cpu-limit 10 \
   --environment TORCH_HOME=/nfs/home/mhuber/.torch \
   --working-dir /workspace/homography_imitation_learning/ \
+  --backoff-limit 1 \
   --run-as-user \
   --command -- /workspace/homography_imitation_learning/shell/dgx1-1/run_vid_to_frames.sh
