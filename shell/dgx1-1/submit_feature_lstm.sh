@@ -1,4 +1,4 @@
-runai submit duv-feature-lstm-phantom \
+runai submit duv-feature-lstm \
   -p mhuber \
   -i 10.202.67.207:5000/mhuber:torch110 \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
@@ -10,7 +10,7 @@ runai submit duv-feature-lstm-phantom \
   --node-type dgx1-3 \
   --environment TORCH_HOME=/nfs/home/mhuber/.torch \
   --large-shm \
-  --command /workspace/homography_imitation_learning/shell/dgx1-1/run_feature_lstm.sh \
   --working-dir /workspace/homography_imitation_learning/ \
   --backoff-limit 1 \
-  --run-as-user # defaults to root -> logs will be saved as root too
+  --run-as-user \
+  --command -- /workspace/homography_imitation_learning/shell/dgx1-1/run_feature_lstm.sh

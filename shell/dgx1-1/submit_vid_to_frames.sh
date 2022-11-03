@@ -6,7 +6,8 @@ runai submit vid2frames \
   -v /nfs/home/mhuber/tresorit/homography_imitation_learning_logs:/nfs/home/mhuber/tresorit/homography_imitation_learning_logs \
   -v /nfs/home/mhuber/.torch:/nfs/home/mhuber/.torch \
   -g 0.2 \
+  --cpu-limit 10 \
   --environment TORCH_HOME=/nfs/home/mhuber/.torch \
-  --command /workspace/homography_imitation_learning/shell/dgx1-1/run_vid_to_frames.sh \
   --working-dir /workspace/homography_imitation_learning/ \
-  --run-as-user # defaults to root -> logs will be saved as root too
+  --run-as-user \
+  --command -- /workspace/homography_imitation_learning/shell/dgx1-1/run_vid_to_frames.sh

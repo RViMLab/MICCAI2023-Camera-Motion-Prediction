@@ -8,6 +8,7 @@ runai submit duv-lstm \
   -g 1 \
   --environment TORCH_HOME=/nfs/home/mhuber/.torch \
   --large-shm \
-  --command /workspace/homography_imitation_learning/shell/dgx1-1/run_lstm.sh \
   --working-dir /workspace/homography_imitation_learning/ \
-  --run-as-user # defaults to root -> logs will be saved as root too
+  --backoff-limit 1 \
+  --run-as-user \
+  --command -- /workspace/homography_imitation_learning/shell/dgx1-1/run_lstm.sh
