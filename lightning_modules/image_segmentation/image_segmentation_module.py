@@ -1,6 +1,6 @@
 import torch
 import pytorch_lightning as pl
-from torchmetrics.classification.iou import IoU
+from torchmetrics.classification.jaccard import JaccardIndex
 from pytorch_toolbelt.losses import BinaryFocalLoss
 import segmentation_models_pytorch as smp
 from kornia.geometry import resize
@@ -32,7 +32,7 @@ class ImageSegmentationModule(pl.LightningModule):
         self._gamma = gamma
 
         self._criterion = BinaryFocalLoss()
-        self._iou = IoU(segmentation_model['kwargs']['classes']+1)
+        self._jaccard = JaccardIndex(segmentation_model['kwargs']['classes']+1)
 
     def forward(self, img):
         shape = img.shape[-2:]
@@ -69,7 +69,7 @@ class ImageSegmentationModule(pl.LightningModule):
         # predict
         seg_pred = self(img)
         bfl = self._criterion(seg_pred, seg)
-        iou = self._iou(seg_pred, seg.int())
+        iou = self._jaccard(seg_pred, seg.int())
 
         self.log_dict({'val/binary_focal_loss': bfl, 'val/iou': iou})
 
@@ -79,7 +79,7 @@ class ImageSegmentationModule(pl.LightningModule):
         # predict
         seg_pred = self(img)
         bfl = self._criterion(seg_pred, seg)
-        iou = self._iou(seg_pred, seg.int())
+        iou = self._jaccard(seg_pred, seg.int())
 
         # log images
         self.logger.experiment.add_images('test/seg', seg, 0)
