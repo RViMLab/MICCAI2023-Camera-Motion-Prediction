@@ -1,6 +1,6 @@
-import pathlib
-import os
 import glob
+import os
+import pathlib
 import re
 from typing import List, Union
 
@@ -16,12 +16,10 @@ def scan2df(folder: str, postfix: str='.jpg') -> pd.DataFrame:
     df = pd.DataFrame(columns={'folder', 'file'})
 
     for file in glob.glob(os.path.join(folder, '*{}'.format(postfix))):
-        dic = {
-            'folder': folder,
-            'file': os.path.basename(file)
-        }
-
-        df = df.append(dic, ignore_index=True)
+        df = pd.concat([df, pd.DataFrame({
+                'folder': [folder],
+                'file': [os.path.basename(file)]
+            })], ignore_index=True)
 
     return df
 
