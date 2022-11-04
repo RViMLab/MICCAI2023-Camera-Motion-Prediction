@@ -5,7 +5,8 @@ model_checkpoint:
     monitor: 'val/distance'
     mode: 'min'
 trainer:
-    gpus: 1
+    accelerator: 'gpu'
+    devices: 1
     max_epochs: 50
     log_every_n_steps: 66
     limit_train_batches: 1.0
