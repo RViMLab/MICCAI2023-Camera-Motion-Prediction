@@ -1,7 +1,8 @@
+from typing import Tuple, Union
+
 import numpy as np
 import pandas as pd
 import torch
-from typing import Tuple, Union
 from kornia.geometry.transform import get_perspective_transform
 from sklearn.model_selection import train_test_split
 
@@ -142,8 +143,8 @@ def unique_video_train_test(df: pd.DataFrame, train_split: float=0.8, tolerance:
 
 
 if __name__ == '__main__':
-    import torch
     import numpy as np
+    import torch
 
     seq_len = 3
     step = 2
