@@ -83,7 +83,8 @@ class DeepImageHomographyEstimationModuleBackbone(pl.LightningModule):
         return self._model(cat).view(-1,4,2)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self._model.parameters(), lr=self._lr, betas=self._betas)
+        # optimizer = torch.optim.Adam(self._model.parameters(), lr=self._lr, betas=self._betas)
+        optimizer = torch.optim.AdamW(self._model.parameters(), lr=self._lr, betas=self._betas)
         scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=self._milestones, gamma=self._gamma)
         return [optimizer], [scheduler]
 

@@ -9,7 +9,7 @@ python /workspace/homography_imitation_learning/vid_to_frames.py \
   --server dgx1-1 \
   --recursive_folder cholec80/videos \
   --output_folder cholec80_single_video_frames_cropped \
-  --processes 8 \
+  --processes 6 \
   --multiprocessed true \
   --pre_process true \
   --circle_file cholec80_circle_tracking_individual/df_interpolated/log.pkl
