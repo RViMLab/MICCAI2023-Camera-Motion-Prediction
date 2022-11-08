@@ -1,11 +1,11 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, TypeVar
 
 import cv2
 import kornia
 import numpy as np
 import torch
 
-from helpers import image_edges
+from .helpers import image_edges
 
 
 class FeatureHomographyEstimation(object):
@@ -114,6 +114,8 @@ class FeatureHomographyEstimation(object):
         )
         return uv
 
+TLoFTRHomographyEstimation = TypeVar("TLoFTRHomographyEstimation", bound="LoFTRHomographyEstimation")
+
 class LoFTRHomographyEstimation(object):
     def __init__(self) -> None:
         self._loftr = kornia.feature.LoFTR()
@@ -134,9 +136,15 @@ class LoFTRHomographyEstimation(object):
         uv1 = kornia.geometry.transform_points(H, uv0)
         return (uv0 - uv1).flip(-1)  # OpenCV convention, this really needs a fix, includes training of deep homography estimation!
 
-    def to(self, device: torch.device) -> None:
+    def to(self, device: torch.device) -> TLoFTRHomographyEstimation:
         self._loftr.to(device=device)
         self._ransac.to(device=device)
+        return self
+
+    def eval(self) -> TLoFTRHomographyEstimation:
+        self._loftr.eval()
+        self._ransac.eval()
+        return self
 
 
 if __name__ == "__main__":
@@ -216,5 +224,5 @@ if __name__ == "__main__":
             plt.show()
         
     # test_cv_homography()
-    test_kornia_homography()
+    # test_kornia_homography()
 
