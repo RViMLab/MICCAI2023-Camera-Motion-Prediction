@@ -11,4 +11,4 @@ runai submit boundary-seg-unet-34-400 \
   --working-dir /workspace/homography_imitation_learning/ \
   --backoff-limit 1 \
   --run-as-user \
-  --command -- /workspace/homography_imitation_learning/shell/dgx1-1/run_boundary_segmentation.sh
+  -- /workspace/homography_imitation_learning/shell/dgx1-1/run_boundary_segmentation.sh

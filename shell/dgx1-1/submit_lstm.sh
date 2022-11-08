@@ -11,4 +11,4 @@ runai submit duv-lstm \
   --working-dir /workspace/homography_imitation_learning/ \
   --backoff-limit 1 \
   --run-as-user \
-  --command -- /workspace/homography_imitation_learning/shell/dgx1-1/run_lstm.sh
+  -- /workspace/homography_imitation_learning/shell/dgx1-1/run_lstm.sh
