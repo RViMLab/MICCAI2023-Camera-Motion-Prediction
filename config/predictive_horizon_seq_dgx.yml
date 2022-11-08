@@ -1,4 +1,4 @@
-experiment: 'iros/21_11_25_first_test_data/dropout'
+experiment: 'iros/21_11_25_first_test_data/dropout/short_seq'
 lightning_module: 'PredictiveHorizonModule'
 lightning_data_module: 'ImageSequenceDataModule'
 model_checkpoint: 
@@ -19,12 +19,12 @@ data:
     pkl_name: 'test_train_log.pkl'
     pkl_path: '21_11_25_first_test_data_frames'
     train_split: 0.8
-    batch_size: 8
+    batch_size: 16
     num_workers: 4
     random_state: 42
     tolerance: 0.05 # change this tolerance
-    seq_len: 25
-    frame_increment: 5
+    seq_len: 10
+    frame_increment: 10
     frames_between_clips: 1
     random_frame_offset: False
     train_transforms:
@@ -53,5 +53,5 @@ model:
     lr: 1.e-4
     betas: [0.9, 0.999]
     log_n_steps: 400
-    recall_horizon: 15  # = recall_horizon + preview_horizon == clip_length_in_frames, recall_horizon at least 13
-    preview_horizon: 10  #
+    recall_horizon: 5  # = recall_horizon + preview_horizon == clip_length_in_frames, recall_horizon at least 13
+    preview_horizon: 5  #

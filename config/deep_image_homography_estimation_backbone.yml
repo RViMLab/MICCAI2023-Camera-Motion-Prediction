@@ -2,7 +2,7 @@ experiment: 'performance/seq_25/rho_48/resnet/34'
 lightning_module: 'DeepImageHomographyEstimationModuleBackbone'
 lightning_data_module: 'ImagePairHomographyDataModule'
 model_checkpoint: 
-    monitor: 'val/distance'
+    monitor: 'val/distance_loss'
     mode: 'min'
 trainer:
     accelerator: 'gpu'
@@ -21,8 +21,8 @@ data:
     pkl_path: 'camera_motion_separated_npy/without_camera_motion'
     train_split: 0.8
     random_state: 42
-    batch_size: 256
-    num_workers: 32
+    batch_size: 64
+    num_workers: 8
     rho: 48
     crp_shape: [240, 320]
     p0: 0.0
@@ -48,9 +48,9 @@ data:
 model:
     shape: [3, 240, 320]
     pretrained: True
-    lr: 1.e-3
+    lr: 2.5e-4
     betas: [0.9, 0.999]
-    milestones: [49, 149]
+    milestones: [49]
     gamma: 0.1
-    log_n_steps: 200
+    log_n_steps: 800
     backbone: 'ResNet-34'

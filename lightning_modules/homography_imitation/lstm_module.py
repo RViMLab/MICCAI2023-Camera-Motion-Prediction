@@ -436,21 +436,21 @@ class FeatureLSTMModule(pl.LightningModule):
             duvs_reg[:,1:].reshape(-1, 2) # note that the first value is skipped
         ).mean()
 
-        # logging
-        if self.global_step % self._log_n_steps == 0:
-            frames_i   = frames_i.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])   # reshape B*NxCxHxW -> BxNxCxHxW
-            frames_ips = frames_ips.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1]) # reshape B*NxCxHxW -> BxNxCxHxW
+        # # logging
+        # if self.global_step % self._log_n_steps == 0:
+        #     frames_i   = frames_i.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])   # reshape B*NxCxHxW -> BxNxCxHxW
+        #     frames_ips = frames_ips.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1]) # reshape B*NxCxHxW -> BxNxCxHxW
 
-            # visualize sequence N in zeroth batch
-            blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
+        #     # visualize sequence N in zeroth batch
+        #     blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
 
-            self.logger.experiment.add_images('train/blend_train', blends, self.global_step)
+        #     self.logger.experiment.add_images('train/blend_train', blends, self.global_step)
 
-            uv = image_edges(frames_i[0,0].unsqueeze(0))
-            uv_reg = integrate_duv(uv, duvs_reg[0,1:])  # batch 0, note that first value is skipped
-            uv_pred = integrate_duv(uv, duvs_pred[0])  # batch 0
-            uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
-            self.logger.experiment.add_figure('train/uv_traj_fig', uv_traj_fig, self.global_step)
+        #     uv = image_edges(frames_i[0,0].unsqueeze(0))
+        #     uv_reg = integrate_duv(uv, duvs_reg[0,1:])  # batch 0, note that first value is skipped
+        #     uv_pred = integrate_duv(uv, duvs_pred[0])  # batch 0
+        #     uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
+        #     self.logger.experiment.add_figure('train/uv_traj_fig', uv_traj_fig, self.global_step)
 
         self.log('train/distance', distance_loss)
         return distance_loss
