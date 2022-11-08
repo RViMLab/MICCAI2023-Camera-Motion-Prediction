@@ -1,0 +1,11 @@
+runai submit test \
+  -i 10.202.67.207:5000/mhuber:torch110 \
+  -g 1 \
+  --interactive \
+  -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
+  -v /nfs/home/mhuber/data:/nfs/home/mhuber/data \
+  -v /nfs/home/mhuber/logs:/nfs/home/mhuber/logs \
+  -v /nfs/home/mhuber/tresorit/homography_imitation_learning_logs:/nfs/home/mhuber/tresorit/homography_imitation_learning_logs \
+  --large-shm \
+  --environment TORCH_MODEL_ZOO=/nfs/home/mhuber \
+  -- sleep infinity
