@@ -58,6 +58,7 @@ if __name__ == '__main__':
         'seq_len': configs['data']['seq_len'],
         'frame_increment': configs['data']['frame_increment'],
         'frames_between_clips': configs['data']['frames_between_clips'],
+        'random_frame_offset': configs['data']['random_frame_offset'],
         'train_transforms': configs['data']['train_transforms'],
         'val_transforms': configs['data']['val_transforms'],
         'test_transforms': configs['data']['test_transforms'],

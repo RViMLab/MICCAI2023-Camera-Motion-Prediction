@@ -1,15 +1,16 @@
-import os
-import torch
 import argparse
-import pandas as pd
-import numpy as np
-from tqdm import tqdm
-from torch.utils.data import DataLoader
+import os
 
-from utils.processing import frame_pairs
-from utils.io import load_yaml, scan2df, natural_keys
-from lightning_modules import DeepImageHomographyEstimationModuleBackbone
+import numpy as np
+import pandas as pd
+import torch
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+
 from datasets import ImageSequenceDataset
+from lightning_modules import DeepImageHomographyEstimationModuleBackbone
+from utils.io import load_yaml, natural_keys, scan2df
+from utils.processing import LoFTRHomographyEstimation, frame_pairs
 
 
 if __name__ == "__main__":
@@ -23,7 +24,9 @@ if __name__ == "__main__":
     parser.add_argument("--out_pkl", type=str, default="pre_processed_log.pkl", help="Pickle file with preprocessed information.")
     parser.add_argument("--num_workers", type=int, default=8, help="Number of workers for data loading.")
     parser.add_argument("--batch_size", type=int, default=16, help="Batch size for data loading.")
-    parser.add_argument("--nth_frame", type=int, default=1, help="Process every nth frame.")
+    parser.add_argument("--frame_increment", type=int, default=1, help="Frame increment in a clip.")
+    parser.add_argument("--frames_between_clips", type=int, default=1, help="Number of frames between clips.")
+    parser.add_argument("--loftr", action="store_true", help="If specified, runs a loftr predictor.")
     args = parser.parse_args()
 
     servers = load_yaml(args.servers_file)
@@ -33,26 +36,29 @@ if __name__ == "__main__":
     device = "cpu"
     if torch.cuda.is_available():
         device = "cuda"
+    if args.loftr:
+        module = LoFTRHomographyEstimation()
+        module = module.eval().to(device)
+    else:
+        backbone_path = os.path.join(server["logging"]["location"], args.backbone_path)
+        backbone_configs = load_yaml(os.path.join(server["logging"]["location"], args.backbone_path, "config.yml"))
+        backbone_configs["model"]["pretrained"] = False  # set to false, as loaded anyways
+        df = scan2df(os.path.join(server["logging"]["location"], args.backbone_path, "checkpoints"), ".ckpt")
+        ckpts = sorted(list(df["file"]), key=natural_keys)
 
-    backbone_path = os.path.join(server["logging"]["location"], args.backbone_path)
-    backbone_configs = load_yaml(os.path.join(server["logging"]["location"], args.backbone_path, "config.yml"))
-    backbone_configs["model"]["pretrained"] = False  # set to false, as loaded anyways
-    df = scan2df(os.path.join(server["logging"]["location"], args.backbone_path, "checkpoints"), ".ckpt")
-    ckpts = sorted(list(df["file"]), key=natural_keys)
-
-    module = DeepImageHomographyEstimationModuleBackbone.load_from_checkpoint(
-        checkpoint_path=os.path.join(backbone_path, "checkpoints/{}".format(ckpts[-1])),
-        **backbone_configs["model"]
-    )
-    module = module.eval().to(device)
-    module.freeze()
+        module = DeepImageHomographyEstimationModuleBackbone.load_from_checkpoint(
+            checkpoint_path=os.path.join(backbone_path, "checkpoints/{}".format(ckpts[-1])),
+            **backbone_configs["model"]
+        )
+        module = module.eval().to(device)
+        module.freeze()
 
     # Prepare data
     data_prefix = os.path.join(server["database"]["location"], args.data_prefix)
     df = pd.read_pickle(os.path.join(data_prefix, args.in_pkl))
 
     ds = ImageSequenceDataset(
-        df, data_prefix, seq_len=2, frame_increment=args.nth_frame, frames_between_clips=1
+        df, data_prefix, seq_len=2, frame_increment=args.frame_increment, frames_between_clips=args.frames_between_clips
     )
     ds._df = ds._df.astype(object)
     dl = DataLoader(ds, num_workers=args.num_workers, batch_size=args.batch_size, drop_last=False, shuffle=False)

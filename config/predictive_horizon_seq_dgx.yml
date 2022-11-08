@@ -26,6 +26,7 @@ data:
     seq_len: 25
     frame_increment: 5
     frames_between_clips: 1
+    random_frame_offset: False
     train_transforms:
         - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'MultiplyAndAddToBrightness', 'kwargs': {'mul': [0.5, 1.5], 'add': [30, 30]}}
         - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Grayscale',                  'kwargs': {}}

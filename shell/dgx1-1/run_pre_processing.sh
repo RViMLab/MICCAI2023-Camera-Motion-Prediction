@@ -12,4 +12,5 @@ python /workspace/homography_imitation_learning/pre_processing_main.py \
   --out_pkl pre_processed_5th_frame_log.pkl \
   --num_workers 20 \
   --batch_size 400 \
-  --nth_frame 5
+  --frame_increment 5 \
+  --frames_between_clips 5

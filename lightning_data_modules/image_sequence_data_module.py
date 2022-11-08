@@ -21,6 +21,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         seq_len: int=10,
         frame_increment: int=1,
         frames_between_clips: int=1,
+        random_frame_offset: bool=False,
         train_transforms: List[dict]=None, 
         val_transforms: List[dict]=None, 
         test_transforms: List[dict]=None,
@@ -57,6 +58,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         self._seq_len = seq_len
         self._frame_increment = frame_increment
         self._frames_between_clips = frames_between_clips
+        self._random_frame_offset = random_frame_offset
 
         self._train_tranforms = dictListToAugment(train_transforms)
         self._val_transforms = dictListToAugment(val_transforms)
@@ -72,7 +74,8 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 seq_len=self._seq_len,
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
-                transforms=self._train_tranforms, 
+                random_frame_offset=self._random_frame_offset,
+                transforms=self._train_tranforms,
                 load_images=self._load_images,
                 seeds=False
             )
@@ -82,6 +85,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 seq_len=self._seq_len,
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
+                random_frame_offset=False,
                 transforms=self._val_transforms,
                 load_images=self._load_images,
                 seeds=True
@@ -93,6 +97,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 seq_len=self._seq_len,
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
+                random_frame_offset=False,
                 transforms=self._test_transforms, 
                 load_images=self._load_images,
                 seeds=True

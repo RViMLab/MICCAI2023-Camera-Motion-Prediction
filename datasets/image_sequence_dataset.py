@@ -17,6 +17,7 @@ class ImageSequenceDataset(Dataset):
         seq_len (int): Sequence length to sample images from, sequence length of 1 corresponds to static images, sequence length of 2 corresponds to neighboring images
         frame_increment (int): Sample every nth frame.
         frames_between_clips (int): Offset between initial frames of subsequent clips.
+        random_frame_offset (bool): If true, samples images with random offset index+random[0, frame_increment).
         transforms (Callable): Callable tranforms for augmenting sequences
         load_images (bool): Whether to return untransformed images
         seeds (bool): Seeds for deterministic output, e.g. for test set
@@ -33,7 +34,8 @@ class ImageSequenceDataset(Dataset):
         seq_len: int=1,
         frame_increment: int=5,
         frames_between_clips: int=1,
-        transforms: List[Callable]=None, 
+        transforms: List[Callable]=None,
+        random_frame_offset: bool=False,
         load_images: bool=True,
         seeds: bool=False
     ):
@@ -43,6 +45,7 @@ class ImageSequenceDataset(Dataset):
         self._frame_increment = frame_increment
         self._frames_between_clips = frames_between_clips
         self._transforms = transforms
+        self._random_frame_offset = random_frame_offset
         self._load_images = load_images
         self._seeds = seeds
         self._idcs = self._filterFeasibleSequenceIndices(
@@ -79,7 +82,9 @@ class ImageSequenceDataset(Dataset):
         img_seq_transformed = []
 
         random.seed(seed)
-        idcs = self._idcs[idx] + np.arange(self._seq_len)*self._frame_increment + random.randint(0, self._frame_increment - 2)
+        idcs = self._idcs[idx] + np.arange(self._seq_len)*self._frame_increment
+        if self._random_frame_offset:
+            idcs = idcs + random.randint(0, self._frame_increment - 1)
         random.seed(None)
 
         file_seq = self._df.loc[idcs]
@@ -117,9 +122,14 @@ class ImageSequenceDataset(Dataset):
         frames_between_clips: int=1
     ) -> pd.DataFrame:
         grouped_df = df.groupby(col)
-        return grouped_df.apply(
-            lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment - (frame_increment-1):frames_between_clips]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)], minus (frame_increment-1) for random offset
-        ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
+        if self._random_frame_offset:
+            return grouped_df.apply(
+                lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment - (frame_increment-1):frames_between_clips]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)], minus (frame_increment-1) for random offset
+            ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
+        else:
+            return grouped_df.apply(
+                lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment:frames_between_clips]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)]
+            ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
 
 
 class ImageSequenceDuvDataset(Dataset):
@@ -131,6 +141,7 @@ class ImageSequenceDuvDataset(Dataset):
         seq_len (int): Sequence length to sample images from, sequence length of 1 corresponds to static images, sequence length of 2 corresponds to neighboring images
         frame_increment (int): Sample every nth frame. Careful! Has to equal frame increment in df.
         frames_between_clips (int): Offset between initial frames of subsequent clips.
+        random_frame_offset (bool): If true, samples images with random offset index+random[0, frame_increment).
         transforms (Callable): Callable tranforms for augmenting sequences
         load_images (bool): Whether to load images
         seeds (bool): Seeds for deterministic output, e.g. for test set
@@ -147,6 +158,7 @@ class ImageSequenceDuvDataset(Dataset):
         seq_len: int=1,
         frame_increment: int=5,
         frames_between_clips: int=1,
+        random_frame_offset: bool=False,
         transforms: List[Callable]=None, 
         load_images: bool=True,
         seeds: bool=False
@@ -157,6 +169,7 @@ class ImageSequenceDuvDataset(Dataset):
         self._frame_increment = frame_increment
         self._frames_between_clips = frames_between_clips
         self._transforms = transforms
+        self._random_frame_offset = random_frame_offset
         self._load_images = load_images
         self._seeds = seeds
         self._idcs = self._filterFeasibleSequenceIndices(
@@ -193,7 +206,9 @@ class ImageSequenceDuvDataset(Dataset):
         duv_seq = []
 
         random.seed(seed)
-        idcs = self._idcs[idx] + np.arange(self._seq_len)*self._frame_increment + random.randint(0, self._frame_increment - 2)
+        idcs = self._idcs[idx] + np.arange(self._seq_len)*self._frame_increment
+        if self._random_frame_offset:
+            idcs = idcs + random.randint(0, self._frame_increment - 1)
         random.seed(None)
 
         file_seq = self._df.loc[idcs]
@@ -230,9 +245,15 @@ class ImageSequenceDuvDataset(Dataset):
         frames_between_clips: int=1
     ) -> pd.DataFrame:
         grouped_df = df.groupby(col)
-        return grouped_df.apply(
-            lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment - (frame_increment-1):frames_between_clips]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)], minus (frame_increment-1) for random offset
-        ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
+        if self._random_frame_offset:
+            return grouped_df.apply(
+                lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment - (frame_increment-1):frames_between_clips]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)], minus (frame_increment-1) for random offset
+            ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
+        else:
+            return grouped_df.apply(
+                lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment:frames_between_clips]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)]
+            ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
+
 
 
 class ImageSequenceDatasetSequenceDf(Dataset):
