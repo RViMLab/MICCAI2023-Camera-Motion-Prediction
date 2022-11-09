@@ -1,4 +1,4 @@
-experiment: 'test/miccai/duv_lstm/cholec80_frames/deep/frame_increment'
+experiment: 'test/miccai/duv_lstm/cholec80_frames/deep/dropout'
 lightning_module: 'LSTMModule'
 lightning_data_module: 'ImageSequenceDuvDataModule'
 model_checkpoint: 
@@ -24,7 +24,7 @@ data:
     random_state: 42
     tolerance: 0.2 # change this tolerance
     seq_len: 20
-    frame_increment: 2
+    frame_increment: 1
     frames_between_clips: 20 # seq_len*frame_increment
     random_frame_offset: False
     train_transforms: null
