@@ -130,7 +130,7 @@ class LoFTRHomographyEstimation(object):
             try:
                 H.append(self._ransac(correspondence_dict["keypoints0"][correspondence_dict["batch_indexes"] == i], correspondence_dict["keypoints1"][correspondence_dict["batch_indexes"] == i])[0])
             except:
-                H.append(None)
+                H.append(torch.full([3, 3], torch.nan))
         H = torch.stack(H)
         uv0 = image_edges(img).flip(-1)
         uv1 = kornia.geometry.transform_points(H, uv0)
