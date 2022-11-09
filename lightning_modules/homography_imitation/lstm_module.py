@@ -269,7 +269,8 @@ class LSTMModule(pl.LightningModule):
         return distance_loss  # + cum_distance_loss
 
     def validation_step(self, batch, batch_idx):
-        duvs_reg, frame_idcs, vid_idcs = batch
+        img_seq, duvs_reg, frame_idcs, vid_idcs = batch
+        img_seq = img_seq.float()/255.
         duvs_reg = duvs_reg.float()
 
         # forward
@@ -282,19 +283,19 @@ class LSTMModule(pl.LightningModule):
         ).mean()
 
         # # logging
-        # if self._validation_step_ct % self._log_n_steps == 0:
-        #     frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
+        if self._validation_step_ct % self._log_n_steps == 0:
+            frames_i, frames_ips = frame_pairs(img_seq, self._frame_stride)  # re-sort images
 
-        #     # visualize sequence N in zeroth batch
-        #     blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0,:-1])
+            # visualize sequence N in zeroth batch
+            blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0,:-1])
 
-        #     self.logger.experiment.add_images('val/blend_train', blends, self._validation_step_ct)
+            self.logger.experiment.add_images('val/blend_train', blends, self._validation_step_ct)
 
-        #     uv = image_edges(frames_i[0,0].unsqueeze(0))
-        #     uv_reg = integrate_duv(uv, duvs_reg[0,1:])  # batch 0, note that first value is skipped
-        #     uv_pred = integrate_duv(uv, duvs_pred[0])  # batch 0
-        #     uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
-        #     self.logger.experiment.add_figure('val/uv_traj_fig', uv_traj_fig, self._validation_step_ct)
+            uv = image_edges(frames_i[0,0].unsqueeze(0))
+            uv_reg = integrate_duv(uv, duvs_reg[0,1:])  # batch 0, note that first value is skipped
+            uv_pred = integrate_duv(uv, duvs_pred[0])  # batch 0
+            uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
+            self.logger.experiment.add_figure('val/uv_traj_fig', uv_traj_fig, self._validation_step_ct)
 
         self.log('val/distance', distance_loss)
         self._validation_step_ct += 1

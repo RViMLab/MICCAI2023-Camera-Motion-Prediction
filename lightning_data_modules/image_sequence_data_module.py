@@ -1,7 +1,8 @@
-import pandas as pd
-import numpy as np
-import pytorch_lightning as pl
 from typing import List
+
+import numpy as np
+import pandas as pd
+import pytorch_lightning as pl
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
@@ -174,7 +175,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
         self._load_images = load_images
 
     def setup(self, stage: str=None) -> None:
-        if stage == 'fit' or stage is None:
+        if stage == 'fit':
             self._train_set = ImageSequenceDuvDataset(
                 df=self._train_df,
                 prefix=self._prefix,
@@ -194,7 +195,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
                 frames_between_clips=self._frames_between_clips,
                 random_frame_offset=False,
                 transforms=self._val_transforms,
-                load_images=self._load_images,
+                load_images=True,
                 seeds=True
             )
         if stage == 'test':
@@ -206,12 +207,9 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
                 frames_between_clips=self._frames_between_clips,
                 random_frame_offset=False,
                 transforms=self._test_transforms,
-                load_images=self._load_images,
+                load_images=True,
                 seeds=True
             )
-
-    # def transfer_batch_to_device(self, batch, device, dataloader_idx):
-    #     pass
 
     def train_dataloader(self):
         return DataLoader(self._train_set, batch_size=self._batch_size, shuffle=True, num_workers=self._num_workers, drop_last=True, pin_memory=True)
@@ -224,8 +222,9 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    from kornia import tensor_to_image
     import cv2
+    from kornia import tensor_to_image
+
     from utils.processing import unique_video_train_test
         
     df = pd.read_pickle("/media/martin/Samsung_T5/data/endoscopic_data/cholec80_frames/log.pkl")
