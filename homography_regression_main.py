@@ -51,7 +51,6 @@ if __name__ == '__main__':
     }
 
     dm = getattr(lightning_data_modules, configs['lightning_data_module'])(**kwargs)
-    dm.setup()
 
     # load specific module
     kwargs = configs['model']
