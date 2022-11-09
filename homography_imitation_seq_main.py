@@ -66,9 +66,6 @@ if __name__ == '__main__':
     }
 
     dm = getattr(lightning_data_modules, configs['lightning_data_module'])(**kwargs)
-    dm.prepare_data()
-
-    dm.setup()
 
     # load specific module
     kwargs = {k: v for k, v in configs['model'].items() if k not in 'homography_regression'}  # exclude homography regression from kwargs
