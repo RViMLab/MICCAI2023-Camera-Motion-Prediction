@@ -201,7 +201,8 @@ class LSTMModule(pl.LightningModule):
         self._lstm = torch.nn.LSTM(
             input_size=8,
             hidden_size=lstm_hidden_size,
-            num_layers=1
+            num_layers=1,
+            dropout=0.5
         )
 
         # fully connected for future duv prediction
