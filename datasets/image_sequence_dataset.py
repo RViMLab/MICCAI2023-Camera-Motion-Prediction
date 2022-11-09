@@ -16,7 +16,7 @@ class ImageSequenceDataset(Dataset):
         prefix (str): Path to database e.g. </path/to/database>/df.folder/df.file
         seq_len (int): Sequence length to sample images from, sequence length of 1 corresponds to static images, sequence length of 2 corresponds to neighboring images
         frame_increment (int): Sample every nth frame.
-        frames_between_clips (int): Offset between initial frames of subsequent clips.
+        frames_between_clips (int): Offset between initial frames of subsequent clips. frames_between_clips = frame_increment*seq_len generates a continuous video.
         random_frame_offset (bool): If true, samples images with random offset index+random[0, frame_increment).
         transforms (Callable): Callable tranforms for augmenting sequences
         load_images (bool): Whether to return untransformed images
@@ -140,7 +140,7 @@ class ImageSequenceDuvDataset(Dataset):
         prefix (str): Path to database e.g. </path/to/database>/df.folder/df.file
         seq_len (int): Sequence length to sample images from, sequence length of 1 corresponds to static images, sequence length of 2 corresponds to neighboring images
         frame_increment (int): Sample every nth frame. Careful! Has to equal frame increment in df.
-        frames_between_clips (int): Offset between initial frames of subsequent clips.
+        frames_between_clips (int): Offset between initial frames of subsequent clips. frames_between_clips = frame_increment*seq_len generates a continuous video.
         random_frame_offset (bool): If true, samples images with random offset index+random[0, frame_increment).
         transforms (Callable): Callable tranforms for augmenting sequences
         load_images (bool): Whether to load images
@@ -292,48 +292,87 @@ class ImageSequenceDatasetSequenceDf(Dataset):
 
 
 if __name__ == '__main__':
-    import os
-    import numpy as np
-    import pandas as pd
-    from dotmap import DotMap
-    import cv2
+    def test_images():
+        import sys
+        sys.path.append(".")
+        import os
+        import numpy as np
+        import pandas as pd
+        from dotmap import DotMap
+        import cv2
 
-    from utils.io import load_yaml
+        from utils.io import load_yaml
 
-    server = 'local'
-    server = DotMap(load_yaml('config/servers.yml')[server])
-    prefix = os.path.join(server.database.location, 'camera_motion_separated_npy/without_camera_motion')
-    pkl_name = 'light_log_without_camera_motion.pkl'
-    df = pd.read_pickle(os.path.join(prefix, pkl_name))
-    seq_len = 10
+        server = 'local'
+        server = DotMap(load_yaml('config/servers.yml')[server])
+        prefix = os.path.join(server.database.location, 'camera_motion_separated_npy/without_camera_motion')
+        pkl_name = 'light_log_without_camera_motion.pkl'
+        df = pd.read_pickle(os.path.join(prefix, pkl_name))
+        seq_len = 10
 
-    col = 'vid'
-    grouped_df = df.groupby(col)
-    idcs = grouped_df.apply(lambda x: x.iloc[:len(x) - (seq_len - 1)]).index.get_level_values(1)
-    print(len(idcs))
+        col = 'vid'
+        grouped_df = df.groupby(col)
+        idcs = grouped_df.apply(lambda x: x.iloc[:len(x) - (seq_len - 1)]).index.get_level_values(1)
+        print(len(idcs))
 
-    dummy_idx = 0
-    print(idcs[dummy_idx])
+        dummy_idx = 0
+        print(idcs[dummy_idx])
 
-    # sample
-    print(df.loc[idcs[dummy_idx]])
+        # sample
+        print(df.loc[idcs[dummy_idx]])
 
-    # random index
-    seq_idcs = idcs[dummy_idx] + np.arange(seq_len)
-    print(seq_idcs)
+        # random index
+        seq_idcs = idcs[dummy_idx] + np.arange(seq_len)
+        print(seq_idcs)
 
-    # sample
-    file_seq = df.loc[seq_idcs]
-    print(file_seq)
-    print(file_seq.vid.iloc[0])
+        # sample
+        file_seq = df.loc[seq_idcs]
+        print(file_seq)
+        print(file_seq.vid.iloc[0])
 
-    # load
-    img_seq = []
-    for _, row in file_seq.iterrows():
-        img = np.load(os.path.join(prefix, row.folder, row.file))
-        img_seq.append(img)
-        cv2.imshow('img', img)
-        cv2.waitKey()
+        # load
+        img_seq = []
+        for _, row in file_seq.iterrows():
+            img = np.load(os.path.join(prefix, row.folder, row.file))
+            img_seq.append(img)
+            cv2.imshow('img', img)
+            cv2.waitKey()
 
-    img_seq = np.stack(img_seq).transpose(0,3,1,2)
-    img_seq = torch.from_numpy(img_seq)
+        img_seq = np.stack(img_seq).transpose(0,3,1,2)
+        img_seq = torch.from_numpy(img_seq)
+
+    def test_image_sequence_dataset():
+        import sys
+        sys.path.append(".")
+        from dotmap import DotMap
+        import cv2
+        import pandas as pd
+        from kornia import tensor_to_image
+
+        from utils.io import load_yaml
+
+        server = 'local'
+        server = DotMap(load_yaml('config/servers.yml')[server])
+        prefix = os.path.join(server.database.location, 'cholec80_frames')
+        csv_name = 'log.csv'
+        df = pd.read_csv(os.path.join(prefix, csv_name))
+
+        seq_len = 10
+        frame_increment = 5
+
+        ds = ImageSequenceDataset(
+            df=df,
+            prefix=prefix,
+            seq_len=seq_len,
+            frame_increment=frame_increment,
+            frames_between_clips=frame_increment*seq_len
+        )
+
+        for vid in ds:
+            print("new vid")
+            for img in vid[0]:
+                img = tensor_to_image(img, False)
+                cv2.imshow("img", img)
+                cv2.waitKey()
+        cv2.destroyAllWindows()
+    test_image_sequence_dataset()
