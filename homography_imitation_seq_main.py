@@ -8,6 +8,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from utils.io import load_yaml, save_yaml, generate_path, scan2df, natural_keys
 import lightning_data_modules
 import lightning_modules
+import lightning_callbacks
 
 
 if __name__ == '__main__':
@@ -88,6 +89,8 @@ if __name__ == '__main__':
 
     # callbacks
     callbacks = [ModelCheckpoint(**configs['model_checkpoint'])]
+    for callback in configs["callbacks"]:
+        callbacks.append(getattr(lightning_callbacks, callback['name'])(**callback['kwargs']))
 
     trainer = pl.Trainer(
         max_epochs=configs['trainer']['max_epochs'],

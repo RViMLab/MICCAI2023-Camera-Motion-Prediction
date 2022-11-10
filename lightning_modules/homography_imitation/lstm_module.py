@@ -249,25 +249,15 @@ class LSTMModule(pl.LightningModule):
         distance_loss = self._distance_loss(
             duvs_pred.reshape(-1, 2),
             duvs_reg[:,1:].reshape(-1, 2) # note that the first value is skipped
-        ).mean()
+        )
 
-        # # logging
-        # if self.global_step % self._log_n_steps == 0:
-        #     frames_i, frames_ips = frame_pairs(videos, self._frame_stride)  # re-sort images
-
-        #     # visualize sequence N in zeroth batch
-        #     blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0,:-1])
-
-        #     self.logger.experiment.add_images('train/blend_train', blends, self.global_step)
-
-        #     uv = image_edges(frames_i[0,0].unsqueeze(0))
-        #     uv_reg = integrate_duv(uv, duvs_reg[0,1:])  # batch 0, note that first value is skipped
-        #     uv_pred = integrate_duv(uv, duvs_pred[0])  # batch 0
-        #     uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
-        #     self.logger.experiment.add_figure('train/uv_traj_fig', uv_traj_fig, self.global_step)
-
-        self.log('train/distance', distance_loss)
-        return distance_loss  # + cum_distance_loss
+        self.log('train/distance', distance_loss.mean())
+        return {
+            'loss': distance_loss.mean(),
+            'sequence_loss': distance_loss.detach().view(duvs_pred.shape[:2] + (4,)).mean(axis=-1).cpu().numpy(), 
+            'frame_idcs': frame_idcs.cpu().numpy(),
+            'vid_idcs': vid_idcs.cpu().numpy()
+        }
 
     def validation_step(self, batch, batch_idx):
         img_seq, duvs_reg, frame_idcs, vid_idcs = batch
@@ -281,7 +271,7 @@ class LSTMModule(pl.LightningModule):
         distance_loss = self._distance_loss(
             duvs_pred.reshape(-1, 2),
             duvs_reg[:,1:].reshape(-1, 2) # note that the first value is skipped
-        ).mean()
+        )
 
         # # logging
         if self._validation_step_ct % self._log_n_steps == 0:
@@ -298,7 +288,7 @@ class LSTMModule(pl.LightningModule):
             uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
             self.logger.experiment.add_figure('val/uv_traj_fig', uv_traj_fig, self._validation_step_ct)
 
-        self.log('val/distance', distance_loss)
+        self.log('val/distance', distance_loss.mean())
         self._validation_step_ct += 1
 
     def test_step(self, batch, batch_idx):
