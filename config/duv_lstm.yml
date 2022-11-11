@@ -14,7 +14,7 @@ trainer:
     limit_test_batches: 1.0
     fast_dev_run: False
     profiler: False
-    reload_dataloaders_every_n_epochs: 0
+    reload_dataloaders_every_n_epochs: 1
 data:
     pkl_name: '22_11_09_loftr_log_pre_processed_test_train_no_nan.pkl' # 'pre_processed_5th_frame_log_test_train_no_nan.pkl'
     pkl_path: 'cholec80_frames' # '21_11_25_first_test_data_frames'
@@ -32,10 +32,10 @@ data:
     test_transforms: null
     load_images: False
 callbacks:
-    - name: "WeightedSamplingCallback"
+    - name: "WorstSamplingCallback"
       kwargs: {}
 model:
     lstm_hidden_size: 128
-    lr: 1.e-2
+    lr: 1.e-4
     betas: [0.9, 0.999]
     log_n_steps: 10

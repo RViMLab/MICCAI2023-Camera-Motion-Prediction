@@ -254,9 +254,7 @@ class LSTMModule(pl.LightningModule):
         self.log('train/distance', distance_loss.mean())
         return {
             'loss': distance_loss.mean(),
-            'sequence_loss': distance_loss.detach().view(duvs_pred.shape[:2] + (4,)).mean(axis=-1).cpu().numpy(), 
-            'frame_idcs': frame_idcs.cpu().numpy(),
-            'vid_idcs': vid_idcs.cpu().numpy()
+            'per_sequence_loss': distance_loss.detach().view(duvs_pred.shape[0], -1).mean(axis=-1).cpu().numpy(), 
         }
 
     def validation_step(self, batch, batch_idx):

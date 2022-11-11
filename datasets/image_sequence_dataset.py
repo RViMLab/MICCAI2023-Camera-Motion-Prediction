@@ -48,12 +48,13 @@ class ImageSequenceDataset(Dataset):
         self._random_frame_offset = random_frame_offset
         self._load_images = load_images
         self._seeds = seeds
-        self._idcs = self._filterFeasibleSequenceIndices(
+        self._valid_idcs = self._filterFeasibleSequenceIndices(
             self._df, col='vid',
             seq_len=self._seq_len,
             frame_increment=self._frame_increment,
             frames_between_clips=self._frames_between_clips
         )
+        self._sample_idcs = self._valid_idcs
 
     @property
     def seq_len(self):
@@ -71,6 +72,22 @@ class ImageSequenceDataset(Dataset):
     def frame_increment(self, frame_increment: int):
         self.frame_increment = frame_increment
 
+    @property
+    def valid_idcs(self) -> pd.Index:
+        return self._valid_idcs
+
+    @valid_idcs.setter
+    def valid_idcs(self, valid_idcs: pd.Index) -> None:
+        self._valid_idcs = valid_idcs
+
+    @property
+    def sample_idcs(self) -> pd.Index:
+        return self._sample_idcs
+
+    @sample_idcs.setter
+    def sample_idcs(self, sample_idcs: pd.Index) -> None:
+        self._sample_idcs = sample_idcs
+
     def __getitem__(self, idx):
         # set seed if desired
         if self._seeds:
@@ -82,7 +99,7 @@ class ImageSequenceDataset(Dataset):
         img_seq_transformed = []
 
         random.seed(seed)
-        idcs = self._idcs[idx] + np.arange(self._seq_len)*self._frame_increment
+        idcs = self._sample_idcs[idx] + np.arange(self._seq_len)*self._frame_increment
         if self._random_frame_offset:
             idcs = idcs + random.randint(0, self._frame_increment - 1)
         random.seed(None)
@@ -112,7 +129,7 @@ class ImageSequenceDataset(Dataset):
         return img_seq_transformed, idcs, file_seq.vid.iloc[0]
 
     def __len__(self):
-        return len(self._idcs)
+        return len(self._sample_idcs)
 
     def _filterFeasibleSequenceIndices(self, 
         df: pd.DataFrame,
@@ -120,7 +137,7 @@ class ImageSequenceDataset(Dataset):
         seq_len: int=2,
         frame_increment: int=1,
         frames_between_clips: int=1
-    ) -> pd.DataFrame:
+    ) -> pd.Index:
         grouped_df = df.groupby(col)
         if self._random_frame_offset:
             return grouped_df.apply(
@@ -172,12 +189,13 @@ class ImageSequenceDuvDataset(Dataset):
         self._random_frame_offset = random_frame_offset
         self._load_images = load_images
         self._seeds = seeds
-        self._idcs = self._filterFeasibleSequenceIndices(
+        self._valid_idcs = self._filterFeasibleSequenceIndices(
             self._df, col='vid',
             seq_len=self._seq_len,
             frame_increment=self._frame_increment,
             frames_between_clips=self._frames_between_clips
         )
+        self._sample_idcs = self._valid_idcs
 
     @property
     def seq_len(self):
@@ -190,6 +208,22 @@ class ImageSequenceDuvDataset(Dataset):
     @property
     def frame_increment(self):
         return self._frame_increment
+
+    @property
+    def sample_idcs(self) -> pd.Index:
+        return self._sample_idcs
+
+    @property
+    def valid_idcs(self) -> pd.Index:
+        return self._valid_idcs
+
+    @valid_idcs.setter
+    def valid_idcs(self, valid_idcs: pd.Index) -> None:
+        self._valid_idcs = valid_idcs
+
+    @sample_idcs.setter
+    def sample_idcs(self, sample_idcs: pd.Index):
+        self._sample_idcs = sample_idcs
 
     frame_increment.setter
     def frame_increment(self, frame_increment: int):
@@ -206,7 +240,7 @@ class ImageSequenceDuvDataset(Dataset):
         duv_seq = []
 
         random.seed(seed)
-        idcs = self._idcs[idx] + np.arange(self._seq_len)*self._frame_increment
+        idcs = self._sample_idcs[idx] + np.arange(self._seq_len)*self._frame_increment
         if self._random_frame_offset:
             idcs = idcs + random.randint(0, self._frame_increment - 1)
         random.seed(None)
@@ -235,7 +269,7 @@ class ImageSequenceDuvDataset(Dataset):
         return duv_seq, idcs, file_seq.vid.iloc[0]
 
     def __len__(self):
-        return len(self._idcs)
+        return len(self._sample_idcs)
 
     def _filterFeasibleSequenceIndices(self, 
         df: pd.DataFrame,
@@ -243,7 +277,7 @@ class ImageSequenceDuvDataset(Dataset):
         seq_len: int=2,
         frame_increment: int=1,
         frames_between_clips: int=1
-    ) -> pd.DataFrame:
+    ) -> pd.Index:
         grouped_df = df.groupby(col)
         if self._random_frame_offset:
             return grouped_df.apply(
