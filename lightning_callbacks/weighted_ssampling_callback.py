@@ -20,7 +20,7 @@ class WorstSamplingCallback(pl.Callback):
         sample_idcs = trainer.train_dataloader.dataset.datasets.sample_idcs[batch_idcs]
 
         # build currently best losses
-        if len(self._per_sequence_loss_buffer) != len(trainer.train_dataloader.dataset.datasets.valid_idcs):
+        if len(self._per_sequence_loss_buffer) < len(trainer.train_dataloader.dataset.datasets.valid_idcs):
             per_sequence_loss_buffer = pd.DataFrame(
                 outputs["per_sequence_loss"].tolist(),
                 index=pd.Index(sample_idcs, "int64"),
