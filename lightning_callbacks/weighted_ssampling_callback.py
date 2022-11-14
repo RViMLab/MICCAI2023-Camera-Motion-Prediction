@@ -15,12 +15,17 @@ class WorstSamplingCallback(pl.Callback):
         super().__init__()
 
     def on_train_batch_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule, outputs: Any, batch: Any, batch_idx: int) -> None:
+        n_samples = len(trainer.train_dataloader.dataset.datasets.valid_idcs)
         batch_size = trainer.train_dataloader.loaders.batch_size
         batch_idcs = (np.arange(batch_size) + batch_idx*batch_size).tolist()
         sample_idcs = trainer.train_dataloader.dataset.datasets.sample_idcs[batch_idcs]
+        if trainer.train_dataloader.loaders.drop_last:
+            total_batches = int(np.floor(n_samples / batch_size))
+        else:
+            total_batches = int(np.ceil(n_samples / batch_size))
+        covered_batches = int(np.ceil(len(self._per_sequence_loss_buffer) / batch_size))
 
-        # build currently best losses
-        if len(self._per_sequence_loss_buffer) < len(trainer.train_dataloader.dataset.datasets.valid_idcs):
+        if covered_batches < total_batches:
             per_sequence_loss_buffer = pd.DataFrame(
                 outputs["per_sequence_loss"].tolist(),
                 index=pd.Index(sample_idcs, "int64"),
