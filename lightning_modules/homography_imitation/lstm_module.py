@@ -424,7 +424,7 @@ class FeatureLSTMModule(pl.LightningModule):
         distance_loss = self._distance_loss(
             duvs_pred.reshape(-1, 2),
             duvs_reg[:,1:].reshape(-1, 2) # note that the first value is skipped
-        ).mean()
+        )
 
         # # logging
         # if self.global_step % self._log_n_steps == 0:
@@ -442,8 +442,11 @@ class FeatureLSTMModule(pl.LightningModule):
         #     uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
         #     self.logger.experiment.add_figure('train/uv_traj_fig', uv_traj_fig, self.global_step)
 
-        self.log('train/distance', distance_loss)
-        return distance_loss
+        self.log('train/distance', distance_loss.mean())
+        return {
+            'loss': distance_loss.mean(),
+            'per_sequence_loss': distance_loss.detach().view(duvs_pred.shape[0], -1).mean(axis=-1).cpu().numpy(), 
+        }
 
     def validation_step(self, batch, batch_idx):
         if self._homography_regression is None:
@@ -466,7 +469,7 @@ class FeatureLSTMModule(pl.LightningModule):
         distance_loss = self._distance_loss(
             duvs_pred.reshape(-1, 2),
             duvs_reg[:,1:].reshape(-1, 2) # note that the first value is skipped
-        ).mean()
+        )
 
         # logging
         if self._validation_step_ct % self._log_n_steps == 0:
@@ -484,7 +487,7 @@ class FeatureLSTMModule(pl.LightningModule):
             uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
             self.logger.experiment.add_figure('val/uv_traj_fig', uv_traj_fig, self._validation_step_ct)
 
-        self.log('val/distance', distance_loss)
+        self.log('val/distance', distance_loss.mean())
         self._validation_step_ct += 1
 
     def test_step(self):
