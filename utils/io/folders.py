@@ -9,12 +9,14 @@ import pandas as pd
 
 def generate_path(prefix: str) -> None:
     if not os.path.exists(prefix):
+        print(f"Generating path at {prefix}")
         pathlib.Path(prefix).mkdir(parents=True, exist_ok=True)
 
 def scan2df(folder: str, postfix: str='.jpg') -> pd.DataFrame:
     # scan folder for images and return dataframe
     df = pd.DataFrame(columns={'folder', 'file'})
 
+    print(f"Scanning {folder} for {postfix} files")
     for file in glob.glob(os.path.join(folder, '*{}'.format(postfix))):
         df = pd.concat([df, pd.DataFrame({
                 'folder': [folder],
@@ -27,6 +29,7 @@ def recursive_scan2df(folder: str, postfix: str='.jpg') -> pd.DataFrame:
     # scan folder for images and return dataframe
     df = pd.DataFrame(columns={'folder', 'file'})
 
+    print(f"Scanning {folder} recursively for {postfix} files")
     for root, subdirs, files in os.walk(folder):
         files = [x for x in files if postfix in x]
         if files:

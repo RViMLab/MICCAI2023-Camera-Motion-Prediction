@@ -11,6 +11,7 @@ def load_yaml(path: str) -> dict:
     """
     try:
         with open(path, 'r') as f:
+            print(f"Reading file from {path}")
             yml = yaml.load(f, Loader=yaml.FullLoader)
         return yml
     except:
@@ -25,4 +26,5 @@ def save_yaml(path: str, dic: dict) -> None:
         dic (dict): Dictionary to be written to YAML file
     """
     with open(path, 'w') as f:
+        print(f"Writing file to {path}")
         yaml.dump(dic, f)
