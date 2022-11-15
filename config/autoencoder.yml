@@ -36,8 +36,8 @@ data:
   module: "lightning_data_modules"
   name: "ImageDataModule"
   kwargs: {
-    "dataframe": "22_11_09_deep_log_pre_processed_test_train_no_nan.pkl",
-    "prefix": "/media/martin/Samsung_T5/data/endoscopic_data/cholec80_frames",
+    "dataframe": "22_11_15_log_test_train.pkl",
+    "prefix": "/media/martin/Samsung_T5/data/endoscopic_data/cholec80_single_video_frames_cropped",
     "train_split": 0.8,
     "batch_size": 1,
     "num_workers": 0,
