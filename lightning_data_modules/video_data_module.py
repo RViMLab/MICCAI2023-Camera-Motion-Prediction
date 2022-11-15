@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
 from datasets import VideoDataset
-from utils.transforms import anyDictListToCompose
+from utils.transforms import any_dict_list_to_compose
 
 
 class VideoDataModule(pl.LightningDataModule):
@@ -65,13 +65,13 @@ class VideoDataModule(pl.LightningDataModule):
         self._test_video_paths = [os.path.join(self._prefix, row.database, row.file['path'], row.file['name']) for _, row in self._test_meta_df.iterrows()]
 
         # transforms for each video individually
-        self._train_pre_transforms = [anyDictListToCompose(row.pre_transforms) for _, row in self._train_meta_df.iterrows()]
-        self._val_pre_transforms = [anyDictListToCompose(row.pre_transforms) for _, row in self._val_meta_df.iterrows()]
-        self._test_pre_transforms = [anyDictListToCompose(row.pre_transforms) for _, row in self._test_meta_df.iterrows()]
+        self._train_pre_transforms = [any_dict_list_to_compose(row.pre_transforms) for _, row in self._train_meta_df.iterrows()]
+        self._val_pre_transforms = [any_dict_list_to_compose(row.pre_transforms) for _, row in self._val_meta_df.iterrows()]
+        self._test_pre_transforms = [any_dict_list_to_compose(row.pre_transforms) for _, row in self._test_meta_df.iterrows()]
 
-        self._train_aug_transforms = [anyDictListToCompose(row.aug_transforms) for _, row in self._train_meta_df.iterrows()]
-        self._val_aug_transforms = [anyDictListToCompose(row.aug_transforms) for _, row in self._val_meta_df.iterrows()]
-        self._test_aug_transforms = [anyDictListToCompose(row.aug_transforms) for _, row in self._test_meta_df.iterrows()]
+        self._train_aug_transforms = [any_dict_list_to_compose(row.aug_transforms) for _, row in self._train_meta_df.iterrows()]
+        self._val_aug_transforms = [any_dict_list_to_compose(row.aug_transforms) for _, row in self._val_meta_df.iterrows()]
+        self._test_aug_transforms = [any_dict_list_to_compose(row.aug_transforms) for _, row in self._test_meta_df.iterrows()]
 
         # store metadata
         self._train_metadata = train_metadata

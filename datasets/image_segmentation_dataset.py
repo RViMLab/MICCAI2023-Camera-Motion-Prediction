@@ -72,7 +72,7 @@ if __name__ == '__main__':
     sys.path.append('..')
     import pandas as pd
 
-    from utils.transforms import dictListToAugment
+    from utils.transforms import dict_list_to_augment
     from utils.io import load_yaml
 
     configs = load_yaml('config/boundary_segmentation.yml')
@@ -80,8 +80,8 @@ if __name__ == '__main__':
     spatial_transforms = configs['data']['spatial_transforms']
     image_transforms = configs['data']['image_transforms']
 
-    spatial_transforms = dictListToAugment(spatial_transforms)
-    image_transforms = dictListToAugment(image_transforms)
+    spatial_transforms = dict_list_to_augment(spatial_transforms)
+    image_transforms = dict_list_to_augment(image_transforms)
 
     prefix = '/media/martin/Samsung_T5/data/endoscopic_data/boundary_segmentation'
 

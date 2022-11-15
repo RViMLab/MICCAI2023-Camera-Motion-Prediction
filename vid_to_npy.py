@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 
 from utils.io import load_yaml, generate_path
-from utils.transforms import Compose, anyDictListToCompose
+from utils.transforms import Compose, any_dict_list_to_compose
 from utils.sampling import ConsecutiveSequences
 from utils.processing import RandomEdgeHomography
 
@@ -44,7 +44,7 @@ if __name__ == '__main__':
         vid_absolute_output_prefix = os.path.join(output_prefix, vid_relative_output_prefix)
         generate_path(vid_absolute_output_prefix)
 
-        compose = [anyDictListToCompose(row.pre_transforms)]
+        compose = [any_dict_list_to_compose(row.pre_transforms)]
         consecutive_sequence = ConsecutiveSequences(
             paths=paths,
             stride=args.stride,

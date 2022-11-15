@@ -5,7 +5,7 @@ from torchvision.transforms import Compose
 from typing import List
 
 
-def recursiveMethodCallFromDictList(x: object, transforms: List[dict]=None, module: object=None) -> object:
+def recursive_method_call_from_dict_list(x: object, transforms: List[dict]=None, module: object=None) -> object:
     r"""Performs a recursive call on x.
 
     Args:
@@ -24,7 +24,7 @@ def recursiveMethodCallFromDictList(x: object, transforms: List[dict]=None, modu
     return x
 
 
-def dictListToCompose(transforms: List[dict]=None, module: object=None) -> Compose:
+def dict_list_to_compose(transforms: List[dict]=None, module: object=None) -> Compose:
     r"""Turns list of dictionaries into a Compose.
 
     Args:
@@ -35,7 +35,7 @@ def dictListToCompose(transforms: List[dict]=None, module: object=None) -> Compo
         import utils
 
         transforms = [{'Crop': ['top_left_corner': [0, 0], 'shape': [480, 640]]}]
-        compose = dictListToCompose(transforms, utils.transforms)
+        compose = dict_list_to_compose(transforms, utils.transforms)
     """
     if not module:
         raise ValueError('Module has to be parsed')
@@ -47,7 +47,7 @@ def dictListToCompose(transforms: List[dict]=None, module: object=None) -> Compo
         compose.append(getattr(module, k)(**kwargs))
     return Compose(compose)
 
-def anyDictListToCompose(transforms: List[dict]=None) -> Compose:
+def any_dict_list_to_compose(transforms: List[dict]=None) -> Compose:
     r"""Turns list of dictionaries into a Compose.
 
     Args:
@@ -67,7 +67,7 @@ def anyDictListToCompose(transforms: List[dict]=None) -> Compose:
     return Compose(compose)
 
 
-def dictListToAugment(transforms: List[dict]=None) -> np.array:
+def dict_list_to_augment(transforms: List[dict]=None) -> np.array:
     r"""Turns list of dictionaries into imgaug augment image, 
     which is a callable.
 
@@ -76,7 +76,7 @@ def dictListToAugment(transforms: List[dict]=None) -> np.array:
 
     Example:
         transforms = [{'chance': 0.5, 'type': , 'kwargs': {}, 'module': imgaug.augmenters}]
-        augment_image = dictListToAugment(transforms)
+        augment_image = dict_list_to_augment(transforms)
         img = augment_image(img)
     """
     if not transforms:

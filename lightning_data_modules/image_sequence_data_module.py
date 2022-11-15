@@ -3,11 +3,13 @@ from typing import List
 import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
+from pytorch_lightning.utilities.types import (EVAL_DATALOADERS,
+                                               TRAIN_DATALOADERS)
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
 from datasets import ImageSequenceDataset, ImageSequenceDuvDataset
-from utils.transforms import dictListToAugment
+from utils.transforms import dict_list_to_augment
 
 
 class ImageSequenceDataModule(pl.LightningDataModule):
@@ -61,9 +63,9 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         self._frames_between_clips = frames_between_clips
         self._random_frame_offset = random_frame_offset
 
-        self._train_tranforms = dictListToAugment(train_transforms)
-        self._val_transforms = dictListToAugment(val_transforms)
-        self._test_transforms = dictListToAugment(test_transforms)
+        self._train_tranforms = dict_list_to_augment(train_transforms)
+        self._val_transforms = dict_list_to_augment(val_transforms)
+        self._test_transforms = dict_list_to_augment(test_transforms)
 
         self._load_images = load_images
 
@@ -107,13 +109,13 @@ class ImageSequenceDataModule(pl.LightningDataModule):
     # def transfer_batch_to_device(self, batch, device, dataloader_idx):
     #     pass
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> TRAIN_DATALOADERS:
         return DataLoader(self._train_set, batch_size=self._batch_size, shuffle=True, num_workers=self._num_workers, drop_last=True, pin_memory=True)
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> EVAL_DATALOADERS:
         return DataLoader(self._val_set, batch_size=self._batch_size, num_workers=self._num_workers, drop_last=True, pin_memory=True)
 
-    def test_dataloader(self):
+    def test_dataloader(self) -> EVAL_DATALOADERS:
         return DataLoader(self._test_set, batch_size=self._batch_size, num_workers=self._num_workers, drop_last=True, pin_memory=True)
 
 
@@ -168,9 +170,9 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
         self._frames_between_clips = frames_between_clips
         self._random_frame_offset = random_frame_offset
 
-        self._train_tranforms = dictListToAugment(train_transforms)
-        self._val_transforms = dictListToAugment(val_transforms)
-        self._test_transforms = dictListToAugment(test_transforms)
+        self._train_tranforms = dict_list_to_augment(train_transforms)
+        self._val_transforms = dict_list_to_augment(val_transforms)
+        self._test_transforms = dict_list_to_augment(test_transforms)
 
         self._load_images = load_images
 
@@ -211,13 +213,13 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
                 seeds=True
             )
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> TRAIN_DATALOADERS:
         return DataLoader(self._train_set, batch_size=self._batch_size, shuffle=True, num_workers=self._num_workers, drop_last=True, pin_memory=True)
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> EVAL_DATALOADERS:
         return DataLoader(self._val_set, batch_size=self._batch_size, num_workers=self._num_workers, drop_last=True, pin_memory=True)
 
-    def test_dataloader(self):
+    def test_dataloader(self) -> EVAL_DATALOADERS:
         return DataLoader(self._test_set, batch_size=self._batch_size, num_workers=self._num_workers, drop_last=True, pin_memory=True)
 
 

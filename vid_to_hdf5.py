@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 import utils
 from utils.sampling import ConsecutiveSequences
-from utils.transforms import anyDictListToCompose
+from utils.transforms import any_dict_list_to_compose
 from utils.io import load_yaml, generate_path
 
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     else:
         paths = [os.path.join(server['database']['location'], args.prefix, row.file['path'], row.file['name']) for _, row in df.iterrows()]
     
-    composes = [anyDictListToCompose(row.pre_transforms) for _, row in df.iterrows()]
+    composes = [any_dict_list_to_compose(row.pre_transforms) for _, row in df.iterrows()]
     consecutive_sequence = ConsecutiveSequences(
         paths=paths,
         stride=args.stride,

@@ -1,12 +1,15 @@
-import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
-import pytorch_lightning as pl
-from torch.utils.data import DataLoader
 from typing import Callable
 
+import numpy as np
+import pandas as pd
+import pytorch_lightning as pl
+from pytorch_lightning.utilities.types import (EVAL_DATALOADERS,
+                                               TRAIN_DATALOADERS)
+from sklearn.model_selection import train_test_split
+from torch.utils.data import DataLoader
+
 from datasets import ImageSegmentationDataset
-from utils.transforms import dictListToAugment
+from utils.transforms import dict_list_to_augment
 
 
 class ImageSegmentationDataModule(pl.LightningDataModule):
@@ -32,12 +35,12 @@ class ImageSegmentationDataModule(pl.LightningDataModule):
         self._batch_size = batch_size
         self._num_workers = num_workers
         self._random_state = random_state
-        self._train_image_transforms = dictListToAugment(train_image_transforms)
-        self._train_spatial_transforms = dictListToAugment(train_spatial_transforms)
-        self._val_image_transforms = dictListToAugment(val_image_transforms)
-        self._val_spatial_transforms = dictListToAugment(val_spatial_transforms)
-        self._test_image_transforms = dictListToAugment(test_image_transforms)
-        self._test_spatial_transforms = dictListToAugment(test_spatial_transforms)
+        self._train_image_transforms = dict_list_to_augment(train_image_transforms)
+        self._train_spatial_transforms = dict_list_to_augment(train_spatial_transforms)
+        self._val_image_transforms = dict_list_to_augment(val_image_transforms)
+        self._val_spatial_transforms = dict_list_to_augment(val_spatial_transforms)
+        self._test_image_transforms = dict_list_to_augment(test_image_transforms)
+        self._test_spatial_transforms = dict_list_to_augment(test_spatial_transforms)
 
         # split train test
         self._train_df = df[df.test == False]
@@ -65,18 +68,19 @@ class ImageSegmentationDataModule(pl.LightningDataModule):
         batch[0], batch[1] = batch[0].to(device), batch[1].to(device)
         return batch
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> TRAIN_DATALOADERS:
         return DataLoader(self._train_set, batch_size=self._batch_size, num_workers=self._num_workers, pin_memory=True)
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> EVAL_DATALOADERS:
         return DataLoader(self._val_set, batch_size=self._batch_size, num_workers=self._num_workers, pin_memory=True)
 
-    def test_dataloader(self):
+    def test_dataloader(self) -> EVAL_DATALOADERS:
         return DataLoader(self._test_set, batch_size=self._batch_size, num_workers=self._num_workers, pin_memory=True)
 
 
 if __name__ == '__main__':
     import os
+
     import cv2
     from kornia import tensor_to_image
 

@@ -1,13 +1,16 @@
-import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
-import pytorch_lightning as pl
-from torch.utils.data import DataLoader
-from torch.utils.data.dataset import random_split, Subset
 from typing import List
 
+import numpy as np
+import pandas as pd
+import pytorch_lightning as pl
+from pytorch_lightning.utilities.types import (EVAL_DATALOADERS,
+                                               TRAIN_DATALOADERS)
+from sklearn.model_selection import train_test_split
+from torch.utils.data import DataLoader
+from torch.utils.data.dataset import Subset, random_split
+
 from datasets import ImagePairHomographyDataset
-from utils.transforms import dictListToAugment
+from utils.transforms import dict_list_to_augment
 
 
 class ImagePairHomographyDataModule(pl.LightningDataModule):
@@ -60,9 +63,9 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
         self._seq_len = seq_len
         self._unsupervised = unsupervised
 
-        self._train_transforms = dictListToAugment(train_transforms)
-        self._val_transforms = dictListToAugment(val_transforms)
-        self._test_transforms = dictListToAugment(test_transforms)
+        self._train_transforms = dict_list_to_augment(train_transforms)
+        self._val_transforms = dict_list_to_augment(val_transforms)
+        self._test_transforms = dict_list_to_augment(test_transforms)
 
     @property
     def rho(self):
@@ -94,21 +97,22 @@ class ImagePairHomographyDataModule(pl.LightningDataModule):
             batch['uv'] = batch['uv'].to(device)
         return batch
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> TRAIN_DATALOADERS:
         return DataLoader(self._train_set, batch_size=self._batch_size, num_workers=self._num_workers, pin_memory=True)
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> EVAL_DATALOADERS:
         return DataLoader(self._val_set, batch_size=self._batch_size, num_workers=self._num_workers, pin_memory=True)
 
-    def test_dataloader(self):
+    def test_dataloader(self) -> EVAL_DATALOADERS:
         return DataLoader(self._test_set, batch_size=self._batch_size, num_workers=self._num_workers, pin_memory=True)
 
 
 if __name__ == '__main__':
     import os
-    from dotmap import DotMap
     import time
-    
+
+    from dotmap import DotMap
+
     from utils.io import load_yaml
 
     server = 'local'
