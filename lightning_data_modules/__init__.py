@@ -1,3 +1,4 @@
+from .image_mask_homography_data_module import ImageHomographyMaskDataModule
 from .image_module import ImageDataModule
 from .image_pair_homography_data_module import ImagePairHomographyDataModule
 from .image_pair_homography_endoscopy_view_data_module import ImagePairHomographyEndoscopyViewDataModule

@@ -1,8 +1,8 @@
-experiment: "test/miccai/autoencoder/mse"
+experiment: "test/miccai/autoencoder/mse/masked"
 trainer:
     accelerator: "gpu"
     devices: 1
-    max_epochs: 100
+    max_epochs: 80
     log_every_n_steps: 1
     limit_train_batches: 1.0
     limit_val_batches: 1.0
@@ -12,27 +12,32 @@ trainer:
     reload_dataloaders_every_n_epochs: 0
 model:
   module: "lightning_modules"
-  name: "UNetModule"
+  name: "GANAutoencoderModule"
   kwargs: {
-    "segmentation_model": {
+    "generator_model": {
       module: "segmentation_models_pytorch",
       name: "Unet",
       kwargs: {
         "encoder_name": "resnet34",
         "encoder_depth": 5,
         "encoder_weights": "imagenet",
-        "decoder_channels": [128, 64, 32, 16, 8],
+        "decoder_channels": [512, 256, 128, 64, 64],
         "in_channels": 3,
         "classes": 3,
         "activation": "sigmoid"
       }
     },
-    "loss_function": {
-      module: "torch.nn",
-      name: "MSELoss",
-      kwargs: {}
+    "discriminator_model": {
+      module: "models",
+      name: "Discriminator",
+      kwargs: {
+        "in_channels": 3,
+        "out_channels": [32, 64, 128, 256, 1],
+        "kernel_sizes": [5, 5, 5, 5, 5],
+        "strides": [2, 2, 2, 2, 1]
+      }
     },
-    "optimizer": {
+    "generator_optimizer": {
       module: "torch.optim",
       name: "AdamW",
       kwargs: {
@@ -40,28 +45,31 @@ model:
         "betas": [0.9, 0.999]
       }
     },
-    "scheduler": {
-      module: "torch.optim.lr_scheduler",
-      name: "MultiStepLR",
+    "discriminator_optimizer": {
+      module: "torch.optim",
+      name: "AdamW",
       kwargs: {
-        "milestones": [19, 49], 
-        "gamma": 0.1
+        "lr": 1.e-3,
+        "betas": [0.9, 0.999]
       }
-    }
+    },
+    "generator_scheduler": null,
+    "discriminator_scheduler": null
   }
 data:
   module: "lightning_data_modules"
-  name: "ImageDataModule"
+  name: "ImageHomographyMaskDataModule"
   kwargs: {
     "dataframe": "22_11_09_deep_log_pre_processed_test_train_no_nan.pkl",
     "prefix": "/media/martin/Samsung_T5/data/endoscopic_data/cholec80_frames",
+    "rho": 64,
     "train_split": 0.8,
-    "batch_size": 32,
+    "batch_size": 16,
     "num_workers": 4,
     "random_state": 42,
     "tolerance": 0.2,
     "train_transforms": [
-      {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',                     'kwargs': {'size': {'height': 224, 'width': 320}}}, # color-space trafo?
+      {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',                     'kwargs': {'size': {'height': 128, 'width': 160}}},
       {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'MultiplyAndAddToBrightness', 'kwargs': {'mul': [0.5, 1.5], 'add': [30, 30]}},
       {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Grayscale',                  'kwargs': {}},
       {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'ChangeColorTemperature',     'kwargs': {'kelvin': [3000, 15000]}},
@@ -72,9 +80,9 @@ data:
       {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Cutout',                 'kwargs': {'nb_iterations': [1, 5], 'cval': 0, 'squared': False}}
     ],
     "val_transforms": [
-      {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',                     'kwargs': {'size': {'height': 224, 'width': 320}}},
+      {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',                     'kwargs': {'size': {'height': 128, 'width': 160}}},
     ],
     "test_transforms": [
-      {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',                     'kwargs': {'size': {'height': 224, 'width': 320}}},
+      {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',                     'kwargs': {'size': {'height': 128, 'width': 160}}},
     ]
   }

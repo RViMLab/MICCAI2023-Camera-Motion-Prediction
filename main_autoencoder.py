@@ -34,4 +34,4 @@ if __name__ == "__main__":
     # train
     trainer = pl.Trainer(**configs["trainer"], logger=logger)
     trainer.fit(model, data_module)
-    trainer.test(model, data_module)
+    # trainer.test(model, data_module)
