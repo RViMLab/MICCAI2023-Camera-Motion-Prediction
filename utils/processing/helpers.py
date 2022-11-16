@@ -21,8 +21,11 @@ def four_point_homography_to_matrix(uv_img: torch.Tensor, duv: torch.Tensor) -> 
         h = four_point_homography_to_matrix(uv_img, duv)
     """
     uv_wrp = uv_img + duv
-    h = get_perspective_transform(uv_img.flip(-1), uv_wrp.flip(-1))
-    return h
+    try:
+        h = get_perspective_transform(uv_img.flip(-1), uv_wrp.flip(-1))
+        return h
+    except:
+        print("Couldn't solve for homography.")
 
 
 def integrate_duv(uv: torch.Tensor, duv: torch.Tensor) -> torch.Tensor:

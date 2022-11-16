@@ -47,10 +47,13 @@ class ImageHomographyMaskDataset(Dataset):
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
         duv = torch.randint(-self._rho, self._rho, [1,4,2])
-        H = four_point_homography_to_matrix(image_edges(img), duv)
-        mask = kornia.geometry.warp_perspective(mask, H, mask.shape[-2:])
-
-        return img.squeeze(0), mask.squeeze(0)
+        try:
+            H = four_point_homography_to_matrix(image_edges(img), duv)
+            mask = kornia.geometry.warp_perspective(mask, H, mask.shape[-2:])
+            return img.squeeze(0), mask.squeeze(0)
+        except:
+            return img.squeeze(0), mask.squeeze(0)
+            
 
     def __len__(self):
         return len(self._df)
