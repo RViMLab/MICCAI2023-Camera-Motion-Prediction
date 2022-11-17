@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 import torch
 
-from models import ConvBlock, DeConvBlock
+from .constitutes import ConvBlock, DeConvBlock
 
 
 class CompletionNetwork(torch.nn.Module):
