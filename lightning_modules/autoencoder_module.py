@@ -115,7 +115,7 @@ class GANAutoencoderModule(pl.LightningModule):
     def validation_step(self, batch, batch_idx) -> Optional[STEP_OUTPUT]:
         if not self._val_logged:
             target, mask = batch
-            output = self(target*mask)
+            output = self._generator(target*mask)
 
             self.logger.experiment.add_images('val/target', target, self.global_step)
             self.logger.experiment.add_images('val/masked_target', target*mask, self.global_step)
