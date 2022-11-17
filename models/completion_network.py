@@ -6,7 +6,7 @@ from .constitutes import ConvBlock, DeConvBlock
 
 
 class CompletionNetwork(torch.nn.Module):
-    def __init__(self, in_channels: int, features: int=64) -> None:
+    def __init__(self, in_channels: int, out_channels: int=3, features: int=64) -> None:
         r"""Completion network as implemented in Globally and Locally Consistent Image Completion.
             http://iizuka.cs.tsukuba.ac.jp/projects/completion/data/completion_sig2017.pdf
         """
@@ -38,7 +38,7 @@ class CompletionNetwork(torch.nn.Module):
             ("conv_1",     ConvBlock(features  , int(features/2) , 3, 1, 1, activation=torch.relu)),
         ]))
 
-        self._head = ConvBlock(int(features/2), in_channels, 3, 1, 1, activation=torch.sigmoid)
+        self._head = ConvBlock(int(features/2), out_channels, 3, 1, 1, activation=torch.sigmoid)
 
     def forward(self, x):
         x = self._downscale(x)

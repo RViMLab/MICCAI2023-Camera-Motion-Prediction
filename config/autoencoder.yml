@@ -2,7 +2,7 @@ experiment: "test/miccai/autoencoder/mse/masked"
 trainer:
     accelerator: "gpu"
     devices: 1
-    max_epochs: 80
+    max_epochs: 100
     log_every_n_steps: 1
     limit_train_batches: 1.0
     limit_val_batches: 1.0
@@ -15,16 +15,12 @@ model:
   name: "GANAutoencoderModule"
   kwargs: {
     "generator_model": {
-      module: "segmentation_models_pytorch",
-      name: "Unet",
+      module: "models",
+      name: "CompletionNetwork",
       kwargs: {
-        "encoder_name": "resnet34",
-        "encoder_depth": 5,
-        "encoder_weights": "imagenet",
-        "decoder_channels": [512, 256, 128, 64, 64],
-        "in_channels": 3,
-        "classes": 3,
-        "activation": "sigmoid"
+        "in_channels": 4,
+        "out_channels": 3,
+        "features": 8
       }
     },
     "discriminator_model": {
@@ -32,9 +28,9 @@ model:
       name: "Discriminator",
       kwargs: {
         "in_channels": 3,
-        "out_channels": [32, 64, 128, 256, 1],
-        "kernel_sizes": [5, 5, 5, 5, 5],
-        "strides": [2, 2, 2, 2, 1]
+        "out_channels": [32, 64, 128, 1],
+        "kernel_sizes": [5, 5, 5, 5],
+        "strides": [2, 2, 2, 2]
       }
     },
     "generator_optimizer": {
@@ -45,11 +41,12 @@ model:
         "betas": [0.9, 0.999]
       }
     },
+    "alpha": 1.e-1,
     "discriminator_optimizer": {
       module: "torch.optim",
       name: "AdamW",
       kwargs: {
-        "lr": 1.e-3,
+        "lr": 1.e-4,
         "betas": [0.9, 0.999]
       }
     },
@@ -62,14 +59,14 @@ data:
   kwargs: {
     "dataframe": "22_11_09_deep_log_pre_processed_test_train_no_nan.pkl",
     "prefix": "/media/martin/Samsung_T5/data/endoscopic_data/cholec80_frames",
-    "rho": 64,
+    "rho": 60,
     "train_split": 0.8,
-    "batch_size": 16,
-    "num_workers": 4,
+    "batch_size": 32,
+    "num_workers": 2,
     "random_state": 42,
     "tolerance": 0.2,
     "train_transforms": [
-      {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',                     'kwargs': {'size': {'height': 128, 'width': 160}}},
+      {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',                     'kwargs': {'size': {'height': 120, 'width': 160}}},
       {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'MultiplyAndAddToBrightness', 'kwargs': {'mul': [0.5, 1.5], 'add': [30, 30]}},
       {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Grayscale',                  'kwargs': {}},
       {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'ChangeColorTemperature',     'kwargs': {'kelvin': [3000, 15000]}},
@@ -80,9 +77,9 @@ data:
       {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Cutout',                 'kwargs': {'nb_iterations': [1, 5], 'cval': 0, 'squared': False}}
     ],
     "val_transforms": [
-      {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',                     'kwargs': {'size': {'height': 128, 'width': 160}}},
+      {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',                     'kwargs': {'size': {'height': 120, 'width': 160}}},
     ],
     "test_transforms": [
-      {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',                     'kwargs': {'size': {'height': 128, 'width': 160}}},
+      {'chance': 1.0, 'module': 'imgaug.augmenters',                'type': 'Resize',                     'kwargs': {'size': {'height': 120, 'width': 160}}},
     ]
   }

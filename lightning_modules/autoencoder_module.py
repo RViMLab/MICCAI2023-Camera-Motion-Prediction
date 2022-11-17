@@ -77,10 +77,11 @@ class GANAutoencoderModule(pl.LightningModule):
 
     def training_step(self, batch, batch_idx, optimizer_idx) -> STEP_OUTPUT:
         target, mask = batch
+        concat = torch.concat([target*mask, mask], axis=1)
 
         # train gen
         if optimizer_idx == 0:
-            output = self._generator(target*mask)
+            output = self._generator(concat)
             ones = torch.ones(target.shape[0], 1, 1, 1, dtype=target.dtype, device=target.device)
             
             mse_loss = self._mse_loss(output*mask, target*mask)
@@ -102,7 +103,7 @@ class GANAutoencoderModule(pl.LightningModule):
             # fake samples
             zeros = torch.zeros([target.shape[0], 1, 1, 1], dtype=target.dtype, device=target.device)
             fake_bce_loss = self._bce_loss(
-                self._discriminator(self._generator(target*mask).detach()), zeros
+                self._discriminator(self._generator(concat).detach()), zeros
             )
             discriminator_loss = (real_bce_loss + fake_bce_loss) / 2
             self.log("train/discriminator_loss", discriminator_loss)
@@ -115,7 +116,8 @@ class GANAutoencoderModule(pl.LightningModule):
     def validation_step(self, batch, batch_idx) -> Optional[STEP_OUTPUT]:
         if not self._val_logged:
             target, mask = batch
-            output = self._generator(target*mask)
+            concat = torch.concat([target*mask, mask], axis=1)
+            output = self._generator(concat)
 
             self.logger.experiment.add_images('val/target', target, self.global_step)
             self.logger.experiment.add_images('val/masked_target', target*mask, self.global_step)
