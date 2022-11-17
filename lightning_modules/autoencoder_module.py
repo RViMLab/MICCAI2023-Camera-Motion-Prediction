@@ -15,6 +15,7 @@ class GANAutoencoderModule(pl.LightningModule):
         discriminator_model: dict,
         generator_optimizer: List[dict],
         discriminator_optimizer: List[dict],
+        alpha: float=1e-2,
         generator_scheduler: List[dict]=None,
         discriminator_scheduler: List[dict]=None
     ) -> None:
@@ -41,6 +42,8 @@ class GANAutoencoderModule(pl.LightningModule):
             importlib.import_module(discriminator_optimizer["module"]),
             discriminator_optimizer["name"]
         )(params=self._discriminator.parameters(), **discriminator_optimizer["kwargs"])
+
+        self._alpha = alpha
 
         self._generator_scheduler = None
         self._discriminator_scheduler = None
@@ -85,7 +88,7 @@ class GANAutoencoderModule(pl.LightningModule):
             self.log("train/mse_loss", mse_loss)
             self.log("train/generator_loss", generator_loss)
             return {
-                "loss": generator_loss + mse_loss
+                "loss": self._alpha*generator_loss + mse_loss
             }
             
         # train discriminator
