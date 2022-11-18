@@ -1,17 +1,15 @@
+from collections import OrderedDict
+from typing import List
+
+import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.models import resnet34
-from collections import OrderedDict
-import pytorch_lightning as pl
-from typing import List
-from kornia.geometry import get_perspective_transform, warp_perspective, crop_and_resize
 from kornia import tensor_to_image
+from kornia.geometry import get_perspective_transform, warp_perspective
 
-from models import DeepHomographyRegression
-from models import ConvBlock
-from utils.viz import warp_figure, yt_alpha_blend
-from utils.processing import image_edges, four_point_homography_to_matrix
+from models import ConvBlock, VarResNet
+from utils.viz import warp_figure
 
 
 class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule):
@@ -49,19 +47,9 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
             ('conv4', ConvBlock(16, 32, padding=1)),
             ('conv5', ConvBlock(32, 1, padding=1, activation=torch.sigmoid)),
         ]))
-        self._homography_estimator = resnet34(pretrained=pretrained)
 
-        # modify in and out layers
-        self._homography_estimator.conv1 = nn.Conv2d(
-            in_channels=2,
-            out_channels=self._homography_estimator.conv1.out_channels,
-            kernel_size=self._homography_estimator.conv1.kernel_size,
-            stride=self._homography_estimator.conv1.stride,
-            padding=self._homography_estimator.conv1.padding
-        )
-        self._homography_estimator.fc = nn.Linear(
-            in_features=self._homography_estimator.fc.in_features,
-            out_features=8
+        self._homography_estimator = VarResNet(
+            in_channels=2, out_features=8, resnet="resnet18", pretrained=pretrained
         )
 
         self._lam = lam
