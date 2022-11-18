@@ -12,7 +12,7 @@ from utils.viz import yt_alpha_blend, duv_mean_pairwise_distance_figure, uv_traj
 
 
 class PredictiveHorizonModule(pl.LightningModule):
-    def __init__(self, backbone: dict, lr: float=1e-4, betas: List[float]=[0.9, 0.999], log_n_steps: int=1000, recall_horizon: int=4, preview_horizon: int=4, frame_stride: int=1):
+    def __init__(self, backbone: dict, lr: float=1e-4, betas: List[float]=[0.9, 0.999], recall_horizon: int=4, preview_horizon: int=4, frame_stride: int=1):
         super().__init__()
         self.save_hyperparameters('lr', 'betas', 'backbone')
 
@@ -30,8 +30,7 @@ class PredictiveHorizonModule(pl.LightningModule):
 
         self._lr = lr
         self._betas = betas
-        self._validation_step_ct = 0
-        self._log_n_steps = log_n_steps
+        self._val_logged = False
 
         self._recall_horizon = recall_horizon
         self._preview_horizon = preview_horizon
@@ -86,27 +85,6 @@ class PredictiveHorizonModule(pl.LightningModule):
             duvs_preview_horizon_reg.reshape(-1, 2)
         ).mean()
 
-        # logging
-        if self.global_step % self._log_n_steps == 0:
-            frames_i   = frames_i.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])   # reshape B*NxCxHxW -> BxNxCxHxW
-            frames_ips = frames_ips.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1]) # reshape B*NxCxHxW -> BxNxCxHxW
-
-            # visualize sequence N in zeroth batch
-            blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
-
-            self.logger.experiment.add_images('train/blend_train', blends, self.global_step)
-
-            uv = image_edges(frames_i[0,0].unsqueeze(0))
-            uv_reg = integrate_duv(uv, duvs_preview_horizon_reg[0])  # batch 0
-            uv_pred = integrate_duv(uv, duvs_preview_horizon_pred[0])  # batch 0
-            uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
-            self.logger.experiment.add_figure('train/uv_traj_fig', uv_traj_fig, self.global_step)
-
-            # visualize duv mean pairwise distance to zero
-            # TODO: fix this plot with frame rate?
-            # duv_mpd_seq_figure = duv_mean_pairwise_distance_figure(duvs_reg[0].cpu().numpy(), duvs_preview_horizon_pred[0].detach().cpu().numpy(), re_fps=frame_rate[0].item(), fps=vid_fps[vid_idc[0]][0].item())  # get vid_idc of zeroth batch
-            # self.logger.experiment.add_figure('verify/duv_mean_pairwise_distance', duv_mpd_seq_figure, self.global_step)
-
         self.log('train/distance', distance_loss)
         return distance_loss
 
@@ -139,24 +117,28 @@ class PredictiveHorizonModule(pl.LightningModule):
         ).mean()
 
         # logging
-        if self._validation_step_ct % self._log_n_steps == 0:
+        if not self._val_logged:
+            self._val_logged = True
             frames_i   = frames_i.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])   # reshape B*NxCxHxW -> BxNxCxHxW
             frames_ips = frames_ips.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1]) # reshape B*NxCxHxW -> BxNxCxHxW
 
             # visualize sequence N in zeroth batch
             blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
 
-            self.logger.experiment.add_images('val/blend_train', blends, self._validation_step_ct)
+            self.logger.experiment.add_images('val/blend_train', blends, self.global_step)
 
             uv = image_edges(frames_i[0,0].unsqueeze(0))
             uv_reg = integrate_duv(uv, duvs_preview_horizon_reg[0])  # batch 0
             uv_pred = integrate_duv(uv, duvs_preview_horizon_pred[0])  # batch 0
             uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
-            self.logger.experiment.add_figure('val/uv_traj_fig', uv_traj_fig, self._validation_step_ct)
+            self.logger.experiment.add_figure('val/uv_traj_fig', uv_traj_fig, self.global_step)
 
         self.log('val/distance', distance_loss, on_epoch=True)
-        self._validation_step_ct += 1
         
+    def on_validation_epoch_end(self) -> None:
+        self._val_logged = False
+        return super().on_validation_epoch_end()
+
     def test_step(self, batch, batch_idx):
         # skip test step until hand labeled homography implemented
         pass

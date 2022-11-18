@@ -12,7 +12,7 @@ from utils.viz import yt_alpha_blend, duv_mean_pairwise_distance_figure
 
 
 class NextViewModule(pl.LightningModule):
-    def __init__(self, shape: List[int], lr: float=1e-4, betas: List[float]=[0.9, 0.999], log_n_steps: int=1000, backbone: str='resnet34', frame_stride: int=1):
+    def __init__(self, shape: List[int], lr: float=1e-4, betas: List[float]=[0.9, 0.999], backbone: str='resnet34', frame_stride: int=1):
         super().__init__()
         self.save_hyperparameters('lr', 'betas', 'backbone')
 
@@ -31,8 +31,7 @@ class NextViewModule(pl.LightningModule):
 
         self._lr = lr
         self._betas = betas
-        self._validation_step_ct = 0
-        self._log_n_steps = log_n_steps
+        self._val_logged = False
 
         self._frame_stride = frame_stride
 
@@ -69,20 +68,6 @@ class NextViewModule(pl.LightningModule):
         with torch.no_grad():
             duvs_reg = self._homography_regression(frames_i, frames_ips)
             duvs_reg = duvs_reg.view(videos.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
-
-            # logging
-            if self.global_step % self._log_n_steps == 0:
-                frames_i   = frames_i.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])   # reshape B*NxCxHxW -> BxNxCxHxW
-                frames_ips = frames_ips.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1]) # reshape B*NxCxHxW -> BxNxCxHxW
-
-                # visualize sequence N in zeroth batch
-                blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
-
-                self.logger.experiment.add_images('verify/blend_train', blends, self.global_step)
-
-                # visualize duv mean pairwise distance to zero
-                duv_mpd_seq_figure = duv_mean_pairwise_distance_figure(duvs_reg[0].cpu().numpy(), re_fps=frame_rate[0].item(), fps=vid_fps[vid_idc[0]][0].item())  # get vid_idc of zeroth batch
-                self.logger.experiment.add_figure('verify/duv_mean_pairwise_distance', duv_mpd_seq_figure, self.global_step)
 
         # homography prediction
         transformed_frames_i = transformed_videos[:,:-self._frame_stride:self._frame_stride]
@@ -121,6 +106,21 @@ class NextViewModule(pl.LightningModule):
         duvs = self(transformed_frames_i)  # forward transformed correspondence to frames_i
         duvs = duvs.view(videos.shape[0], -1, 4, 2)  # reshape B*Nx4x2 -> BxNx4x2
 
+        if not self._val_logged:
+            self._val_logged = True
+            # logging
+            frames_i   = frames_i.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1])   # reshape B*NxCxHxW -> BxNxCxHxW
+            frames_ips = frames_ips.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1]) # reshape B*NxCxHxW -> BxNxCxHxW
+
+            # visualize sequence N in zeroth batch
+            blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
+
+            self.logger.experiment.add_images('val/blend_train', blends, self.global_step)
+
+            # visualize duv mean pairwise distance to zero
+            duv_mpd_seq_figure = duv_mean_pairwise_distance_figure(duvs_reg[0].cpu().numpy(), re_fps=frame_rate[0].item(), fps=vid_fps[vid_idc[0]][0].item())  # get vid_idc of zeroth batch
+            self.logger.experiment.add_figure('val/duv_mean_pairwise_distance', duv_mpd_seq_figure, self.global_step)
+
         # distance loss
         distance_loss = self._distance_loss(
             duvs.view(-1, 2),
@@ -129,6 +129,10 @@ class NextViewModule(pl.LightningModule):
 
         self.log('val/distance', distance_loss, on_epoch=True)
         return distance_loss
+
+    def on_validation_epoch_end(self) -> None:
+        self._val_logged = True
+        return super().on_validation_epoch_end()
         
     def test_step(self, batch, batch_idx):
         # skip test step until hand labeled homography implemented, therefore, analyze homography histograms

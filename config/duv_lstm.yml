@@ -1,4 +1,4 @@
-experiment: 'test/miccai/duv_lstm/cholec80_frames/loftr/dropout'
+experiment: 'test/miccai/duv_lstm/cholec80_frames/deep/dropout'
 lightning_module: 'LSTMModule'
 lightning_data_module: 'ImageSequenceDuvDataModule'
 model_checkpoint: 
@@ -14,12 +14,12 @@ trainer:
     limit_test_batches: 1.0
     fast_dev_run: False
     profiler: False
-    reload_dataloaders_every_n_epochs: 1
+    reload_dataloaders_every_n_epochs: 0
 data:
-    pkl_name: '22_11_09_loftr_log_pre_processed_test_train_no_nan.pkl' # 'pre_processed_5th_frame_log_test_train_no_nan.pkl'
+    pkl_name: '22_11_09_deep_log_pre_processed_test_train_no_nan.pkl' # 'pre_processed_5th_frame_log_test_train_no_nan.pkl'
     pkl_path: 'cholec80_frames' # '21_11_25_first_test_data_frames'
     train_split: 0.8
-    batch_size: 2
+    batch_size: 3
     num_workers: 0
     random_state: 42
     tolerance: 0.2 # change this tolerance
@@ -31,11 +31,13 @@ data:
     val_transforms: null
     test_transforms: null
     load_images: False
-callbacks:
-    - name: "WorstSamplingCallback"
-      kwargs: {}
+callbacks: []
+    # - name: "WorstSamplingCallback"
+    #   kwargs: {
+    #     "worst": 0.1,
+    #     "random": 0.2
+    #   }
 model:
     lstm_hidden_size: 128
-    lr: 1.e-4
+    lr: 1.e-3
     betas: [0.9, 0.999]
-    log_n_steps: 10
