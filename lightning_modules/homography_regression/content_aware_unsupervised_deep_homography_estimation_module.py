@@ -49,7 +49,7 @@ class ContentAwareUnsupervisedDeepHomographyEstimationModule(pl.LightningModule)
         ]))
 
         self._homography_estimator = VarResNet(
-            in_channels=2, out_features=8, resnet="resnet18", pretrained=pretrained
+            in_channels=2, out_features=8, name="resnet18", pretrained=pretrained
         )
 
         self._lam = lam

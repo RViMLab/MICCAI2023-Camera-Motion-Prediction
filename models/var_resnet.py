@@ -7,7 +7,7 @@ class VarResNet(torch.nn.Module):
         self,
         in_channels: int,
         out_features: int,
-        resnet: str="resnet18",
+        name: str="resnet18",
         pretrained: bool=False
     ) -> None:
         r"""Creates a ResNet from torchvision.models with
@@ -16,11 +16,11 @@ class VarResNet(torch.nn.Module):
         Args:
             in_channels (int): Number of input channels
             out_features (int): Number of output classes
-            resnet (str): Name of ResNet, e.g. [resnet18/34/50/101/152]
+            name (str): Name of ResNet, e.g. [resnet18/34/50/101/152]
             pretrained (bool): Whether to load pre-trained
         """
         super().__init__()
-        self._model = getattr(torchvision.models, resnet)(
+        self._model = getattr(torchvision.models, name)(
             pretrained=pretrained
         )
 
