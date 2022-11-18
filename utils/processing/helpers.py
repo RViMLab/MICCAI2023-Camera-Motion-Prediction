@@ -13,6 +13,7 @@ def four_point_homography_to_matrix(uv_img: torch.Tensor, duv: torch.Tensor) -> 
     Args:
         uv_img (torch.Tensor): Image edges in image coordinates
         duv (torch.Tensor): Deviation from edges in image coordinates
+    
     Return:
         h (torch.Tensor): Homography of shape 3x3.
 
@@ -34,6 +35,7 @@ def integrate_duv(uv: torch.Tensor, duv: torch.Tensor) -> torch.Tensor:
     Args:
         uv (torch.Tensor): Image edges in image coordinates of shape Bx4x2
         duv (torch.Tensor): Deviation from edges in image coordinates of shape Bx4x2
+    
     Return:
         uv_int (torch.Tensor): Integrated duv with uv as starting point of shape Bx4x2
     """
@@ -44,13 +46,30 @@ def integrate_duv(uv: torch.Tensor, duv: torch.Tensor) -> torch.Tensor:
     return uv + torch.cumsum(duv, dim=0)
 
 
+def differentiate_duv(duv: torch.Tensor, batch_first: bool=True) -> torch.Tensor:
+    r"""Computes the finite difference of duv.
+
+    Args:
+        duv (torch.Tensor): Deviation from edges in image coordinates of shape BxTx4x2
+        batch_first (bool): If true, expects input of shape BxTx.., else TxBx...
+
+    Return:
+        dduv (torch.Tensor): Differentiated duv of shape Bx(T-1)x4x2
+    """
+    if batch_first:
+        dduv = duv.narrow(1, 1, duv.size(1) - 1) - duv.narrow(1, 0, duv.size(1) - 1)
+    else:
+        dduv = duv.narrow(0, 1, duv.size(0) - 1) - duv.narrow(0, 0, duv.size(0) - 1)
+    return dduv
+
+
 def image_edges(img: torch.Tensor) -> torch.Tensor:
     r"""Returns edges of image (uv) in OpenCV convention.
 
     Args:
         img (torch.Tensor): Image of shape BxCxHxW
 
-    Returns:
+    Return:
         uv (torch.Tensor): Image edges of shape Bx4x2
     """
     if len(img.shape) != 4:
@@ -121,6 +140,7 @@ def unique_video_train_test(df: pd.DataFrame, train_split: float=0.8, tolerance:
         train_split (float): Fraction of train data, default 0.8
         tolerance (float): Split tolerance, train_split + tolerance <= len(df[df.train] == False)/len(df) <= train_split + tolerance
         random_state (int): Random state for deterministic splitting
+    
     Return:
         df (pd.DataFrame): Pandas dataframe, contain {'folder': , 'file': , 'vid': , 'frame': , 'train': }
     """
@@ -146,27 +166,50 @@ def unique_video_train_test(df: pd.DataFrame, train_split: float=0.8, tolerance:
 
 
 if __name__ == '__main__':
-    import numpy as np
-    import torch
 
-    seq_len = 3
-    step = 2
-    last_step = 1
+    def test_forward_backward_sequence():
+        import numpy as np
+        import torch
 
-    # np
-    dummy_vid = np.zeros([1,seq_len,1,2,2])
-    for i in range(seq_len):
-        dummy_vid[:, i] = i
+        seq_len = 3
+        step = 2
+        last_step = 1
 
-    forward, backward = forward_backward_sequence(dummy_vid, step, last_step)
-    print(forward)
-    print(backward)
+        # np
+        dummy_vid = np.zeros([1,seq_len,1,2,2])
+        for i in range(seq_len):
+            dummy_vid[:, i] = i
 
-    # torch
-    dummy_vid = torch.zeros([1,seq_len,1,2,2])
-    for i in range(seq_len):
-        dummy_vid[:,i] = i
+        forward, backward = forward_backward_sequence(dummy_vid, step, last_step)
+        print(forward)
+        print(backward)
 
-    forward, backward = forward_backward_sequence(dummy_vid, step, last_step)
-    print(forward)
-    print(backward)
+        # torch
+        dummy_vid = torch.zeros([1,seq_len,1,2,2])
+        for i in range(seq_len):
+            dummy_vid[:,i] = i
+
+        forward, backward = forward_backward_sequence(dummy_vid, step, last_step)
+        print(forward)
+        print(backward)
+
+    def test_differentiate_duv():
+        import torch
+
+        B = 2
+        T = 10
+        duv = torch.ones([B,T,4,2])
+        dduv = differentiate_duv(duv, True)
+        if dduv.shape[1] != T-1:
+            raise ValueError("Shape of dduv must be T-1.")
+        if dduv.nonzero().nelement() != 0:
+            raise ValueError("Expected derivative to equal zero.")
+        duv = torch.ones([T,B,4,2])
+        dduv = differentiate_duv(duv, False)
+        if dduv.shape[0] != T-1:
+            raise ValueError("Shape of dduv must be T-1.")
+        if dduv.nonzero().nelement() != 0:
+            raise ValueError("Expected derivative to equal zero.")
+
+    test_differentiate_duv()
+
