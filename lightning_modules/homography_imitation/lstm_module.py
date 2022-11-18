@@ -8,7 +8,7 @@ from kornia.geometry import warp_perspective
 from typing import List
 
 import lightning_modules
-from utils.processing import frame_pairs, image_edges, four_point_homography_to_matrix, integrate_duv
+from utils.processing import frame_pairs, image_edges, four_point_homography_to_matrix, integrate_duv, differentiate_duv
 from utils.viz import duv_mean_pairwise_distance_figure, yt_alpha_blend, uv_trajectory_figure
 
 
@@ -229,32 +229,36 @@ class LSTMModule(pl.LightningModule):
         optimizer = torch.optim.Adam(self._model.parameters(), lr=self.lr, betas=self._betas)
         return optimizer
 
-    def forward(self, duvs):
-        duvs = duvs.permute(1,0,2,3) # BxTx4x2 -> TxBx4x2
-        duvs = duvs.view(duvs.shape[:2] + (-1,)) # TxBx4x2 -> TxBx8
-        duvs_pred, (hn, cn) = self._lstm(duvs) # duvs_pred gives access to all hidden states in the sequence
-        duvs_pred = self._fc(duvs_pred)
-        duvs_pred = duvs_pred.view(duvs_pred.shape[:2] + (4, 2,)) # TxBx8 -> TxBx4x2
-        duvs_pred = duvs_pred.permute(1,0,2,3) # TxBx4x2 -> BxTx4x2
-        return duvs_pred
+    def forward(self, duvs_i):
+        duvs_i = duvs_i.permute(1,0,2,3) # BxTx4x2 -> TxBx4x2
+        dduvs_i = differentiate_duv(duvs_i, False)
+        dduvs_i = dduvs_i.view(dduvs_i.shape[:2] + (-1,)) # (T-1)xBx4x2 -> (T-1)xBx8
+        dduvs_ip1, (hn, cn) = self._lstm(dduvs_i) # dduvs_p1 gives access to all hidden states in the sequence
+        dduvs_ip1 = self._fc(dduvs_ip1)
+        dduvs_ip1 = dduvs_ip1.view(dduvs_ip1.shape[:2] + (4, 2,)) # (T-1)xBx8 -> (T-1)xBx4x2
+        dduvs_ip1 = dduvs_ip1.permute(1,0,2,3) # (T-1)xBx4x2 -> Bx(T-1)x4x2
+        duvs_i = duvs_i.permute(1,0,2,3) # TxBx4x2 -> BxTx4x2
+        duvs_ip1 = duvs_i[:,1:]
+        duvs_ip2 = duvs_ip1 + dduvs_ip1
+        return duvs_ip2
     
     def training_step(self, batch, batch_idx):
         duvs_reg, frame_idcs, vid_idcs = batch
         duvs_reg = duvs_reg.float()
 
         # forward
-        duvs_pred = self(duvs_reg[:,:-1])
+        duvs_ip2 = self(duvs_reg)  # Bx(T-2)x4x2
 
         # compute distance loss
         distance_loss = self._distance_loss(
-            duvs_pred.reshape(-1, 2),
-            duvs_reg[:,1:].reshape(-1, 2) # note that the first value is skipped
+            duvs_ip2[:,:-1].reshape(-1, 2), # we don't have ground truth for the last value in the sequence
+            duvs_reg[:,2:].reshape(-1, 2) # note that the first two values are skipped
         )
 
         self.log('train/distance', distance_loss.mean())
         return {
             'loss': distance_loss.mean(),
-            'per_sequence_loss': distance_loss.detach().view(duvs_pred.shape[0], -1).mean(axis=-1).cpu().numpy(), 
+            'per_sequence_loss': distance_loss.detach().view(duvs_ip2.shape[0], -1).mean(axis=-1).cpu().numpy(), 
         }
 
     def validation_step(self, batch, batch_idx):
@@ -263,12 +267,12 @@ class LSTMModule(pl.LightningModule):
         duvs_reg = duvs_reg.float()
 
         # forward
-        duvs_pred = self(duvs_reg[:,:-1])
+        duvs_ip2 = self(duvs_reg)  # Bx(T-2)x4x2
 
         # compute distance loss
         distance_loss = self._distance_loss(
-            duvs_pred.reshape(-1, 2),
-            duvs_reg[:,1:].reshape(-1, 2) # note that the first value is skipped
+            duvs_ip2[:,:-1].reshape(-1, 2), # we don't have ground truth for the last value in the sequence
+            duvs_reg[:,2:].reshape(-1, 2) # note that the first two values are skipped
         )
 
         # # logging
@@ -282,7 +286,7 @@ class LSTMModule(pl.LightningModule):
 
             uv = image_edges(frames_i[0,0].unsqueeze(0))
             uv_reg = integrate_duv(uv, duvs_reg[0,1:])  # batch 0, note that first value is skipped
-            uv_pred = integrate_duv(uv, duvs_pred[0])  # batch 0
+            uv_pred = integrate_duv(uv, duvs_ip2[0])  # batch 0
             uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
             self.logger.experiment.add_figure('val/uv_traj_fig', uv_traj_fig, self._validation_step_ct)
 
