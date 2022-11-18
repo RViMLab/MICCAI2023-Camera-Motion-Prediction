@@ -247,7 +247,7 @@ class LSTMModule(pl.LightningModule):
         duvs_reg = duvs_reg.float()
 
         # forward
-        duvs_ip2 = self(duvs_reg)  # Bx(T-2)x4x2
+        duvs_ip2 = self(duvs_reg)  # Bx(T-1)x4x2
 
         # compute distance loss
         distance_loss = self._distance_loss(
@@ -267,7 +267,7 @@ class LSTMModule(pl.LightningModule):
         duvs_reg = duvs_reg.float()
 
         # forward
-        duvs_ip2 = self(duvs_reg)  # Bx(T-2)x4x2
+        duvs_ip2 = self(duvs_reg)  # Bx(T-1)x4x2
 
         # compute distance loss
         distance_loss = self._distance_loss(
