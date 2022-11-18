@@ -1,14 +1,15 @@
 import os
+from typing import List
+
+import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torchvision.models as models
-import pytorch_lightning as pl
-from typing import List
-from kornia.geometry import warp_perspective
 
 import lightning_modules
-from utils.processing import frame_pairs, image_edges, four_point_homography_to_matrix
-from utils.viz import yt_alpha_blend, duv_mean_pairwise_distance_figure
+from utils.processing import frame_pairs
+from utils.viz import (create_blend_from_four_point_homography,
+                       duv_mean_pairwise_distance_figure)
 
 
 class NextViewModule(pl.LightningModule):
@@ -113,7 +114,7 @@ class NextViewModule(pl.LightningModule):
             frames_ips = frames_ips.view(videos.shape[0], -1, 3, videos.shape[-2], videos.shape[-1]) # reshape B*NxCxHxW -> BxNxCxHxW
 
             # visualize sequence N in zeroth batch
-            blends = self._create_blend_from_homography_regression(frames_i[0], frames_ips[0], duvs_reg[0])
+            blends = create_blend_from_four_point_homography(frames_i[0], frames_ips[0], duvs_reg[0])
 
             self.logger.experiment.add_images('val/blend_train', blends, self.global_step)
 
@@ -137,20 +138,3 @@ class NextViewModule(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         # skip test step until hand labeled homography implemented, therefore, analyze homography histograms
         pass
-
-    def _create_blend_from_homography_regression(self, frames_i: torch.Tensor, frames_ips: torch.Tensor, duvs: torch.Tensor):
-        r"""Helper function that creates blend figure, given four point homgraphy representation.
-
-        Args:
-            frames_i (torch.Tensor): Frames i of shape NxCxHxW
-            frames_ips (torch.Tensor): Frames i+step of shape NxCxHxW
-            duvs (torch.Tensor): Edge delta from frames i+step to frames i of shape Nx4x2
-
-        Return:
-            blends (torch.Tensor): Blends of warp(frames_i) and frames_ips
-        """
-        uvs = image_edges(frames_i)         
-        Hs = four_point_homography_to_matrix(uvs, duvs)
-        wrps = warp_perspective(frames_i, torch.inverse(Hs), frames_i.shape[-2:])
-        blends = yt_alpha_blend(frames_ips, wrps)
-        return blends

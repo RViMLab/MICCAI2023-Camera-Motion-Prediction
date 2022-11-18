@@ -1,6 +1,11 @@
+from typing import Union
+
 import numpy as np
 import torch
-from typing import Union
+from kornia.geometry import warp_perspective
+from processing.helpers import four_point_homography_to_matrix, image_edges
+
+from .blend import yt_alpha_blend
 
 
 def yt_alpha_blend(img_y: Union[np.ndarray, torch.Tensor], img_t: Union[np.ndarray, torch.Tensor], alpha: float=.5) -> Union[np.ndarray, torch.Tensor]:
@@ -28,3 +33,24 @@ def yt_alpha_blend(img_y: Union[np.ndarray, torch.Tensor], img_t: Union[np.ndarr
 
     blend = alpha*img_y_cpy + (1-alpha)*img_t_cpy
     return blend
+
+
+def create_blend_from_four_point_homography(frames_i: torch.Tensor, frames_ips: torch.Tensor, duvs: torch.Tensor) -> torch.Tensor:
+    r"""Helper function that creates blend figure, given four point homgraphy representation.
+
+    Args:
+        frames_i (torch.Tensor): Frames i of shape NxCxHxW
+        frames_ips (torch.Tensor): Frames i+step of shape NxCxHxW
+        duvs (torch.Tensor): Edge delta from frames i+step to frames i of shape Nx4x2
+
+    Return:
+        blends (torch.Tensor): Blends of warp(frames_i) and frames_ips
+    """
+    uvs = image_edges(frames_i)         
+    Hs = four_point_homography_to_matrix(uvs, duvs)
+    try:  # handle inversion error
+        wrps = warp_perspective(frames_i, torch.inverse(Hs), frames_i.shape[-2:])
+        blends = yt_alpha_blend(frames_ips, wrps)
+    except:
+        return frames_i
+    return blends
