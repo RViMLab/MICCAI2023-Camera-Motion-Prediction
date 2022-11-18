@@ -3,9 +3,8 @@ from typing import Union
 import numpy as np
 import torch
 from kornia.geometry import warp_perspective
-from processing.helpers import four_point_homography_to_matrix, image_edges
 
-from .blend import yt_alpha_blend
+from ..processing import four_point_homography_to_matrix, image_edges
 
 
 def yt_alpha_blend(img_y: Union[np.ndarray, torch.Tensor], img_t: Union[np.ndarray, torch.Tensor], alpha: float=.5) -> Union[np.ndarray, torch.Tensor]:
