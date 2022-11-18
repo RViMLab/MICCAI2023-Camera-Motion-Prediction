@@ -1,4 +1,4 @@
-experiment: 'test/miccai/duv_lstm/cholec80_frames/deep/dropout'
+experiment: 'test/miccai/lstm/deep/adaptive'
 lightning_module: 'LSTMModule'
 lightning_data_module: 'ImageSequenceDuvDataModule'
 model_checkpoint: 
@@ -7,37 +7,37 @@ model_checkpoint:
 trainer:
     accelerator: 'gpu'
     devices: 1
-    max_epochs: 200
-    log_every_n_steps: 2
+    max_epochs: 50
+    log_every_n_steps: 10
     limit_train_batches: 1.0
     limit_val_batches: 1.0
     limit_test_batches: 1.0
     fast_dev_run: False
     profiler: False
-    reload_dataloaders_every_n_epochs: 0
+    reload_dataloaders_every_n_epochs: 1
 data:
-    pkl_name: '22_11_09_deep_log_pre_processed_test_train_no_nan.pkl' # 'pre_processed_5th_frame_log_test_train_no_nan.pkl'
-    pkl_path: 'cholec80_frames' # '21_11_25_first_test_data_frames'
+    pkl_name: '22_11_09_deep_pre_processed_frame_increment_5_frames_between_clips_5_log_test_train_no_nan.pkl' # 'pre_processed_5th_frame_log_test_train_no_nan.pkl'
+    pkl_path: 'cholec80_single_video_frames_cropped' # '21_11_25_first_test_data_frames'
     train_split: 0.8
-    batch_size: 3
-    num_workers: 0
+    batch_size: 128
+    num_workers: 8
     random_state: 42
     tolerance: 0.2 # change this tolerance
-    seq_len: 20
+    seq_len: 40
     frame_increment: 1
-    frames_between_clips: 20 # seq_len*frame_increment
+    frames_between_clips: 40 # seq_len*frame_increment
     random_frame_offset: False
     train_transforms: null
     val_transforms: null
     test_transforms: null
     load_images: False
-callbacks: []
-    # - name: "WorstSamplingCallback"
-    #   kwargs: {
-    #     "worst": 0.1,
-    #     "random": 0.2
-    #   }
+callbacks:
+    - name: "WorstSamplingCallback"
+      kwargs: {
+        "worst": 0.1,
+        "random": 0.2
+      }
 model:
-    lstm_hidden_size: 128
+    lstm_hidden_size: 256
     lr: 1.e-3
     betas: [0.9, 0.999]

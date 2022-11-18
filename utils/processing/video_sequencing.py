@@ -62,12 +62,14 @@ class MultiProcessVideoSequencer(object):
             np.save(os.path.join(element["path"], file), element["img"])
 
             # log
-            log_df = log_df.append({
-                "folder": element["folder"],
-                "file": file,
-                "vid": element["vid_idx"],
-                "frame": element["frame_cnt"]
-            }, ignore_index=True)
+            log_df = pd.concat([
+                log_df, pd.DataFrame({
+                    "folder": [element["folder"]],
+                    "file": [file],
+                    "vid": [element["vid_idx"]],
+                    "frame": [element["frame_cnt"]]
+                })], ignore_index=True, axis=0
+            ) 
 
         buffer.clear()
         return log_df
@@ -215,23 +217,29 @@ class SingleProcessInferenceVideoSequencer():
 
                 # log
                 if center is not np.nan:
-                    log_df = log_df.append({
-                        "folder": element["folder"],
-                        "file": file,
-                        "vid": element["vid_idx"],
-                        "frame": element["frame_cnt"],
-                        "center": center.squeeze().cpu().numpy(),
-                        "radius": radius.squeeze().cpu().numpy()
-                    }, ignore_index=True)
+                    log_df = pd.concat(
+                        [log_df, pd.DataFrame({
+                            "folder": [element["folder"]],
+                            "file": [file],
+                            "vid": [element["vid_idx"]],
+                            "frame": [element["frame_cnt"]],
+                            "center": [center.squeeze().cpu().numpy()],
+                            "radius": [radius.squeeze().cpu().numpy()]
+                        })],
+                        ignore_index=True, axis=0
+                    )
                 else:
-                    log_df = log_df.append({
-                        "folder": element["folder"],
-                        "file": file,
-                        "vid": element["vid_idx"],
-                        "frame": element["frame_cnt"],
-                        "center": center,
-                        "radius": radius
-                    }, ignore_index=True)
+                    log_df = pd.concat(
+                        [log_df, pd.DataFrame({
+                            "folder": [element["folder"]],
+                            "file": [file],
+                            "vid": [element["vid_idx"]],
+                            "frame": [element["frame_cnt"]],
+                            "center": [center],
+                            "radius": [radius]
+                        })],
+                        ignore_index=True, axis=0
+                    )
 
         batch.clear()
         return log_df
