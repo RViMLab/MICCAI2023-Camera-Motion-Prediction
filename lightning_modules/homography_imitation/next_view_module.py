@@ -118,7 +118,7 @@ class NextViewModule(pl.LightningModule):
             # visualize sequence N in zeroth batch
             blends = create_blend_from_four_point_homography(frames_i[0], frames_ips[0], duvs_reg[0])
 
-            self.logger.experiment.add_images('val/blend_train', blends, self.global_step)
+            self.logger.experiment.add_images('val/blend', blends, self.global_step)
 
             # visualize duv mean pairwise distance to zero
             duv_mpd_seq_figure = duv_mean_pairwise_distance_figure(duvs_reg[0].cpu().numpy(), re_fps=frame_rate[0].item(), fps=vid_fps[vid_idc[0]][0].item())  # get vid_idc of zeroth batch

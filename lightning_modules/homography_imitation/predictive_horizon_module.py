@@ -126,7 +126,7 @@ class PredictiveHorizonModule(pl.LightningModule):
             # visualize sequence N in zeroth batch
             blends = create_blend_from_four_point_homography(frames_i[0], frames_ips[0], duvs_reg[0])
 
-            self.logger.experiment.add_images('val/blend_train', blends, self.global_step)
+            self.logger.experiment.add_images('val/blend', blends, self.global_step)
 
             uv = image_edges(frames_i[0,0].unsqueeze(0))
             uv_reg = integrate_duv(uv, duvs_preview_horizon_reg[0])  # batch 0
