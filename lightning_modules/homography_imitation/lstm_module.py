@@ -405,6 +405,7 @@ class FeatureLSTMModule(pl.LightningModule):
             duvs_reg[:,2:].cpu().reshape(-1, 2) # note that the first two values are skipped
         )
         self.log("val/loss_taylor", loss_taylor.mean())
+        self.log("val/taylor_loss_minus_loss", loss_taylor.mean() - loss.mean())
 
     def on_validation_epoch_end(self) -> None:
         self._val_logged = False
