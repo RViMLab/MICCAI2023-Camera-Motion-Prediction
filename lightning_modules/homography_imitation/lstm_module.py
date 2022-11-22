@@ -9,7 +9,7 @@ from kornia.geometry import warp_perspective
 from pytorch_lightning.utilities.types import STEP_OUTPUT
 
 import lightning_modules
-from utils.processing import (differentiate_duv,
+from utils.processing import (TaylorHomographyPrediction, differentiate_duv,
                               four_point_homography_to_matrix, frame_pairs,
                               image_edges, integrate_duv)
 from utils.viz import (create_blend_from_four_point_homography,
@@ -309,6 +309,8 @@ class FeatureLSTMModule(pl.LightningModule):
         self._val_logged = False
         self._frame_stride = frame_stride
 
+        self._taylor = TaylorHomographyPrediction(order=1) # comparing against simple linear model
+
     def inject_homography_regression(self, homography_regression: dict, homography_regression_prefix: str):
         raise RuntimeError("Currently not supported.")
 
@@ -351,7 +353,7 @@ class FeatureLSTMModule(pl.LightningModule):
 
         # compute loss
         loss = self._loss(
-            duvs_ip1.reshape(-1, 2), # we don't have ground truth for the last value in the sequence
+            duvs_ip1.reshape(-1, 2),
             duvs_reg[:,2:].reshape(-1, 2) # note that the first two values are skipped
         )
 
@@ -373,7 +375,7 @@ class FeatureLSTMModule(pl.LightningModule):
 
         # compute loss
         loss = self._loss(
-            duvs_ip1.reshape(-1, 2), # we don't have ground truth for the last value in the sequence
+            duvs_ip1.reshape(-1, 2),
             duvs_reg[:,2:].reshape(-1, 2) # note that the first two values are skipped
         )
 
@@ -394,6 +396,15 @@ class FeatureLSTMModule(pl.LightningModule):
             uv_traj_fig = uv_trajectory_figure(uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy())
             self.logger.experiment.add_figure('val/uv_traj_fig', uv_traj_fig, self.global_step)
 
+        # classical estimation
+        duvs_ip1_taylor = self._taylor(duvs_reg.cpu())[:,1:]
+
+        # compute loss
+        loss_taylor = self._loss(
+            duvs_ip1_taylor.reshape(-1, 2), # we don't have ground truth for the last value in the sequence
+            duvs_reg[:,2:].cpu().reshape(-1, 2) # note that the first two values are skipped
+        )
+        self.log("val/loss_taylor", loss_taylor.mean())
 
     def on_validation_epoch_end(self) -> None:
         self._val_logged = False
