@@ -279,7 +279,7 @@ class LSTMModule(pl.LightningModule):
 
 
 class FeatureLSTMModule(pl.LightningModule):
-    def __init__(self, encoder: dict, lstm: dict, head: dict, optimizer: dict, loss: dict, frame_stride: int=1) -> None:
+    def __init__(self, encoder: dict, lstm: dict, head: List[dict], optimizer: dict, loss: dict, frame_stride: int=1) -> None:
         super().__init__()
         self._encoder = getattr(
             importlib.import_module(encoder["module"]),
@@ -291,10 +291,15 @@ class FeatureLSTMModule(pl.LightningModule):
             lstm["name"]
         )(**lstm["kwargs"])
 
-        self._head = getattr(
-            importlib.import_module(head["module"]),
-            head["name"]
-        )(**head["kwargs"])
+        modules = []
+        for module in head:
+            modules.append(
+                getattr(
+                    importlib.import_module(module["module"]),
+                    module["name"]
+                )(**module["kwargs"])
+            )
+        self._head = torch.nn.Sequential(*modules)
 
         self._optimizer = getattr(
             importlib.import_module(optimizer["module"]),
