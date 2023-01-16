@@ -1,4 +1,3 @@
-from .endoscopy import endoscopy
 from .feature_homography import (FeatureHomographyEstimation,
                                  LoFTRHomographyEstimation)
 from .helpers import *
