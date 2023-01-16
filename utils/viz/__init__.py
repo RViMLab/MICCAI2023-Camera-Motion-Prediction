@@ -1,3 +1,4 @@
-from .blend import yt_alpha_blend, create_blend_from_four_point_homography
-from .figures import warp_figure, duv_mean_pairwise_distance_figure, uv_trajectory_figure
+from .blend import create_blend_from_four_point_homography, yt_alpha_blend
+from .figures import (duv_mean_pairwise_distance_figure, uv_trajectory_figure,
+                      warp_figure)
 from .points import draw_points

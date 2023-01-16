@@ -16,11 +16,12 @@ from utils import four_point_homography_to_matrix, image_edges
 
 class ImageHomographyMaskDataset(Dataset):
     def __init__(
-        self, df: pd.DataFrame,
+        self,
+        df: pd.DataFrame,
         prefix: str,
         rho: int,
-        transforms: List[Callable]=None,
-        seeds: bool=False
+        transforms: List[Callable] = None,
+        seeds: bool = False,
     ) -> None:
         self._df = df
         self._prefix = prefix
@@ -33,27 +34,35 @@ class ImageHomographyMaskDataset(Dataset):
         if self._seeds:
             seed = idx
         else:
-            seed = random.randint(0, np.iinfo(np.int32).max) # set random seed for numpy
+            seed = random.randint(
+                0, np.iinfo(np.int32).max
+            )  # set random seed for numpy
         row = self._df.iloc[idx]
         img = np.load(os.path.join(self._prefix, row.folder, row.file))
         if self._transforms:
             imgaug.seed(seed)
             img = self._transforms(img)
 
-        img = torch.from_numpy(img.transpose(2,0,1)).unsqueeze(0) # HxWxC -> 1xCxHxW
-        img = img.to(torch.float32)/255.
+        img = torch.from_numpy(img.transpose(2, 0, 1)).unsqueeze(0)  # HxWxC -> 1xCxHxW
+        img = img.to(torch.float32) / 255.0
 
-        mask = torch.ones((1, 1,) + img.shape[-2:], dtype=img.dtype)
+        mask = torch.ones(
+            (
+                1,
+                1,
+            )
+            + img.shape[-2:],
+            dtype=img.dtype,
+        )
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
-        duv = torch.randint(-self._rho, self._rho, [1,4,2])
+        duv = torch.randint(-self._rho, self._rho, [1, 4, 2])
         try:
             H = four_point_homography_to_matrix(image_edges(img), duv)
             mask = kornia.geometry.warp_perspective(mask, H, mask.shape[-2:])
             return img.squeeze(0), mask.squeeze(0)
         except:
             return img.squeeze(0), mask.squeeze(0)
-            
 
     def __len__(self):
         return len(self._df)

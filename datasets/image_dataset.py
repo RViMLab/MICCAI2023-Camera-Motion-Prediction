@@ -11,7 +11,13 @@ from torch.utils.data.dataset import T_co
 
 
 class ImageDataset(Dataset):
-    def __init__(self, df: pd.DataFrame, prefix: str, transforms: List[Callable]=None, seeds: bool=False) -> None:
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        prefix: str,
+        transforms: List[Callable] = None,
+        seeds: bool = False,
+    ) -> None:
         self._df = df
         self._prefix = prefix
         self._transforms = transforms
@@ -22,13 +28,15 @@ class ImageDataset(Dataset):
         if self._seeds:
             seed = idx
         else:
-            seed = random.randint(0, np.iinfo(np.int32).max) # set random seed for numpy
+            seed = random.randint(
+                0, np.iinfo(np.int32).max
+            )  # set random seed for numpy
         row = self._df.iloc[idx]
         img = np.load(os.path.join(self._prefix, row.folder, row.file))
         if self._transforms:
             imgaug.seed(seed)
             img = self._transforms(img)
-        return torch.from_numpy(img.transpose(2,0,1))  #HxWxC -> CxHxW
+        return torch.from_numpy(img.transpose(2, 0, 1))  # HxWxC -> CxHxW
 
     def __len__(self):
         return len(self._df)

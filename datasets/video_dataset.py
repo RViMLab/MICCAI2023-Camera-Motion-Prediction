@@ -1,25 +1,27 @@
 import random
+from typing import Callable, List, Tuple
+
 import numpy as np
-from typing import List, Tuple, Callable
 import torch
 from torch.utils.data import Dataset
-from torchvision.transforms import ConvertImageDtype
 from torchvision.datasets.video_utils import VideoClips
+from torchvision.transforms import ConvertImageDtype
 
 
 class VideoDataset(Dataset):
-    def __init__(self, 
-        video_paths: List[str], 
-        clip_length_in_frames: int=25, 
-        frames_between_clips: int=1, 
-        frame_rate: int=1, 
-        precomputed_metadata: dict=None, 
-        num_workers: int=0, 
-        pre_transforms: List[Callable]=None, 
-        aug_transforms: List[Callable]=None, 
-        seeds: bool=False,
-        permute: bool=True,
-        convert_dtype: bool=True
+    def __init__(
+        self,
+        video_paths: List[str],
+        clip_length_in_frames: int = 25,
+        frames_between_clips: int = 1,
+        frame_rate: int = 1,
+        precomputed_metadata: dict = None,
+        num_workers: int = 0,
+        pre_transforms: List[Callable] = None,
+        aug_transforms: List[Callable] = None,
+        seeds: bool = False,
+        permute: bool = True,
+        convert_dtype: bool = True,
     ) -> None:
         r"""Dataset to load video clips with homographies
 
@@ -37,8 +39,10 @@ class VideoDataset(Dataset):
             convert_dtype (bool): Permute sampled sequence dtype to torch.float32 (memory intensive)
         """
         super().__init__()
-        if pre_transforms is not None and len(video_paths) != len(pre_transforms): 
-            raise ValueError("Length of provided videos paths must equal length of provided transforms.")
+        if pre_transforms is not None and len(video_paths) != len(pre_transforms):
+            raise ValueError(
+                "Length of provided videos paths must equal length of provided transforms."
+            )
 
         self._video_clips = VideoClips(
             video_paths=video_paths,
@@ -46,14 +50,14 @@ class VideoDataset(Dataset):
             frames_between_clips=frames_between_clips,
             frame_rate=frame_rate,
             _precomputed_metadata=precomputed_metadata,
-            num_workers=num_workers
+            num_workers=num_workers,
         )
         if pre_transforms is None:
-            self._pre_transforms = [None]*(len(video_paths))
+            self._pre_transforms = [None] * (len(video_paths))
         else:
             self._pre_transforms = pre_transforms
         if aug_transforms is None:
-            self._aug_transforms = [None]*(len(video_paths))
+            self._aug_transforms = [None] * (len(video_paths))
         else:
             self._aug_transforms = aug_transforms
         self._seeds = seeds
@@ -82,7 +86,9 @@ class VideoDataset(Dataset):
         if self._seeds:
             seed = idx
         else:
-            seed = random.randint(0, np.iinfo(np.int32).max)  # set random seed for numpy
+            seed = random.randint(
+                0, np.iinfo(np.int32).max
+            )  # set random seed for numpy
 
         augmented_video = video.clone()
 
@@ -95,7 +101,14 @@ class VideoDataset(Dataset):
             video = self._dtype_trafo(video)
             augmented_video = self._dtype_trafo(augmented_video)
 
-        return video, augmented_video, self._video_clips.frame_rate, self._video_clips.video_fps, video_idx, idx
+        return (
+            video,
+            augmented_video,
+            self._video_clips.frame_rate,
+            self._video_clips.video_fps,
+            video_idx,
+            idx,
+        )
 
     def __len__(self):
         return self._video_clips.num_clips()

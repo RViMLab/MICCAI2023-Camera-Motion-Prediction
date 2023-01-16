@@ -5,7 +5,7 @@ class Compose(object):
     def __init__(self, transforms: List[object]):
         r"""Composes a list o transforms.
 
-        Args: 
+        Args:
             transforms (list of callables): Transforms to be composed
         """
         self.transforms = transforms

@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union, TypeVar
+from typing import List, Tuple, TypeVar, Union
 
 import cv2
 import kornia
@@ -22,11 +22,21 @@ class FeatureHomographyEstimation(object):
 
         wrp_est = cv2.warpPerspective(img, H, (img.shape[1], img.shape[0]))
     """
+
     def __init__(self, fd: cv2.Feature2D) -> None:
         self._fd = fd
         self._matcher = cv2.FlannBasedMatcher()
 
-    def __call__(self, img: np.array, wrp: np.array, ransacReprojThreshold=5.0, return_kp: bool=False) -> Union[Tuple[np.array, np.array], Tuple[np.array, np.array, np.array, np.array, np.array]]:
+    def __call__(
+        self,
+        img: np.array,
+        wrp: np.array,
+        ransacReprojThreshold=5.0,
+        return_kp: bool = False,
+    ) -> Union[
+        Tuple[np.array, np.array],
+        Tuple[np.array, np.array, np.array, np.array, np.array],
+    ]:
         r"""Estimates the homography between images and returns point representation and homography.
 
         Args:
@@ -48,31 +58,42 @@ class FeatureHomographyEstimation(object):
         img, wrp = self._grayscale(img, wrp)
         kp_img, des_img = self._fd.detectAndCompute(img, None)
         kp_wrp, des_wrp = self._fd.detectAndCompute(wrp, None)
-        if des_img is None or des_wrp is None or des_img.shape[0] < 2 or des_wrp.shape[0] < 2:
+        if (
+            des_img is None
+            or des_wrp is None
+            or des_img.shape[0] < 2
+            or des_wrp.shape[0] < 2
+        ):
             if return_kp:
                 return None, None, None, None, None
-            else:   
+            else:
                 return None, None
 
         des_img, des_wrp = des_img.astype(np.float32), des_wrp.astype(np.float32)
         good_matches = self._match(des_img, des_wrp)
 
-        kp_img = np.float32([ kp_img[m.queryIdx].pt for m in good_matches ]).reshape(-1,1,2)
-        kp_wrp = np.float32([ kp_wrp[m.trainIdx].pt for m in good_matches ]).reshape(-1,1,2)
+        kp_img = np.float32([kp_img[m.queryIdx].pt for m in good_matches]).reshape(
+            -1, 1, 2
+        )
+        kp_wrp = np.float32([kp_wrp[m.trainIdx].pt for m in good_matches]).reshape(
+            -1, 1, 2
+        )
         if kp_img.shape[0] < 4 or kp_wrp.shape[0] < 4:
             if return_kp:
                 return None, None, None, None, None
-            else:   
+            else:
                 return None, None
         H, mask = cv2.findHomography(kp_img, kp_wrp, cv2.RANSAC, ransacReprojThreshold)
         if H is None:
             if return_kp:
                 return None, None, None, None, None
-            else:   
+            else:
                 return None, None
 
-        uv_pred = cv2.perspectiveTransform(uv.astype(np.float32).reshape(-1, 1, 2)[...,::-1], H).squeeze()
-        duv = uv - uv_pred[...,::-1]
+        uv_pred = cv2.perspectiveTransform(
+            uv.astype(np.float32).reshape(-1, 1, 2)[..., ::-1], H
+        ).squeeze()
+        duv = uv - uv_pred[..., ::-1]
 
         if return_kp:
             return H, duv, kp_img, kp_wrp, mask
@@ -88,8 +109,8 @@ class FeatureHomographyEstimation(object):
         matches = self._matcher.knnMatch(queryDescriptors, trainDescriptors, k=2)
 
         good_matches = []
-        for m,n in matches:
-            if m.distance < 0.7*n.distance:
+        for m, n in matches:
+            if m.distance < 0.7 * n.distance:
                 good_matches.append(m)
 
         return good_matches
@@ -104,37 +125,48 @@ class FeatureHomographyEstimation(object):
             uv (np.array): Image edges of shape 4x2
         """
         shape = img.shape[:2]
-        uv = np.array(
-            [
-                [       0,        0],
-                [       0, shape[1]],
-                [shape[0], shape[1]],
-                [shape[0],        0]
-            ]
-        )
+        uv = np.array([[0, 0], [0, shape[1]], [shape[0], shape[1]], [shape[0], 0]])
         return uv
 
-TLoFTRHomographyEstimation = TypeVar("TLoFTRHomographyEstimation", bound="LoFTRHomographyEstimation")
+
+TLoFTRHomographyEstimation = TypeVar(
+    "TLoFTRHomographyEstimation", bound="LoFTRHomographyEstimation"
+)
+
 
 class LoFTRHomographyEstimation(object):
     def __init__(self) -> None:
         self._loftr = kornia.feature.LoFTR()
-        self._ransac = kornia.geometry.RANSAC(inl_th=1.0)    
+        self._ransac = kornia.geometry.RANSAC(inl_th=1.0)
 
     def __call__(self, img: torch.Tensor, wrp: torch.Tensor) -> torch.Tensor:
-        input = {"image0": kornia.color.rgb_to_grayscale(img), "image1": kornia.color.rgb_to_grayscale(wrp)}
+        input = {
+            "image0": kornia.color.rgb_to_grayscale(img),
+            "image1": kornia.color.rgb_to_grayscale(wrp),
+        }
         correspondence_dict = self._loftr(input)
 
         H = []
-        for i in range(img.shape[0]): # ransac might not be parallelizeable!
+        for i in range(img.shape[0]):  # ransac might not be parallelizeable!
             try:
-                H.append(self._ransac(correspondence_dict["keypoints0"][correspondence_dict["batch_indexes"] == i], correspondence_dict["keypoints1"][correspondence_dict["batch_indexes"] == i])[0])
+                H.append(
+                    self._ransac(
+                        correspondence_dict["keypoints0"][
+                            correspondence_dict["batch_indexes"] == i
+                        ],
+                        correspondence_dict["keypoints1"][
+                            correspondence_dict["batch_indexes"] == i
+                        ],
+                    )[0]
+                )
             except:
                 H.append(torch.full([3, 3], torch.nan, device=img.device))
         H = torch.stack(H)
         uv0 = image_edges(img).flip(-1)
         uv1 = kornia.geometry.transform_points(H, uv0)
-        return (uv0 - uv1).flip(-1)  # OpenCV convention, this really needs a fix, includes training of deep homography estimation!
+        return (uv0 - uv1).flip(
+            -1
+        )  # OpenCV convention, this really needs a fix, includes training of deep homography estimation!
 
     def to(self, device: torch.device) -> TLoFTRHomographyEstimation:
         self._loftr.to(device=device)
@@ -148,6 +180,7 @@ class LoFTRHomographyEstimation(object):
 
 
 if __name__ == "__main__":
+
     def test_cv_homography():
         fd = cv2.SIFT_create()
         fh = FeatureHomographyEstimation(fd)
@@ -164,24 +197,24 @@ if __name__ == "__main__":
         wrp_est = cv2.warpPerspective(img, H, (img.shape[1], img.shape[0]))
 
         # plot results
-        shape = (int(img.shape[1]/2.), int(img.shape[0]/2.))
+        shape = (int(img.shape[1] / 2.0), int(img.shape[0] / 2.0))
 
         img = cv2.resize(img, shape)
         wrp = cv2.resize(wrp, shape)
         wrp_est = cv2.resize(wrp_est, shape)
 
-        cv2.imshow("composite", np.concatenate([img, wrp ,wrp_est], axis=1))
+        cv2.imshow("composite", np.concatenate([img, wrp, wrp_est], axis=1))
         cv2.waitKey()
 
         print("H - H_pred:\n", H - H_pred)
         print("duv:\n", duv)
-    
+
     def test_kornia_homography():
         import cv2
         import matplotlib.pyplot as plt
+        from helpers import four_point_homography_to_matrix, image_edges
         from kornia import image_to_tensor, tensor_to_image
         from kornia.geometry import warp_perspective
-        from helpers import four_point_homography_to_matrix, image_edges
 
         estimator = LoFTRHomographyEstimation()
         device = "cpu"
@@ -189,7 +222,7 @@ if __name__ == "__main__":
             device = "cuda"
         estimator.to(device)
 
-        img = np.load("utils/processing/sample.npy")[:,:,::-1]
+        img = np.load("utils/processing/sample.npy")[:, :, ::-1]
         img = cv2.resize(img, [320, 240])
 
         # create fake warp
@@ -211,7 +244,7 @@ if __name__ == "__main__":
             wrps[i] = image_to_tensor(wrps[i], True)
         imgs = torch.concat([img, img])
         wrps = torch.stack(wrps)
-        imgs, wrps = imgs.to(device).float()/255., wrps.to(device).float()/255.
+        imgs, wrps = imgs.to(device).float() / 255.0, wrps.to(device).float() / 255.0
 
         # estimate warp
         duvs = estimator(imgs, wrps)
@@ -222,7 +255,6 @@ if __name__ == "__main__":
             wrp_pred = tensor_to_image(wrp_pred, False)
             plt.imshow(wrp_pred)
             plt.show()
-        
+
     # test_cv_homography()
     # test_kornia_homography()
-

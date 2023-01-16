@@ -3,8 +3,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
-from pytorch_lightning.utilities.types import (EVAL_DATALOADERS,
-                                               TRAIN_DATALOADERS)
+from pytorch_lightning.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
@@ -13,22 +12,23 @@ from utils.transforms import dict_list_to_augment
 
 
 class ImageSequenceDataModule(pl.LightningDataModule):
-    def __init__(self,
-        df: pd.DataFrame, 
+    def __init__(
+        self,
+        df: pd.DataFrame,
         prefix: str,
-        train_split: float, 
-        batch_size: int, 
-        num_workers: int=2,
-        random_state: int=42,
+        train_split: float,
+        batch_size: int,
+        num_workers: int = 2,
+        random_state: int = 42,
         tolerance: float = 0.05,
-        seq_len: int=10,
-        frame_increment: int=1,
-        frames_between_clips: int=1,
-        random_frame_offset: bool=False,
-        train_transforms: List[dict]=None, 
-        val_transforms: List[dict]=None, 
-        test_transforms: List[dict]=None,
-        load_images: bool=True
+        seq_len: int = 10,
+        frame_increment: int = 1,
+        frames_between_clips: int = 1,
+        random_frame_offset: bool = False,
+        train_transforms: List[dict] = None,
+        val_transforms: List[dict] = None,
+        test_transforms: List[dict] = None,
+        load_images: bool = True,
     ):
         super().__init__()
 
@@ -40,19 +40,23 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         unique_vid = self._train_df.vid.unique()
 
         train_vid, val_vid = train_test_split(
-            unique_vid,
-            train_size=train_split,
-            random_state=random_state
+            unique_vid, train_size=train_split, random_state=random_state
         )
 
-        self._val_df = self._train_df[self._train_df.vid.apply(lambda x: x in val_vid)].reset_index()
-        self._train_df = self._train_df[self._train_df.vid.apply(lambda x: x in train_vid)].reset_index()
+        self._val_df = self._train_df[
+            self._train_df.vid.apply(lambda x: x in val_vid)
+        ].reset_index()
+        self._train_df = self._train_df[
+            self._train_df.vid.apply(lambda x: x in train_vid)
+        ].reset_index()
 
         # assert if fraction off
-        fraction = len(self._val_df)/(len(self._train_df) + len(self._val_df))
+        fraction = len(self._val_df) / (len(self._train_df) + len(self._val_df))
         assert np.isclose(
             fraction, 1 - train_split, atol=tolerance
-        ), 'Train set fraction {:.3f} not close enough to (1 - train_split) {} at tolerance {}'.format(fraction, 1 - train_split, tolerance)
+        ), "Train set fraction {:.3f} not close enough to (1 - train_split) {} at tolerance {}".format(
+            fraction, 1 - train_split, tolerance
+        )
 
         self._prefix = prefix
         self._batch_size = batch_size
@@ -69,8 +73,8 @@ class ImageSequenceDataModule(pl.LightningDataModule):
 
         self._load_images = load_images
 
-    def setup(self, stage: str=None) -> None:
-        if stage == 'fit' or stage is None:
+    def setup(self, stage: str = None) -> None:
+        if stage == "fit" or stage is None:
             self._train_set = ImageSequenceDataset(
                 df=self._train_df,
                 prefix=self._prefix,
@@ -80,7 +84,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 random_frame_offset=self._random_frame_offset,
                 transforms=self._train_tranforms,
                 load_images=self._load_images,
-                seeds=False
+                seeds=False,
             )
             self._val_set = ImageSequenceDataset(
                 df=self._val_df,
@@ -91,9 +95,9 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 random_frame_offset=False,
                 transforms=self._val_transforms,
                 load_images=self._load_images,
-                seeds=True
+                seeds=True,
             )
-        if stage == 'test':
+        if stage == "test":
             self._test_set = ImageSequenceDataset(
                 df=self._test_df,
                 prefix=self._prefix,
@@ -101,41 +105,61 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
                 random_frame_offset=False,
-                transforms=self._test_transforms, 
+                transforms=self._test_transforms,
                 load_images=self._load_images,
-                seeds=True
+                seeds=True,
             )
 
     # def transfer_batch_to_device(self, batch, device, dataloader_idx):
     #     pass
 
     def train_dataloader(self) -> TRAIN_DATALOADERS:
-        return DataLoader(self._train_set, batch_size=self._batch_size, shuffle=True, num_workers=self._num_workers, drop_last=True, pin_memory=True)
+        return DataLoader(
+            self._train_set,
+            batch_size=self._batch_size,
+            shuffle=True,
+            num_workers=self._num_workers,
+            drop_last=True,
+            pin_memory=True,
+        )
 
     def val_dataloader(self) -> EVAL_DATALOADERS:
-        return DataLoader(self._val_set, batch_size=self._batch_size, num_workers=self._num_workers, drop_last=True, pin_memory=True)
+        return DataLoader(
+            self._val_set,
+            batch_size=self._batch_size,
+            num_workers=self._num_workers,
+            drop_last=True,
+            pin_memory=True,
+        )
 
     def test_dataloader(self) -> EVAL_DATALOADERS:
-        return DataLoader(self._test_set, batch_size=self._batch_size, num_workers=self._num_workers, drop_last=True, pin_memory=True)
+        return DataLoader(
+            self._test_set,
+            batch_size=self._batch_size,
+            num_workers=self._num_workers,
+            drop_last=True,
+            pin_memory=True,
+        )
 
 
 class ImageSequenceDuvDataModule(pl.LightningDataModule):
-    def __init__(self,
-        df: pd.DataFrame, 
+    def __init__(
+        self,
+        df: pd.DataFrame,
         prefix: str,
-        train_split: float, 
-        batch_size: int, 
-        num_workers: int=2,
-        random_state: int=42,
+        train_split: float,
+        batch_size: int,
+        num_workers: int = 2,
+        random_state: int = 42,
         tolerance: float = 0.05,
-        seq_len: int=10,
-        frame_increment: int=1,
-        frames_between_clips: int=1,
-        random_frame_offset: bool=False,
-        train_transforms: List[dict]=None, 
-        val_transforms: List[dict]=None, 
-        test_transforms: List[dict]=None,
-        load_images: bool=True
+        seq_len: int = 10,
+        frame_increment: int = 1,
+        frames_between_clips: int = 1,
+        random_frame_offset: bool = False,
+        train_transforms: List[dict] = None,
+        val_transforms: List[dict] = None,
+        test_transforms: List[dict] = None,
+        load_images: bool = True,
     ):
         super().__init__()
 
@@ -147,19 +171,23 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
         unique_vid = self._train_df.vid.unique()
 
         train_vid, val_vid = train_test_split(
-            unique_vid,
-            train_size=train_split,
-            random_state=random_state
+            unique_vid, train_size=train_split, random_state=random_state
         )
 
-        self._val_df = self._train_df[self._train_df.vid.apply(lambda x: x in val_vid)].reset_index()
-        self._train_df = self._train_df[self._train_df.vid.apply(lambda x: x in train_vid)].reset_index()
+        self._val_df = self._train_df[
+            self._train_df.vid.apply(lambda x: x in val_vid)
+        ].reset_index()
+        self._train_df = self._train_df[
+            self._train_df.vid.apply(lambda x: x in train_vid)
+        ].reset_index()
 
         # assert if fraction off
-        fraction = len(self._val_df)/(len(self._train_df) + len(self._val_df))
+        fraction = len(self._val_df) / (len(self._train_df) + len(self._val_df))
         assert np.isclose(
             fraction, 1 - train_split, atol=tolerance
-        ), 'Train set fraction {:.3f} not close enough to (1 - train_split) {} at tolerance {}'.format(fraction, 1 - train_split, tolerance)
+        ), "Train set fraction {:.3f} not close enough to (1 - train_split) {} at tolerance {}".format(
+            fraction, 1 - train_split, tolerance
+        )
 
         self._prefix = prefix
         self._batch_size = batch_size
@@ -176,8 +204,8 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
 
         self._load_images = load_images
 
-    def setup(self, stage: str=None) -> None:
-        if stage == 'fit':
+    def setup(self, stage: str = None) -> None:
+        if stage == "fit":
             self._train_set = ImageSequenceDuvDataset(
                 df=self._train_df,
                 prefix=self._prefix,
@@ -185,9 +213,9 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
                 random_frame_offset=self._random_frame_offset,
-                transforms=self._train_tranforms, 
+                transforms=self._train_tranforms,
                 load_images=self._load_images,
-                seeds=False
+                seeds=False,
             )
             self._val_set = ImageSequenceDuvDataset(
                 df=self._val_df,
@@ -198,9 +226,9 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
                 random_frame_offset=False,
                 transforms=self._val_transforms,
                 load_images=True,
-                seeds=True
+                seeds=True,
             )
-        if stage == 'test':
+        if stage == "test":
             self._test_set = ImageSequenceDuvDataset(
                 df=self._test_df,
                 prefix=self._prefix,
@@ -210,17 +238,36 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
                 random_frame_offset=False,
                 transforms=self._test_transforms,
                 load_images=True,
-                seeds=True
+                seeds=True,
             )
 
     def train_dataloader(self) -> TRAIN_DATALOADERS:
-        return DataLoader(self._train_set, batch_size=self._batch_size, shuffle=True, num_workers=self._num_workers, drop_last=True, pin_memory=True)
+        return DataLoader(
+            self._train_set,
+            batch_size=self._batch_size,
+            shuffle=True,
+            num_workers=self._num_workers,
+            drop_last=True,
+            pin_memory=True,
+        )
 
     def val_dataloader(self) -> EVAL_DATALOADERS:
-        return DataLoader(self._val_set, batch_size=self._batch_size, num_workers=self._num_workers, drop_last=True, pin_memory=True)
+        return DataLoader(
+            self._val_set,
+            batch_size=self._batch_size,
+            num_workers=self._num_workers,
+            drop_last=True,
+            pin_memory=True,
+        )
 
     def test_dataloader(self) -> EVAL_DATALOADERS:
-        return DataLoader(self._test_set, batch_size=self._batch_size, num_workers=self._num_workers, drop_last=True, pin_memory=True)
+        return DataLoader(
+            self._test_set,
+            batch_size=self._batch_size,
+            num_workers=self._num_workers,
+            drop_last=True,
+            pin_memory=True,
+        )
 
 
 if __name__ == "__main__":
@@ -228,8 +275,10 @@ if __name__ == "__main__":
     from kornia import tensor_to_image
 
     from utils.processing import unique_video_train_test
-        
-    df = pd.read_pickle("/media/martin/Samsung_T5/data/endoscopic_data/cholec80_frames/log.pkl")
+
+    df = pd.read_pickle(
+        "/media/martin/Samsung_T5/data/endoscopic_data/cholec80_frames/log.pkl"
+    )
     df = unique_video_train_test(df)
     prefix = "/media/martin/Samsung_T5/data/endoscopic_data/cholec80_frames"
 
@@ -242,5 +291,5 @@ if __name__ == "__main__":
         print(idcs)
         for frame in frames[0]:
             frame = tensor_to_image(frame, False)
-            cv2.imshow('frame', frame)
+            cv2.imshow("frame", frame)
             cv2.waitKey()

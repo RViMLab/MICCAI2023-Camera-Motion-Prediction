@@ -1,5 +1,3 @@
-
-
 # TODO
 class HomographyMotionBlur(object):
     def __init__(self):

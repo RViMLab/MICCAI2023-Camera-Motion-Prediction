@@ -1,11 +1,14 @@
-import numpy as np
 import importlib
-import imgaug
-from torchvision.transforms import Compose
 from typing import List
 
+import imgaug
+import numpy as np
+from torchvision.transforms import Compose
 
-def recursive_method_call_from_dict_list(x: object, transforms: List[dict]=None, module: object=None) -> object:
+
+def recursive_method_call_from_dict_list(
+    x: object, transforms: List[dict] = None, module: object = None
+) -> object:
     r"""Performs a recursive call on x.
 
     Args:
@@ -17,14 +20,16 @@ def recursive_method_call_from_dict_list(x: object, transforms: List[dict]=None,
         x (object): Forwarded object
     """
     if not module:
-        raise ValueError('Module has to be parsed')
+        raise ValueError("Module has to be parsed")
     for t in transforms:
-        (k, kwargs), = t.items()
+        ((k, kwargs),) = t.items()
         x = getattr(module, k)(x, **kwargs)
     return x
 
 
-def dict_list_to_compose(transforms: List[dict]=None, module: object=None) -> Compose:
+def dict_list_to_compose(
+    transforms: List[dict] = None, module: object = None
+) -> Compose:
     r"""Turns list of dictionaries into a Compose.
 
     Args:
@@ -38,16 +43,17 @@ def dict_list_to_compose(transforms: List[dict]=None, module: object=None) -> Co
         compose = dict_list_to_compose(transforms, utils.transforms)
     """
     if not module:
-        raise ValueError('Module has to be parsed')
+        raise ValueError("Module has to be parsed")
     if not transforms:
         return None
     compose = []
     for t in transforms:
-        (k, kwargs), = t.items()
+        ((k, kwargs),) = t.items()
         compose.append(getattr(module, k)(**kwargs))
     return Compose(compose)
 
-def any_dict_list_to_compose(transforms: List[dict]=None) -> Compose:
+
+def any_dict_list_to_compose(transforms: List[dict] = None) -> Compose:
     r"""Turns list of dictionaries into a Compose.
 
     Args:
@@ -60,15 +66,15 @@ def any_dict_list_to_compose(transforms: List[dict]=None) -> Compose:
     compose = []
     for t in transforms:
         try:
-            module = importlib.import_module(t['module'])
+            module = importlib.import_module(t["module"])
         except:
-            raise ValueError('Parsed module could not be found.')
-        compose.append(getattr(module, t['type'])(**t['kwargs']))
+            raise ValueError("Parsed module could not be found.")
+        compose.append(getattr(module, t["type"])(**t["kwargs"]))
     return Compose(compose)
 
 
-def dict_list_to_augment(transforms: List[dict]=None) -> np.array:
-    r"""Turns list of dictionaries into imgaug augment image, 
+def dict_list_to_augment(transforms: List[dict] = None) -> np.array:
+    r"""Turns list of dictionaries into imgaug augment image,
     which is a callable.
 
     Args:
@@ -83,6 +89,6 @@ def dict_list_to_augment(transforms: List[dict]=None) -> np.array:
         return None
     augs = imgaug.augmenters.Sequential()
     for t in transforms:
-        aug = getattr(eval(t['module']), t['type'])(**t['kwargs'])
-        augs.append(imgaug.augmenters.Sometimes(t['chance'], aug))
+        aug = getattr(eval(t["module"]), t["type"])(**t["kwargs"])
+        augs.append(imgaug.augmenters.Sometimes(t["chance"], aug))
     return augs.augment_image
