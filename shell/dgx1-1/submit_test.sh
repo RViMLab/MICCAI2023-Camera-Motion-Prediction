@@ -7,5 +7,5 @@ runai submit test \
   -v /nfs/home/mhuber/logs:/nfs/home/mhuber/logs \
   -v /nfs/home/mhuber/tresorit/homography_imitation_learning_logs:/nfs/home/mhuber/tresorit/homography_imitation_learning_logs \
   --large-shm \
-  --environment TORCH_MODEL_ZOO=/nfs/home/mhuber \
+  --environment TORCH_HOME=/nfs/home/mhuber \
   -- sleep infinity

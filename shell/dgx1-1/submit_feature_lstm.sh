@@ -1,4 +1,4 @@
-runai submit duv-feature-lstm \
+runai submit f-lstm-phantom-linear \
   -p mhuber \
   -i 10.202.67.207:5000/mhuber:torch110 \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
@@ -6,8 +6,6 @@ runai submit duv-feature-lstm \
   -v /nfs/home/mhuber/tresorit/homography_imitation_learning_logs:/nfs/home/mhuber/tresorit/homography_imitation_learning_logs \
   -v /nfs/home/mhuber/.torch:/nfs/home/mhuber/.torch \
   -g 1 \
-  --cpu 6 \
-  --node-type dgx1-3 \
   --environment TORCH_HOME=/nfs/home/mhuber/.torch \
   --large-shm \
   --working-dir /workspace/homography_imitation_learning/ \

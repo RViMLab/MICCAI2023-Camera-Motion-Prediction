@@ -6,5 +6,4 @@ conda activate torch110
 
 python /workspace/homography_imitation_learning/main_homography_imitation_seq.py \
   --server dgx1-1 \
-  --config config/feature_lstm.yml \
-  --backbone_path endoscopy_view/resnet/34/version_0
+  --config config/feature_lstm.yml
