@@ -1,5 +1,5 @@
 runai submit test \
-  -i 10.202.67.207:5000/mhuber:torch110 \
+  -i aicregistry:5000/mhuber:torch110 \
   -g 1 \
   --interactive \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
