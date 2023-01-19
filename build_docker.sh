@@ -1,5 +1,5 @@
 #!/bin/bash
-docker_tag=10.202.67.207:5000/$USER:torch110
+docker_tag=aicregistry:5000/$USER:torch110
 
 docker build . -f Dockerfile \
   --tag $docker_tag \
