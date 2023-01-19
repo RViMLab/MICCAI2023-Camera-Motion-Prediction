@@ -75,24 +75,18 @@ def differentiate_duv(duv: torch.Tensor, batch_first: bool = True) -> torch.Tens
 
 def image_edges(img: torch.Tensor) -> torch.Tensor:
     r"""Returns edges of image (uv) in OpenCV convention.
-
     Args:
-        img (torch.Tensor): Image of shape BxCxHxW
-
-    Return:
-        uv (torch.Tensor): Image edges of shape Bx4x2
+        img (torch.Tensor): Image of shape ...xCxHxW
+    Returns:
+        uv (torch.Tensor): Image edges of shape ...x4x2
     """
-    if len(img.shape) != 4:
-        raise ValueError(
-            "Expected 4 dimensional input, got {} dimensions.".format(len(img.shape))
-        )
     shape = img.shape[-2:]
     uv = torch.tensor(
         [[0, 0], [0, shape[1]], [shape[0], shape[1]], [shape[0], 0]],
         device=img.device,
         dtype=torch.float32,
     )
-    return uv.unsqueeze(0).repeat(img.shape[0], 1, 1)
+    return uv.unsqueeze(0).repeat(img.shape[:-3] + (1, 1))
 
 
 def frame_pairs(
