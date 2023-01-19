@@ -1,6 +1,6 @@
 import importlib
 import os
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 import pytorch_lightning as pl
 import torch
@@ -415,8 +415,12 @@ class FeatureLSTMModule(pl.LightningModule):
         raise RuntimeError("Currently not supported.")
 
     def forward(
-        self, imgs_ip1: torch.Tensor, duvs_i: torch.Tensor, dduvs_im1: torch.Tensor
-    ) -> torch.Tensor:
+        self,
+        imgs_ip1: torch.Tensor,
+        duvs_i: torch.Tensor,
+        dduvs_im1: torch.Tensor,
+        hx: Tuple[torch.Tensor, torch.Tensor] = None,
+    ) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         # for indices, see https://drive.google.com/file/d/1T1HV01G0bzM_xAavhefhGgsOHGRQmCGw/view?usp=share_link
         B, T, C, H, W = imgs_ip1.shape
 
@@ -432,14 +436,14 @@ class FeatureLSTMModule(pl.LightningModule):
 
         # lstm and head
         f_ip1 = torch.concat([f_ip1, dduvs_im1], axis=-1)
-        dduvs_i, (hn, cn) = self._lstm(f_ip1)
+        dduvs_i, hx = self._lstm(f_ip1, hx)
         dduvs_i = self._head(dduvs_i)
 
         dduvs_i = dduvs_i.view(T, B, 4, 2)  # TxBx8 -> TxBx4x2
         dduvs_i = dduvs_i.permute(1, 0, 2, 3)  # TxBx4x2 -> BxTx4x2
         duvs_ip1 = duvs_i + dduvs_i
 
-        return duvs_ip1
+        return duvs_ip1, hx
 
     def configure_optimizers(self) -> Any:
         return self._optimizer
@@ -456,7 +460,7 @@ class FeatureLSTMModule(pl.LightningModule):
 
         # forward model
         dduvs_reg = differentiate_duv(duvs_reg, True)  # Bx(T-1)x4x2
-        duvs_ip1 = self(tf_imgs[:, 2:], duvs_reg[:, 1:-1], dduvs_reg[:, :-1])
+        duvs_ip1, _ = self(tf_imgs[:, 2:], duvs_reg[:, 1:-1], dduvs_reg[:, :-1])
 
         # compute loss
         loss = self._loss(
@@ -489,7 +493,7 @@ class FeatureLSTMModule(pl.LightningModule):
 
         # forward model
         dduvs_reg = differentiate_duv(duvs_reg, True)  # Bx(T-1)x4x2
-        duvs_ip1 = self(tf_imgs[:, 2:], duvs_reg[:, 1:-1], dduvs_reg[:, :-1])
+        duvs_ip1, _ = self(tf_imgs[:, 2:], duvs_reg[:, 1:-1], dduvs_reg[:, :-1])
 
         # compute loss
         loss = self._loss(
