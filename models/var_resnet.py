@@ -7,8 +7,8 @@ class VarResNet(torch.nn.Module):
         self,
         in_channels: int,
         out_features: int,
-        name: str="resnet18",
-        pretrained: bool=False
+        name: str = "resnet18",
+        pretrained: bool = False,
     ) -> None:
         r"""Creates a ResNet from torchvision.models with
         variable input and output features.
@@ -20,21 +20,18 @@ class VarResNet(torch.nn.Module):
             pretrained (bool): Whether to load pre-trained
         """
         super().__init__()
-        self._model = getattr(torchvision.models, name)(
-            pretrained=pretrained
-        )
+        self._model = getattr(torchvision.models, name)(pretrained=pretrained)
 
         self._model.conv1 = torch.nn.Conv2d(
             in_channels=in_channels,
             out_channels=self._model.conv1.out_channels,
             kernel_size=self._model.conv1.kernel_size,
             stride=self._model.conv1.stride,
-            padding=self._model.conv1.padding
+            padding=self._model.conv1.padding,
         )
 
         self._model.fc = torch.nn.Linear(
-            in_features=self._model.fc.in_features,
-            out_features=out_features
+            in_features=self._model.fc.in_features, out_features=out_features
         )
 
     def forward(self, x):

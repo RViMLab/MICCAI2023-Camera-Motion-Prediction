@@ -1,10 +1,11 @@
+from typing import Callable, List, Union
+
 import cv2
 import numpy as np
 import torch
-from typing import List, Callable, Union
 
 
-class ConsecutiveSequences():
+class ConsecutiveSequences:
     r"""Iterator over consecutive video sequences.
 
     Args:
@@ -16,7 +17,17 @@ class ConsecutiveSequences():
         transforms (list of callables): Transforming videos
         verbose (bool): Return verbose output if true
     """
-    def __init__(self, paths: List[str], stride: int=1, max_seq: int=None, seq_len: int=1, seq_stride: int=None, transforms: Callable=None, verbose: bool=False) -> None:
+
+    def __init__(
+        self,
+        paths: List[str],
+        stride: int = 1,
+        max_seq: int = None,
+        seq_len: int = 1,
+        seq_stride: int = None,
+        transforms: Callable = None,
+        verbose: bool = False,
+    ) -> None:
         self._video_captures = []
         self._seq = 0
         self._max_seq = max_seq
@@ -59,9 +70,16 @@ class ConsecutiveSequences():
         """
         if self._vid_idx < len(self._video_captures):
             if self._transforms:
-                imgs = self._sample(self._video_captures[self._vid_idx], self._frame_idx, self._stride, self._transforms[self._vid_idx])
+                imgs = self._sample(
+                    self._video_captures[self._vid_idx],
+                    self._frame_idx,
+                    self._stride,
+                    self._transforms[self._vid_idx],
+                )
             else:
-                imgs = self._sample(self._video_captures[self._vid_idx], self._frame_idx, self._stride)
+                imgs = self._sample(
+                    self._video_captures[self._vid_idx], self._frame_idx, self._stride
+                )
 
             vid_idx = self._vid_idx
             frame_idx = self._frame_idx
@@ -73,7 +91,10 @@ class ConsecutiveSequences():
                     raise StopIteration
                 self._seq += 1
             self._frame_idx += self._seq_stride
-            if self._frame_counts[self._vid_idx] - self._stride*self._seq_len < self._frame_idx:
+            if (
+                self._frame_counts[self._vid_idx] - self._stride * self._seq_len
+                < self._frame_idx
+            ):
                 self._video_captures[self._vid_idx].release()
                 self._frame_idx = 0
                 self._vid_idx += 1
@@ -91,7 +112,13 @@ class ConsecutiveSequences():
         else:
             return self._max_seq
 
-    def _sample(self, capture: cv2.VideoCapture, frame: int, stride: int, transforms: Callable=None) -> Union[np.ndarray, torch.Tensor]:
+    def _sample(
+        self,
+        capture: cv2.VideoCapture,
+        frame: int,
+        stride: int,
+        transforms: Callable = None,
+    ) -> Union[np.ndarray, torch.Tensor]:
         r"""Return a sequence of images from a videos capture.
 
         Args:
@@ -105,7 +132,9 @@ class ConsecutiveSequences():
         """
         imgs = []
         for i in range(self._seq_len):
-            capture.set(1, frame+i*stride) # https://stackoverflow.com/questions/33650974/opencv-python-read-specific-frame-using-videocapture
+            capture.set(
+                1, frame + i * stride
+            )  # https://stackoverflow.com/questions/33650974/opencv-python-read-specific-frame-using-videocapture
             _, img = capture.read()
             if transforms:
                 img = transforms(img)
@@ -113,22 +142,38 @@ class ConsecutiveSequences():
         return np.array(imgs)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
+
     import cv2
     from tqdm import tqdm
 
     from utils.transforms import Resize
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--paths', type=str, nargs='+', required=True, help='Set list of paths to videos.')
-    parser.add_argument('-m', '--max_seq', type=int, default=None, help='Set number of frames to return.')
+    parser.add_argument(
+        "-p",
+        "--paths",
+        type=str,
+        nargs="+",
+        required=True,
+        help="Set list of paths to videos.",
+    )
+    parser.add_argument(
+        "-m",
+        "--max_seq",
+        type=int,
+        default=None,
+        help="Set number of frames to return.",
+    )
     args = parser.parse_args()
 
-    consecutive_seq = ConsecutiveSequences(paths=args.paths, max_seq=args.max_seq, seq_stride=2000, seq_len=1, stride=1)
+    consecutive_seq = ConsecutiveSequences(
+        paths=args.paths, max_seq=args.max_seq, seq_stride=2000, seq_len=1, stride=1
+    )
 
     for cs in tqdm(consecutive_seq):
 
         for i in range(cs.shape[0]):
-            cv2.imshow('random_frame', cs[i])
+            cv2.imshow("random_frame", cs[i])
             cv2.waitKey()

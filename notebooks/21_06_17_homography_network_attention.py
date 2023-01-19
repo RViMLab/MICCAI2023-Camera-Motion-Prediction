@@ -4,7 +4,7 @@ from dotmap import DotMap
 
 from utils.io import load_yaml
 from utils.io import load_pickle, save_pickle
-from utils.transforms import anyDictListToCompose
+from utils.transforms import any_dict_list_to_compose
 from lightning_data_modules import VideoDataModule
 
 server = 'local'

@@ -1,11 +1,12 @@
 import os
-import imgaug
 import random
+from typing import Callable, List
+
+import imgaug
 import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
-from typing import Callable, List
 
 
 class ImageSequenceDataset(Dataset):
@@ -28,18 +29,20 @@ class ImageSequenceDataset(Dataset):
         idcs (List[int]): Frame indices
         vid_idx (int): Video index
     """
-    def __init__(self,
+
+    def __init__(
+        self,
         df: pd.DataFrame,
         prefix: str,
-        seq_len: int=1,
-        frame_increment: int=5,
-        frames_between_clips: int=1,
-        transforms: List[Callable]=None,
-        random_frame_offset: bool=False,
-        load_images: bool=True,
-        seeds: bool=False
+        seq_len: int = 1,
+        frame_increment: int = 5,
+        frames_between_clips: int = 1,
+        transforms: List[Callable] = None,
+        random_frame_offset: bool = False,
+        load_images: bool = True,
+        seeds: bool = False,
     ):
-        self._df = df.sort_values(['vid', 'frame']).reset_index(drop=True)
+        self._df = df.sort_values(["vid", "frame"]).reset_index(drop=True)
         self._prefix = prefix
         self._seq_len = seq_len
         self._frame_increment = frame_increment
@@ -49,17 +52,18 @@ class ImageSequenceDataset(Dataset):
         self._load_images = load_images
         self._seeds = seeds
         self._valid_idcs = self._filterFeasibleSequenceIndices(
-            self._df, col='vid',
+            self._df,
+            col="vid",
             seq_len=self._seq_len,
             frame_increment=self._frame_increment,
-            frames_between_clips=self._frames_between_clips
+            frames_between_clips=self._frames_between_clips,
         )
         self._sample_idcs = self._valid_idcs
 
     @property
     def seq_len(self):
         return self._seq_len
-    
+
     @seq_len.setter
     def seq_len(self, seq_len: int):
         self._seq_len = seq_len
@@ -69,6 +73,7 @@ class ImageSequenceDataset(Dataset):
         return self._frame_increment
 
     frame_increment.setter
+
     def frame_increment(self, frame_increment: int):
         self.frame_increment = frame_increment
 
@@ -93,13 +98,15 @@ class ImageSequenceDataset(Dataset):
         if self._seeds:
             seed = idx
         else:
-            seed = random.randint(0, np.iinfo(np.int32).max)  # set random seed for numpy
+            seed = random.randint(
+                0, np.iinfo(np.int32).max
+            )  # set random seed for numpy
 
         img_seq = []
         img_seq_transformed = []
 
         random.seed(seed)
-        idcs = self._sample_idcs[idx] + np.arange(self._seq_len)*self._frame_increment
+        idcs = self._sample_idcs[idx] + np.arange(self._seq_len) * self._frame_increment
         if self._random_frame_offset:
             idcs = idcs + random.randint(0, self._frame_increment - 1)
         random.seed(None)
@@ -119,9 +126,11 @@ class ImageSequenceDataset(Dataset):
                 img_seq_transformed.append(img)
 
         if self._load_images:
-            img_seq = np.stack(img_seq).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
+            img_seq = np.stack(img_seq).transpose(0, 3, 1, 2)  # NxHxWxC -> NxCxHxW
             img_seq = torch.from_numpy(img_seq)
-        img_seq_transformed = np.stack(img_seq_transformed).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
+        img_seq_transformed = np.stack(img_seq_transformed).transpose(
+            0, 3, 1, 2
+        )  # NxHxWxC -> NxCxHxW
         img_seq_transformed = torch.from_numpy(img_seq_transformed)
 
         if self._load_images:
@@ -131,22 +140,33 @@ class ImageSequenceDataset(Dataset):
     def __len__(self):
         return len(self._sample_idcs)
 
-    def _filterFeasibleSequenceIndices(self, 
+    def _filterFeasibleSequenceIndices(
+        self,
         df: pd.DataFrame,
-        col: str='vid',
-        seq_len: int=2,
-        frame_increment: int=1,
-        frames_between_clips: int=1
+        col: str = "vid",
+        seq_len: int = 2,
+        frame_increment: int = 1,
+        frames_between_clips: int = 1,
     ) -> pd.Index:
         grouped_df = df.groupby(col)
         if self._random_frame_offset:
             return grouped_df.apply(
-                lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment - (frame_increment-1):frames_between_clips]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)], minus (frame_increment-1) for random offset
-            ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
+                lambda x: x.iloc[
+                    : len(x)
+                    - (seq_len - 1) * frame_increment
+                    - (frame_increment - 1) : frames_between_clips
+                ]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)], minus (frame_increment-1) for random offset
+            ).index.get_level_values(
+                1
+            )  # return 2nd values of pd.MultiIndex
         else:
             return grouped_df.apply(
-                lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment:frames_between_clips]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)]
-            ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
+                lambda x: x.iloc[
+                    : len(x) - (seq_len - 1) * frame_increment : frames_between_clips
+                ]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)]
+            ).index.get_level_values(
+                1
+            )  # return 2nd values of pd.MultiIndex
 
 
 class ImageSequenceDuvDataset(Dataset):
@@ -169,18 +189,20 @@ class ImageSequenceDuvDataset(Dataset):
         idcs (List[int]): Frame indices
         vid_idx (int): Video index
     """
-    def __init__(self,
+
+    def __init__(
+        self,
         df: pd.DataFrame,
         prefix: str,
-        seq_len: int=1,
-        frame_increment: int=5,
-        frames_between_clips: int=1,
-        random_frame_offset: bool=False,
-        transforms: List[Callable]=None, 
-        load_images: bool=True,
-        seeds: bool=False
+        seq_len: int = 1,
+        frame_increment: int = 5,
+        frames_between_clips: int = 1,
+        random_frame_offset: bool = False,
+        transforms: List[Callable] = None,
+        load_images: bool = True,
+        seeds: bool = False,
     ):
-        self._df = df.sort_values(['vid', 'frame']).reset_index(drop=True)
+        self._df = df.sort_values(["vid", "frame"]).reset_index(drop=True)
         self._prefix = prefix
         self._seq_len = seq_len
         self._frame_increment = frame_increment
@@ -190,17 +212,18 @@ class ImageSequenceDuvDataset(Dataset):
         self._load_images = load_images
         self._seeds = seeds
         self._valid_idcs = self._filterFeasibleSequenceIndices(
-            self._df, col='vid',
+            self._df,
+            col="vid",
             seq_len=self._seq_len,
             frame_increment=self._frame_increment,
-            frames_between_clips=self._frames_between_clips
+            frames_between_clips=self._frames_between_clips,
         )
         self._sample_idcs = self._valid_idcs
 
     @property
     def seq_len(self):
         return self._seq_len
-    
+
     @seq_len.setter
     def seq_len(self, seq_len: int):
         self._seq_len = seq_len
@@ -226,6 +249,7 @@ class ImageSequenceDuvDataset(Dataset):
         self._sample_idcs = sample_idcs
 
     frame_increment.setter
+
     def frame_increment(self, frame_increment: int):
         self.frame_increment = frame_increment
 
@@ -234,13 +258,15 @@ class ImageSequenceDuvDataset(Dataset):
         if self._seeds:
             seed = idx
         else:
-            seed = random.randint(0, np.iinfo(np.int32).max)  # set random seed for numpy
+            seed = random.randint(
+                0, np.iinfo(np.int32).max
+            )  # set random seed for numpy
 
         img_seq = []
         duv_seq = []
 
         random.seed(seed)
-        idcs = self._sample_idcs[idx] + np.arange(self._seq_len)*self._frame_increment
+        idcs = self._sample_idcs[idx] + np.arange(self._seq_len) * self._frame_increment
         if self._random_frame_offset:
             idcs = idcs + random.randint(0, self._frame_increment - 1)
         random.seed(None)
@@ -260,7 +286,7 @@ class ImageSequenceDuvDataset(Dataset):
             duv_seq.append(np.array(row.duv))
 
         if self._load_images:
-            img_seq = np.stack(img_seq).transpose(0,3,1,2)  # NxHxWxC -> NxCxHxW
+            img_seq = np.stack(img_seq).transpose(0, 3, 1, 2)  # NxHxWxC -> NxCxHxW
             img_seq = torch.from_numpy(img_seq)
         duv_seq = torch.from_numpy(np.stack(duv_seq))
 
@@ -271,23 +297,33 @@ class ImageSequenceDuvDataset(Dataset):
     def __len__(self):
         return len(self._sample_idcs)
 
-    def _filterFeasibleSequenceIndices(self, 
+    def _filterFeasibleSequenceIndices(
+        self,
         df: pd.DataFrame,
-        col: str='vid',
-        seq_len: int=2,
-        frame_increment: int=1,
-        frames_between_clips: int=1
+        col: str = "vid",
+        seq_len: int = 2,
+        frame_increment: int = 1,
+        frames_between_clips: int = 1,
     ) -> pd.Index:
         grouped_df = df.groupby(col)
         if self._random_frame_offset:
             return grouped_df.apply(
-                lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment - (frame_increment-1):frames_between_clips]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)], minus (frame_increment-1) for random offset
-            ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
+                lambda x: x.iloc[
+                    : len(x)
+                    - (seq_len - 1) * frame_increment
+                    - (frame_increment - 1) : frames_between_clips
+                ]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)], minus (frame_increment-1) for random offset
+            ).index.get_level_values(
+                1
+            )  # return 2nd values of pd.MultiIndex
         else:
             return grouped_df.apply(
-                lambda x: x.iloc[:len(x) - (seq_len - 1)*frame_increment:frames_between_clips]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)]
-            ).index.get_level_values(1)  # return 2nd values of pd.MultiIndex
-
+                lambda x: x.iloc[
+                    : len(x) - (seq_len - 1) * frame_increment : frames_between_clips
+                ]  # get indices [0, length - (seq_len - 1) - (frame_increment-1)]
+            ).index.get_level_values(
+                1
+            )  # return 2nd values of pd.MultiIndex
 
 
 class ImageSequenceDatasetSequenceDf(Dataset):
@@ -300,21 +336,22 @@ class ImageSequenceDatasetSequenceDf(Dataset):
 
     Returns:
         img_seq (list of Torch.tensor): Sequence of images of shape CxHxW
-    
+
     Note:
         Legacy code.
     """
-    def __init__(self, df: pd.DataFrame, prefix: str, transforms: Callable=None):
+
+    def __init__(self, df: pd.DataFrame, prefix: str, transforms: Callable = None):
         self._df = df
         self._prefix = prefix
         self._transforms = transforms
 
     def __getitem__(self, idx):
-        file_seq = self._df['file_seq'][idx]
+        file_seq = self._df["file_seq"][idx]
         img_seq = []
 
         for file in file_seq:
-            img = np.load(os.path.join(self._prefix, self._df['path'][idx], file))
+            img = np.load(os.path.join(self._prefix, self._df["path"][idx], file))
             if self._transforms:
                 img = self._transforms(img)
             img_seq.append(img)
@@ -325,28 +362,36 @@ class ImageSequenceDatasetSequenceDf(Dataset):
         return len(self._df)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+
     def test_images():
         import sys
+
         sys.path.append(".")
         import os
+
+        import cv2
         import numpy as np
         import pandas as pd
         from dotmap import DotMap
-        import cv2
 
         from utils.io import load_yaml
 
-        server = 'local'
-        server = DotMap(load_yaml('config/servers.yml')[server])
-        prefix = os.path.join(server.database.location, 'camera_motion_separated_npy/without_camera_motion')
-        pkl_name = 'light_log_without_camera_motion.pkl'
+        server = "local"
+        server = DotMap(load_yaml("config/servers.yml")[server])
+        prefix = os.path.join(
+            server.database.location,
+            "camera_motion_separated_npy/without_camera_motion",
+        )
+        pkl_name = "light_log_without_camera_motion.pkl"
         df = pd.read_pickle(os.path.join(prefix, pkl_name))
         seq_len = 10
 
-        col = 'vid'
+        col = "vid"
         grouped_df = df.groupby(col)
-        idcs = grouped_df.apply(lambda x: x.iloc[:len(x) - (seq_len - 1)]).index.get_level_values(1)
+        idcs = grouped_df.apply(
+            lambda x: x.iloc[: len(x) - (seq_len - 1)]
+        ).index.get_level_values(1)
         print(len(idcs))
 
         dummy_idx = 0
@@ -369,26 +414,27 @@ if __name__ == '__main__':
         for _, row in file_seq.iterrows():
             img = np.load(os.path.join(prefix, row.folder, row.file))
             img_seq.append(img)
-            cv2.imshow('img', img)
+            cv2.imshow("img", img)
             cv2.waitKey()
 
-        img_seq = np.stack(img_seq).transpose(0,3,1,2)
+        img_seq = np.stack(img_seq).transpose(0, 3, 1, 2)
         img_seq = torch.from_numpy(img_seq)
 
     def test_image_sequence_dataset():
         import sys
+
         sys.path.append(".")
-        from dotmap import DotMap
         import cv2
         import pandas as pd
+        from dotmap import DotMap
         from kornia import tensor_to_image
 
         from utils.io import load_yaml
 
-        server = 'local'
-        server = DotMap(load_yaml('config/servers.yml')[server])
-        prefix = os.path.join(server.database.location, 'cholec80_frames')
-        csv_name = 'log.csv'
+        server = "local"
+        server = DotMap(load_yaml("config/servers.yml")[server])
+        prefix = os.path.join(server.database.location, "cholec80_frames")
+        csv_name = "log.csv"
         df = pd.read_csv(os.path.join(prefix, csv_name))
 
         seq_len = 10
@@ -399,7 +445,7 @@ if __name__ == '__main__':
             prefix=prefix,
             seq_len=seq_len,
             frame_increment=frame_increment,
-            frames_between_clips=frame_increment*seq_len
+            frames_between_clips=frame_increment * seq_len,
         )
 
         for vid in ds:
@@ -409,4 +455,5 @@ if __name__ == '__main__':
                 cv2.imshow("img", img)
                 cv2.waitKey()
         cv2.destroyAllWindows()
+
     test_image_sequence_dataset()
