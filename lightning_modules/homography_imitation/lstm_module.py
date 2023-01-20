@@ -589,6 +589,10 @@ class FeatureLSTMModule(pl.LightningModule):
             **loss["kwargs"]
         )
 
+        self._sign = 1.
+        if isinstance(self._loss, torch.nn.CosineSimilarity):
+            self._sign = -1.
+
         self._val_logged = False
         self._frame_stride = frame_stride
 
@@ -640,7 +644,7 @@ class FeatureLSTMModule(pl.LightningModule):
         duvs, _ = self(tf_imgs)
 
         # compute loss
-        loss = self._loss(
+        loss = self._sign*self._loss(
             duvs.reshape(-1, 2),
             duvs_reg.reshape(-1, 2),
         )
@@ -670,7 +674,7 @@ class FeatureLSTMModule(pl.LightningModule):
         duvs, _ = self(tf_imgs)
 
         # compute loss
-        loss = self._loss(
+        loss = self._sign*self._loss(
             duvs.reshape(-1, 2),
             duvs_reg.reshape(-1, 2),
         )
@@ -704,7 +708,7 @@ class FeatureLSTMModule(pl.LightningModule):
         duvs_taylor = self._taylor(duvs_reg.cpu())
 
         # compute loss
-        loss_taylor = self._loss(
+        loss_taylor = self._sign*self._loss(
             duvs_taylor.reshape(
                 -1, 2
             ),  # we don't have ground truth for the last value in the sequence
