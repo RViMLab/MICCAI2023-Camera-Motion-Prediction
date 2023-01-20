@@ -45,7 +45,7 @@ model:
         name: "VarResNet",
         kwargs: {
             "in_channels": 3,
-            "out_features": 128,
+            "out_features": 1024,
             "name": "resnet34",
             "pretrained": True
         }
@@ -54,8 +54,8 @@ model:
         module: "torch.nn",
         name: "LSTM",
         kwargs: {
-            "input_size": 128,
-            "hidden_size": 128
+            "input_size": 1024,
+            "hidden_size": 1024
         }
     }
     head: [
@@ -63,7 +63,7 @@ model:
             module: "torch.nn",
             name: "Linear",
             kwargs: {
-                "in_features": 128,
+                "in_features": 1024,
                 "out_features": 8
             }
         }
