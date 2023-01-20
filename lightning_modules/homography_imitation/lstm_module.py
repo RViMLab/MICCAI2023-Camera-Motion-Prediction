@@ -551,3 +551,173 @@ class FeatureLSTMIncrementalModule(pl.LightningModule):
 
     def test_step(self, batch, batch_idx) -> Optional[STEP_OUTPUT]:
         pass
+
+
+class FeatureLSTMModule(pl.LightningModule):
+    def __init__(
+        self,
+        encoder: dict,
+        lstm: dict,
+        head: List[dict],
+        optimizer: dict,
+        loss: dict,
+        frame_stride: int = 1,
+    ) -> None:
+        super().__init__()
+        self._encoder = getattr(
+            importlib.import_module(encoder["module"]), encoder["name"]
+        )(**encoder["kwargs"])
+
+        self._lstm = getattr(importlib.import_module(lstm["module"]), lstm["name"])(
+            **lstm["kwargs"]
+        )
+
+        modules = []
+        for module in head:
+            modules.append(
+                getattr(importlib.import_module(module["module"]), module["name"])(
+                    **module["kwargs"]
+                )
+            )
+        self._head = torch.nn.Sequential(*modules)
+
+        self._optimizer = getattr(
+            importlib.import_module(optimizer["module"]), optimizer["name"]
+        )(params=self.parameters(), **optimizer["kwargs"])
+
+        self._loss = getattr(importlib.import_module(loss["module"]), loss["name"])(
+            **loss["kwargs"]
+        )
+
+        self._val_logged = False
+        self._frame_stride = frame_stride
+
+        self._taylor = TaylorHomographyPrediction(
+            order=1
+        )  # comparing against simple linear model
+
+    def inject_homography_regression(
+        self, homography_regression: dict, homography_regression_prefix: str
+    ):
+        raise RuntimeError("Currently not supported.")
+
+    def forward(
+        self,
+        imgs: torch.Tensor,
+        hx: Tuple[torch.Tensor, torch.Tensor] = None,
+    ) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+        B, T, C, H, W = imgs.shape
+
+        # forward videos into latent space
+        imgs = imgs.reshape(-1, C, H, W)  # BxTxCxHxW -> B*TxCxHxW
+        f = self._encoder(imgs)
+        f = f.view(B, T, -1)  # B*TxF -> BxTxF, where F = features
+        f = f.permute(1, 0, 2)  # BxTxF -> TxBxF
+
+        # lstm and head
+        duvs, hx = self._lstm(f, hx)
+        duvs = self._head(duvs)
+
+        duvs = duvs.view(T, B, 4, 2)  # TxBx8 -> TxBx4x2
+        duvs = duvs.permute(1, 0, 2, 3)  # TxBx4x2 -> BxTx4x2
+
+        return duvs, hx
+
+    def configure_optimizers(self) -> Any:
+        return self._optimizer
+
+    def training_step(self, batch, batch_idx) -> STEP_OUTPUT:
+        (
+            tf_imgs,
+            duvs_reg,
+            frame_idcs,
+            vid_idcs,
+        ) = batch  # transformed images and four point homography
+        tf_imgs = tf_imgs.float() / 255.0
+        duvs_reg = duvs_reg.float()
+
+        # forward model
+        duvs, _ = self(tf_imgs)
+
+        # compute loss
+        loss = self._loss(
+            duvs.reshape(-1, 2),
+            duvs_reg.reshape(-1, 2),
+        )
+
+        self.log("train/loss", loss.mean())
+
+        return {
+            "loss": loss.mean(),
+            "per_sequence_loss": loss.detach()
+            .view(duvs.shape[0], -1)
+            .mean(axis=-1)
+            .cpu()
+            .numpy(),
+        }
+
+    def validation_step(self, batch, batch_idx) -> Optional[STEP_OUTPUT]:
+        (
+            tf_imgs,
+            duvs_reg,
+            frame_idcs,
+            vid_idcs,
+        ) = batch  # transformed images and four point homography
+        tf_imgs = tf_imgs.float() / 255.0
+        duvs_reg = duvs_reg.float()
+
+        # forward model
+        duvs, _ = self(tf_imgs)
+
+        # compute loss
+        loss = self._loss(
+            duvs.reshape(-1, 2),
+            duvs_reg.reshape(-1, 2),
+        )
+
+        self.log("val/loss", loss.mean())
+
+        if not self._val_logged:
+            self._val_logged = True
+            frames_i, frames_ips = frame_pairs(
+                tf_imgs, self._frame_stride
+            )  # re-sort images
+
+            # visualize sequence N in zeroth batch
+            blends = create_blend_from_four_point_homography(
+                frames_i[0], frames_ips[0], duvs_reg[0, :-1]
+            )
+
+            self.logger.experiment.add_images("val/blend", blends, self.global_step)
+
+            uv = image_edges(frames_i[0, 0].unsqueeze(0))
+            uv_reg = integrate_duv(uv, duvs_reg[0])  # batch 0
+            uv_pred = integrate_duv(uv, duvs[0])  # batch 0
+            uv_traj_fig = uv_trajectory_figure(
+                uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy()
+            )
+            self.logger.experiment.add_figure(
+                "val/uv_traj_fig", uv_traj_fig, self.global_step
+            )
+
+        # classical estimation
+        duvs_taylor = self._taylor(duvs_reg.cpu())
+
+        # compute loss
+        loss_taylor = self._loss(
+            duvs_taylor.reshape(
+                -1, 2
+            ),  # we don't have ground truth for the last value in the sequence
+            duvs_reg[:, self._taylor._order :]
+            .cpu()
+            .reshape(-1, 2),  # note that the first two values are skipped
+        )
+        self.log("val/loss_taylor", loss_taylor.mean())
+        self.log("val/taylor_loss_minus_loss", loss_taylor.mean() - loss.mean())
+
+    def on_validation_epoch_end(self) -> None:
+        self._val_logged = False
+        return super().on_validation_epoch_end()
+
+    def test_step(self, batch, batch_idx) -> Optional[STEP_OUTPUT]:
+        pass

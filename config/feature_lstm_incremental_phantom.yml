@@ -1,5 +1,5 @@
-experiment: 'test/miccai/feature_lstm/phantom/resnet34'
-lightning_module: 'FeatureLSTMModule'
+experiment: 'miccai/feature_lstm/phantom/resnet34'
+lightning_module: 'FeatureLSTMIncrementalModule'
 lightning_data_module: 'ImageSequenceDuvDataModule'
 model_checkpoint: 
     monitor: 'val/loss'
@@ -19,8 +19,8 @@ data:
     pkl_name: 'pre_processed_10th_frame_log_test_train_no_nan.pkl'
     pkl_path: '21_11_25_first_test_data_frames'
     train_split: 0.8
-    batch_size: 1
-    num_workers: 0
+    batch_size: 4
+    num_workers: 4
     random_state: 42
     tolerance: 0.2 # change this tolerance
     seq_len: 20
@@ -45,7 +45,7 @@ model:
         name: "VarResNet",
         kwargs: {
             "in_channels": 3,
-            "out_features": 128,
+            "out_features": 32,
             "name": "resnet34",
             "pretrained": True
         }
@@ -54,8 +54,8 @@ model:
         module: "torch.nn",
         name: "LSTM",
         kwargs: {
-            "input_size": 128,
-            "hidden_size": 128
+            "input_size": 40, # out_features + 8
+            "hidden_size": 64
         }
     }
     head: [
@@ -63,7 +63,7 @@ model:
             module: "torch.nn",
             name: "Linear",
             kwargs: {
-                "in_features": 128,
+                "in_features": 64,
                 "out_features": 8
             }
         }
