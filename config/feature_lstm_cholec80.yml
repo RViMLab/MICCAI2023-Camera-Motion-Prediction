@@ -1,4 +1,4 @@
-experiment: 'miccai/feature_lstm/phantom/resnet34/frame_increment_1/transforms'
+experiment: 'miccai/feature_lstm/cholec80/resnet34'
 lightning_module: 'FeatureLSTMModule'
 lightning_data_module: 'ImageSequenceDuvDataModule'
 model_checkpoint: 
@@ -8,7 +8,7 @@ trainer:
     accelerator: 'gpu'
     devices: 1
     max_epochs: 50
-    log_every_n_steps: 1
+    log_every_n_steps: 2
     limit_train_batches: 1.0
     limit_val_batches: 1.0
     limit_test_batches: 1.0
@@ -16,16 +16,16 @@ trainer:
     profiler: False
     reload_dataloaders_every_n_epochs: 1
 data:
-    pkl_name: 'pre_processed_10th_frame_log_test_train_no_nan.pkl'
-    pkl_path: '21_11_25_first_test_data_frames'
+    pkl_name: '22_11_09_deep_pre_processed_frame_increment_5_frames_between_clips_5_log_test_train_no_nan.pkl'
+    pkl_path: 'cholec80_single_video_frames_cropped'
     train_split: 0.8
     batch_size: 16
-    num_workers: 4
+    num_workers: 8
     random_state: 42
     tolerance: 0.2 # change this tolerance
-    seq_len: 20
+    seq_len: 25
     frame_increment: 1
-    frames_between_clips: 1 # seq_len*frame_increment
+    frames_between_clips: 25 # seq_len*frame_increment
     random_frame_offset: False
     train_transforms:
         - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'MultiplyAndAddToBrightness', 'kwargs': {'mul': [0.5, 1.5], 'add': [30, 30]}}
@@ -35,13 +35,14 @@ data:
         - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'AdditiveGaussianNoise',                 'kwargs': {'scale': [0, 51]}}
         - {'chance': 0.1, 'module': 'imgaug.augmenters',                'type': 'GaussianBlur',           'kwargs': {}}
         - {'chance': 0.1, 'module': 'imgaug.augmenters.imgcorruptlike', 'type': 'Fog',                    'kwargs': {'severity': 2}}
-        - {'chance': 0.5, 'module': 'imgaug.augmenters',                'type': 'HorizontalFlip',         'kwargs': {}}
-        - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Crop',                   'kwargs': {'percent': !!python/tuple [0., 0.4]}}
-        - {'chance': 0.1, 'module': 'imgaug.augmenters.imgcorruptlike', 'type': 'Fog',                    'kwargs': {'severity': 2}}
     val_transforms: null
     test_transforms: null
     load_images: True
-callbacks: {}
+callbacks:
+    - name: WorstSamplingCallback
+      kwargs:
+        random: 0.2
+        worst: 0.1
 model:
     encoder: {
         module: "models",
@@ -75,7 +76,7 @@ model:
         module: "torch.optim",
         name: "Adam",
         kwargs: {
-            "lr": 5.e-4,
+            "lr": 3.e-4,
             "betas": [0.9, 0.999]
         }
     }
