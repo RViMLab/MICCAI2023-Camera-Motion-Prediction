@@ -122,20 +122,8 @@ if __name__ == "__main__":
         )
 
     trainer = pl.Trainer(
-        max_epochs=configs["trainer"]["max_epochs"],
+        **configs["trainer"],
         logger=logger,
-        callbacks=callbacks,
-        log_every_n_steps=configs["trainer"]["log_every_n_steps"],
-        limit_train_batches=configs["trainer"]["limit_train_batches"],
-        limit_val_batches=configs["trainer"]["limit_val_batches"],
-        limit_test_batches=configs["trainer"]["limit_test_batches"],
-        accelerator=configs["trainer"]["accelerator"],
-        devices=configs["trainer"]["devices"],
-        fast_dev_run=configs["trainer"]["fast_dev_run"],
-        profiler=configs["trainer"]["profiler"],
-        reload_dataloaders_every_n_epochs=configs["trainer"][
-            "reload_dataloaders_every_n_epochs"
-        ],
     )
 
     # fit and validation
