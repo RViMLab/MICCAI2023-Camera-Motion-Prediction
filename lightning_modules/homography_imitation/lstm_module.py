@@ -366,7 +366,7 @@ class LSTMModule(pl.LightningModule):
         pass
 
 
-class FeatureLSTMModule(pl.LightningModule):
+class FeatureLSTMIncrementalModule(pl.LightningModule):
     def __init__(
         self,
         encoder: dict,

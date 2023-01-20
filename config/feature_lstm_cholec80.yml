@@ -1,5 +1,5 @@
 experiment: 'miccai/feature_lstm/cholec80/resnet34'
-lightning_module: 'FeatureLSTMModule'
+lightning_module: 'FeatureLSTMIncrementalModule'
 lightning_data_module: 'ImageSequenceDuvDataModule'
 model_checkpoint: 
     monitor: 'val/loss'
