@@ -11,4 +11,4 @@ runai submit hil-next \
   --working-dir /workspace/homography_imitation_learning/ \
   --backoff-limit 1 \
   --run-as-user \
-  -- /workspace/homography_imitation_learning/shell/dgx1-1/run_next_view.sh
+  -- /workspace/homography_imitation_learning/shell/dgx1-1/run_homography_predictor.sh
