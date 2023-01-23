@@ -171,6 +171,7 @@ if __name__ == "__main__":
     trainer = pl.Trainer(
         **configs["trainer"],
         logger=logger,
+        callbacks=callbacks,
     )
 
     # fit and validation
