@@ -1,4 +1,4 @@
-runai submit hil-next \
+runai submit c-pred-phantom-resnet50 \
   -p mhuber \
   -i aicregistry:5000/mhuber:torch110 \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \

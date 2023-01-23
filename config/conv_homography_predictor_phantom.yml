@@ -1,4 +1,4 @@
-experiment: 'test/miccai/conv_homography_predictor/phantom/resnet34'
+experiment: 'miccai/conv_homography_predictor/phantom/resnet50'
 lightning_module: 'ConvHomographyPredictorModule'
 lightning_data_module: 'ImageSequenceDataModule'
 model_checkpoint: 
@@ -7,7 +7,7 @@ model_checkpoint:
 trainer:
     accelerator: 'gpu'
     devices: 1
-    max_epochs: 200
+    max_epochs: 500
     log_every_n_steps: 1
     limit_train_batches: 1.0
     limit_val_batches: 1.0
@@ -20,7 +20,7 @@ data:
     kwargs:
         train_split: 0.8
         batch_size: 32
-        num_workers: 4
+        num_workers: 16
         random_state: 42
         tolerance: 0.2 # change this tolerance
         seq_len: 10
@@ -61,7 +61,7 @@ model:
         module: "torch.optim",
         name: "Adam",
         kwargs: {
-            "lr": 1.e-3,
+            "lr": 3.e-4,
             "betas": [0.9, 0.999]
         }
     }
