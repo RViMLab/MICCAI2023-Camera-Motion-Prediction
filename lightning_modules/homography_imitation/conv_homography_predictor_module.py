@@ -69,7 +69,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             vid_idcs,
         ) = batch  # transformed images and four point homography
         B, T, C, H, W = imgs.shape
-        imgs, wrps = frame_pairs(imgs[:, -2:], 1)
+        imgs, wrps = frame_pairs(imgs, T-1)
         imgs, wrps = imgs.float() / 255.0, wrps.float() / 255.0
         tf_imgs = tf_imgs.float() / 255.0
 
@@ -79,28 +79,31 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             duv_reg = duv_reg.view(B, 1, 4, 2)
 
         imgs = tf_imgs[:, :-1]
-        B, T, C, H, W = imgs.shape
         imgs = imgs.view(B, -1, H, W)
         duv_pred = self(imgs)
         duv_pred = duv_pred.view(B, 1, 4, 2)
 
         loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
+        norm = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
 
         if not self._train_logged:
             self._train_logged = True
             blend_identity = yt_alpha_blend(
-                tf_imgs[0, -2].unsqueeze(0),
-                tf_imgs[0, -1].unsqueeze(0),
+                tf_imgs[0, 0].unsqueeze(0),
+                tf_imgs[0, T-1].unsqueeze(0),
             )
             blend_reg = create_blend_from_four_point_homography(
-                tf_imgs[0, -2].unsqueeze(0),
-                tf_imgs[0, -1].unsqueeze(0),
+                tf_imgs[0, 0].unsqueeze(0),
+                tf_imgs[0, T-1].unsqueeze(0),
                 duv_reg[0],
             )
             blend_pred = create_blend_from_four_point_homography(
-                tf_imgs[0, -2].unsqueeze(0), tf_imgs[0, -1].unsqueeze(0), duv_pred[0]
+                tf_imgs[0, 0].unsqueeze(0), tf_imgs[0, T-1].unsqueeze(0), duv_pred[0]
             )
 
+            self.logger.experiment.add_images(
+                "train/transformed_imgs", tf_imgs[0], self.global_step
+            )
             self.logger.experiment.add_images(
                 "train/blend/identity", blend_identity, self.global_step
             )
@@ -112,6 +115,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             )
 
         self.log("train/loss", loss.mean())
+        self.log("train/norm", norm.mean())
 
         return {
             "loss": loss.mean(),
@@ -125,7 +129,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             vid_idcs,
         ) = batch  # transformed images and four point homography
         B, T, C, H, W = imgs.shape
-        imgs, wrps = frame_pairs(imgs[:, -2:], 1)
+        imgs, wrps = frame_pairs(imgs, T-1)
         imgs, wrps = imgs.float() / 255.0, wrps.float() / 255.0
         tf_imgs = tf_imgs.float() / 255.0
 
@@ -140,22 +144,26 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         duv_pred = duv_pred.view(B, 1, 4, 2)
 
         loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
+        norm = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
 
         if not self._val_logged:
             self._val_logged = True
             blend_identity = yt_alpha_blend(
-                tf_imgs[0, -2].unsqueeze(0),
-                tf_imgs[0, -1].unsqueeze(0),
+                tf_imgs[0, 0].unsqueeze(0),
+                tf_imgs[0, T-1].unsqueeze(0),
             )
             blend_reg = create_blend_from_four_point_homography(
-                tf_imgs[0, -2].unsqueeze(0),
-                tf_imgs[0, -1].unsqueeze(0),
+                tf_imgs[0, 0].unsqueeze(0),
+                tf_imgs[0, T-1].unsqueeze(0),
                 duv_reg[0],
             )
             blend_pred = create_blend_from_four_point_homography(
-                tf_imgs[0, -2].unsqueeze(0), tf_imgs[0, -1].unsqueeze(0), duv_pred[0]
+                tf_imgs[0, 0].unsqueeze(0), tf_imgs[0, T-1].unsqueeze(0), duv_pred[0]
             )
 
+            self.logger.experiment.add_images(
+                "val/transformed_imgs", tf_imgs[0], self.global_step
+            )
             self.logger.experiment.add_images(
                 "val/blend/identity", blend_identity, self.global_step
             )
@@ -167,6 +175,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             )
 
         self.log("val/loss", loss.mean())
+        self.log("val/norm", norm.mean())
 
     def test_step(self, batch, batch_idx):
         pass
