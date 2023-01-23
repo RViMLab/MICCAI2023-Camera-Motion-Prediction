@@ -5,6 +5,8 @@ import pytorch_lightning as pl
 import torch
 
 import lightning_modules
+from utils import frame_pairs
+from utils.viz import create_blend_from_four_point_homography, yt_alpha_blend
 
 
 class ConvHomographyPredictorModule(pl.LightningModule):
@@ -28,6 +30,8 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         )
 
         self._homography_regression = None
+        self._train_logged = False
+        self._val_logged = False
 
     def inject_homography_regression(
         self, homography_regression: dict, homography_regression_prefix: str
@@ -59,20 +63,55 @@ class ConvHomographyPredictorModule(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         (
+            imgs,
             tf_imgs,
-            duvs_reg,
             frame_idcs,
             vid_idcs,
         ) = batch  # transformed images and four point homography
+        B, T, C, H, W = imgs.shape
+        imgs, wrps = frame_pairs(imgs[:, -2:], 1)
+        imgs, wrps = imgs.float() / 255.0, wrps.float() / 255.0
         tf_imgs = tf_imgs.float() / 255.0
-        duvs_reg = duvs_reg.float()
 
-        B, T, C, H, W = tf_imgs.shape
-        tf_imgs = tf_imgs.view(B, T * C, H, W)
-        duv = self(tf_imgs)
-        duv = duv.view(B, 4, 2)
+        with torch.no_grad():
+            imgs, wrps = imgs.view(-1, C, H, W), wrps.view(-1, C, H, W)
+            duv_reg = self._homography_regression(imgs, wrps)
+            duv_reg = duv_reg.view(B, 1, 4, 2)
 
-        loss = self._loss(duv.view(-1, 2), duvs_reg[:, -1].view(-1, 2))
+        imgs = tf_imgs[:, :-1]
+        B, T, C, H, W = imgs.shape
+        imgs = imgs.view(B, -1, H, W)
+        duv_pred = self(imgs)
+        duv_pred = duv_pred.view(B, 1, 4, 2)
+
+        loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
+
+        if not self._train_logged:
+            self._train_logged = True
+            blend_identity = yt_alpha_blend(
+                tf_imgs[0, -2].unsqueeze(0),
+                tf_imgs[0, -1].unsqueeze(0),
+            )
+            blend_reg = create_blend_from_four_point_homography(
+                tf_imgs[0, -2].unsqueeze(0),
+                tf_imgs[0, -1].unsqueeze(0),
+                duv_reg[0],
+            )
+            blend_pred = create_blend_from_four_point_homography(
+                tf_imgs[0, -2].unsqueeze(0), tf_imgs[0, -1].unsqueeze(0), duv_pred[0]
+            )
+
+            self.logger.experiment.add_images(
+                "train/blend/identity", blend_identity, self.global_step
+            )
+            self.logger.experiment.add_images(
+                "train/blend/regressed", blend_reg, self.global_step
+            )
+            self.logger.experiment.add_images(
+                "train/blend/predicted", blend_pred, self.global_step
+            )
+
+        self.log("train/loss", loss.mean())
 
         return {
             "loss": loss.mean(),
@@ -80,22 +119,62 @@ class ConvHomographyPredictorModule(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         (
+            imgs,
             tf_imgs,
-            duvs_reg,
             frame_idcs,
             vid_idcs,
         ) = batch  # transformed images and four point homography
+        B, T, C, H, W = imgs.shape
+        imgs, wrps = frame_pairs(imgs[:, -2:], 1)
+        imgs, wrps = imgs.float() / 255.0, wrps.float() / 255.0
         tf_imgs = tf_imgs.float() / 255.0
-        duvs_reg = duvs_reg.float()
 
-        B, T, C, H, W = tf_imgs.shape
-        tf_imgs = tf_imgs.view(B, T * C, H, W)
-        duv = self(tf_imgs)
-        duv = duv.view(B, 4, 2)
+        with torch.no_grad():
+            imgs, wrps = imgs.view(-1, C, H, W), wrps.view(-1, C, H, W)
+            duv_reg = self._homography_regression(imgs, wrps)
+            duv_reg = duv_reg.view(B, 1, 4, 2)
 
-        loss = self._loss(duv.view(-1, 2), duvs_reg[:, -1].view(-1, 2))
+        imgs = tf_imgs[:, :-1]
+        imgs = imgs.view(B, -1, H, W)
+        duv_pred = self(imgs)
+        duv_pred = duv_pred.view(B, 1, 4, 2)
+
+        loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
+
+        if not self._val_logged:
+            self._val_logged = True
+            blend_identity = yt_alpha_blend(
+                tf_imgs[0, -2].unsqueeze(0),
+                tf_imgs[0, -1].unsqueeze(0),
+            )
+            blend_reg = create_blend_from_four_point_homography(
+                tf_imgs[0, -2].unsqueeze(0),
+                tf_imgs[0, -1].unsqueeze(0),
+                duv_reg[0],
+            )
+            blend_pred = create_blend_from_four_point_homography(
+                tf_imgs[0, -2].unsqueeze(0), tf_imgs[0, -1].unsqueeze(0), duv_pred[0]
+            )
+
+            self.logger.experiment.add_images(
+                "val/blend/identity", blend_identity, self.global_step
+            )
+            self.logger.experiment.add_images(
+                "val/blend/regressed", blend_reg, self.global_step
+            )
+            self.logger.experiment.add_images(
+                "val/blend/predicted", blend_pred, self.global_step
+            )
 
         self.log("val/loss", loss.mean())
 
     def test_step(self, batch, batch_idx):
         pass
+
+    def on_train_epoch_end(self) -> None:
+        self._train_logged = False
+        return super().on_train_epoch_end()
+
+    def on_validation_epoch_end(self) -> None:
+        self._val_logged = False
+        return super().on_validation_epoch_end()

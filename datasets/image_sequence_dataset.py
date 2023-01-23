@@ -19,7 +19,8 @@ class ImageSequenceDataset(Dataset):
         frame_increment (int): Sample every nth frame.
         frames_between_clips (int): Offset between initial frames of subsequent clips. frames_between_clips = frame_increment*seq_len generates a continuous video.
         random_frame_offset (bool): If true, samples images with random offset index+random[0, frame_increment).
-        transforms (Callable): Callable tranforms for augmenting sequences
+        spectral_transforms (Callable): Callable spectral tranforms for augmenting sequences (applied to augmented sequence only)
+        geometric_transforms (Callable): Callable geometric transforms for augmenting sequences (applied to original and augmented sequence)
         load_images (bool): Whether to return untransformed images
         seeds (bool): Seeds for deterministic output, e.g. for test set
 
@@ -37,7 +38,8 @@ class ImageSequenceDataset(Dataset):
         seq_len: int = 1,
         frame_increment: int = 5,
         frames_between_clips: int = 1,
-        transforms: List[Callable] = None,
+        spectral_transforms: List[Callable] = None,
+        geometric_transforms: List[Callable] = None,
         random_frame_offset: bool = False,
         load_images: bool = True,
         seeds: bool = False,
@@ -47,7 +49,8 @@ class ImageSequenceDataset(Dataset):
         self._seq_len = seq_len
         self._frame_increment = frame_increment
         self._frames_between_clips = frames_between_clips
-        self._transforms = transforms
+        self._spectral_transforms = spectral_transforms
+        self._geometric_transforms = geometric_transforms
         self._random_frame_offset = random_frame_offset
         self._load_images = load_images
         self._seeds = seeds
@@ -116,12 +119,15 @@ class ImageSequenceDataset(Dataset):
             img = np.load(os.path.join(self._prefix, row.folder, row.file))
 
             if self._load_images:
+                if self._geometric_transforms:
+                    imgaug.seed(seed)
+                    img = self._geometric_transforms(img)
                 img_seq.append(img)
 
             # transform image sequences
-            if self._transforms:
+            if self._spectral_transforms:
                 imgaug.seed(seed)
-                img_seq_transformed.append(self._transforms(img))
+                img_seq_transformed.append(self._spectral_transforms(img))
             else:
                 img_seq_transformed.append(img)
 

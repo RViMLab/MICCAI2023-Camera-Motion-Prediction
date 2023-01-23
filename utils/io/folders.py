@@ -15,7 +15,7 @@ def generate_path(prefix: str) -> None:
 
 def scan2df(folder: str, postfix: str = ".jpg") -> pd.DataFrame:
     # scan folder for images and return dataframe
-    df = pd.DataFrame(columns={"folder", "file"})
+    df = pd.DataFrame(columns=["folder", "file"])
 
     print(f"Scanning {folder} for {postfix} files")
     for file in glob.glob(os.path.join(folder, "*{}".format(postfix))):
@@ -29,7 +29,7 @@ def scan2df(folder: str, postfix: str = ".jpg") -> pd.DataFrame:
 
 def recursive_scan2df(folder: str, postfix: str = ".jpg") -> pd.DataFrame:
     # scan folder for images and return dataframe
-    df = pd.DataFrame(columns={"folder", "file"})
+    df = pd.DataFrame(columns=["folder", "file"])
 
     print(f"Scanning {folder} recursively for {postfix} files")
     for root, subdirs, files in os.walk(folder):

@@ -25,9 +25,12 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         frame_increment: int = 1,
         frames_between_clips: int = 1,
         random_frame_offset: bool = False,
-        train_transforms: List[dict] = None,
-        val_transforms: List[dict] = None,
-        test_transforms: List[dict] = None,
+        train_spectral_transforms: List[dict] = None,
+        train_geometric_transforms: List[dict] = None,
+        val_spectral_transforms: List[dict] = None,
+        val_geometric_transforms: List[dict] = None,
+        test_spectral_transforms: List[dict] = None,
+        test_geometric_transforms: List[dict] = None,
         load_images: bool = True,
     ):
         super().__init__()
@@ -67,9 +70,16 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         self._frames_between_clips = frames_between_clips
         self._random_frame_offset = random_frame_offset
 
-        self._train_tranforms = dict_list_to_augment(train_transforms)
-        self._val_transforms = dict_list_to_augment(val_transforms)
-        self._test_transforms = dict_list_to_augment(test_transforms)
+        self._train_spectral_tranforms = dict_list_to_augment(train_spectral_transforms)
+        self._train_geometric_transforms = dict_list_to_augment(
+            train_geometric_transforms
+        )
+        self._val_spectral_transforms = dict_list_to_augment(val_spectral_transforms)
+        self._val_geometric_transforms = dict_list_to_augment(val_geometric_transforms)
+        self._test_spectral_transforms = dict_list_to_augment(test_spectral_transforms)
+        self._test_geometric_transforms = dict_list_to_augment(
+            test_geometric_transforms
+        )
 
         self._load_images = load_images
 
@@ -82,7 +92,8 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
                 random_frame_offset=self._random_frame_offset,
-                transforms=self._train_tranforms,
+                spectral_transforms=self._train_spectral_tranforms,
+                geometric_transforms=self._train_geometric_transforms,
                 load_images=self._load_images,
                 seeds=False,
             )
@@ -93,7 +104,8 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
                 random_frame_offset=False,
-                transforms=self._val_transforms,
+                spectral_transforms=self._val_spectral_transforms,
+                geometric_transforms=self._val_geometric_transforms,
                 load_images=self._load_images,
                 seeds=True,
             )
@@ -105,7 +117,8 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
                 random_frame_offset=False,
-                transforms=self._test_transforms,
+                spectral_transforms=self._test_spectral_transforms,
+                geometric_transforms=self._test_geometric_transforms,
                 load_images=self._load_images,
                 seeds=True,
             )
@@ -119,7 +132,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
             batch_size=self._batch_size,
             shuffle=True,
             num_workers=self._num_workers,
-            drop_last=True,
+            drop_last=False,
             pin_memory=True,
             persistent_workers=True,
         )
@@ -129,7 +142,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
             self._val_set,
             batch_size=self._batch_size,
             num_workers=self._num_workers,
-            drop_last=True,
+            drop_last=False,
             pin_memory=True,
             persistent_workers=True,
         )
@@ -139,7 +152,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
             self._test_set,
             batch_size=self._batch_size,
             num_workers=self._num_workers,
-            drop_last=True,
+            drop_last=False,
             pin_memory=True,
             persistent_workers=True,
         )
@@ -250,7 +263,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
             batch_size=self._batch_size,
             shuffle=True,
             num_workers=self._num_workers,
-            drop_last=True,
+            drop_last=False,
             pin_memory=True,
             persistent_workers=True,
         )
@@ -260,7 +273,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
             self._val_set,
             batch_size=self._batch_size,
             num_workers=self._num_workers,
-            drop_last=True,
+            drop_last=False,
             pin_memory=True,
             persistent_workers=True,
         )
@@ -270,7 +283,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
             self._test_set,
             batch_size=self._batch_size,
             num_workers=self._num_workers,
-            drop_last=True,
+            drop_last=False,
             pin_memory=True,
             persistent_workers=True,
         )
