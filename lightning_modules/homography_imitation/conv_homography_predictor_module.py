@@ -1,14 +1,13 @@
+import importlib
 import os
 
-import importlib
 import pytorch_lightning as pl
 import torch
 
 import lightning_modules
-from utils.processing import frame_pairs
 
 
-class HomographyPredictorModule(pl.LightningModule):
+class ConvHomographyPredictorModule(pl.LightningModule):
     def __init__(
         self,
         predictor: dict,
@@ -17,16 +16,16 @@ class HomographyPredictorModule(pl.LightningModule):
     ):
         super().__init__()
         self._predictor = getattr(
-            importlib.import_module(predictor["module"], predictor["name"])
+            importlib.import_module(predictor["module"]), predictor["name"]
         )(**predictor["kwargs"])
 
         self._optimizer = getattr(
-            importlib.import_module(optimizer["module"], optimizer["name"])
-        )(**optimizer["kwargs"])
+            importlib.import_module(optimizer["module"]), optimizer["name"]
+        )(params=self.parameters(), **optimizer["kwargs"])
 
-        self._loss = getattr(
-            importlib.import_module(loss["module"], loss["name"])
-        )(**loss["kwargs"])
+        self._loss = getattr(importlib.import_module(loss["module"]), loss["name"])(
+            **loss["kwargs"]
+        )
 
         self._homography_regression = None
 
@@ -56,7 +55,7 @@ class HomographyPredictorModule(pl.LightningModule):
         return self._optimizer
 
     def forward(self, imgs: torch.Tensor) -> torch.Tensor:
-        pass
+        return self._predictor(imgs)
 
     def training_step(self, batch, batch_idx):
         (
@@ -68,9 +67,16 @@ class HomographyPredictorModule(pl.LightningModule):
         tf_imgs = tf_imgs.float() / 255.0
         duvs_reg = duvs_reg.float()
 
-        duvs_pred = self(tf_imgs)
-        
-                
+        B, T, C, H, W = tf_imgs.shape
+        tf_imgs = tf_imgs.view(B, T * C, H, W)
+        duv = self(tf_imgs)
+        duv = duv.view(B, 4, 2)
+
+        loss = self._loss(duv.view(-1, 2), duvs_reg[:, -1].view(-1, 2))
+
+        return {
+            "loss": loss.mean(),
+        }
 
     def validation_step(self, batch, batch_idx):
         (
@@ -82,7 +88,14 @@ class HomographyPredictorModule(pl.LightningModule):
         tf_imgs = tf_imgs.float() / 255.0
         duvs_reg = duvs_reg.float()
 
+        B, T, C, H, W = tf_imgs.shape
+        tf_imgs = tf_imgs.view(B, T * C, H, W)
+        duv = self(tf_imgs)
+        duv = duv.view(B, 4, 2)
 
+        loss = self._loss(duv.view(-1, 2), duvs_reg[:, -1].view(-1, 2))
+
+        self.log("val/loss", loss.mean())
 
     def test_step(self, batch, batch_idx):
         pass
