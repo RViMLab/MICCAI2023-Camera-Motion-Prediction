@@ -402,6 +402,10 @@ class FeatureLSTMIncrementalModule(pl.LightningModule):
             **loss["kwargs"]
         )
 
+        self._sign = 1.
+        if isinstance(self._loss, torch.nn.CosineSimilarity):
+            self._sign = -1.
+
         self._val_logged = False
         self._frame_stride = frame_stride
 
@@ -463,7 +467,7 @@ class FeatureLSTMIncrementalModule(pl.LightningModule):
         duvs_ip1, _ = self(tf_imgs[:, 2:], duvs_reg[:, 1:-1], dduvs_reg[:, :-1])
 
         # compute loss
-        loss = self._loss(
+        loss = self._sign*self._loss(
             duvs_ip1.reshape(-1, 2),
             duvs_reg[:, 2:].reshape(
                 -1, 2
@@ -496,7 +500,7 @@ class FeatureLSTMIncrementalModule(pl.LightningModule):
         duvs_ip1, _ = self(tf_imgs[:, 2:], duvs_reg[:, 1:-1], dduvs_reg[:, :-1])
 
         # compute loss
-        loss = self._loss(
+        loss = self._sign*self._loss(
             duvs_ip1.reshape(-1, 2),
             duvs_reg[:, 2:].reshape(
                 -1, 2
@@ -534,7 +538,7 @@ class FeatureLSTMIncrementalModule(pl.LightningModule):
         duvs_ip1_taylor = self._taylor(duvs_reg.cpu())[:, 1:]
 
         # compute loss
-        loss_taylor = self._loss(
+        loss_taylor = self._sign*self._loss(
             duvs_ip1_taylor.reshape(
                 -1, 2
             ),  # we don't have ground truth for the last value in the sequence
