@@ -72,19 +72,7 @@ if __name__ == "__main__":
     kwargs = {
         "df": df,
         "prefix": prefix,
-        "train_split": configs["data"]["train_split"],
-        "batch_size": configs["data"]["batch_size"],
-        "num_workers": configs["data"]["num_workers"],
-        "random_state": configs["data"]["random_state"],
-        "tolerance": configs["data"]["tolerance"],
-        "seq_len": configs["data"]["seq_len"],
-        "frame_increment": configs["data"]["frame_increment"],
-        "frames_between_clips": configs["data"]["frames_between_clips"],
-        "random_frame_offset": configs["data"]["random_frame_offset"],
-        "train_transforms": configs["data"]["train_transforms"],
-        "val_transforms": configs["data"]["val_transforms"],
-        "test_transforms": configs["data"]["test_transforms"],
-        "load_images": configs["data"]["load_images"],
+        **configs["data"]["kwargs"],
     }
 
     dm = getattr(lightning_data_modules, configs["lightning_data_module"])(**kwargs)
