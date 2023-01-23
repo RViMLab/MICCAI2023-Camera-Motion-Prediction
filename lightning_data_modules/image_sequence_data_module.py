@@ -121,6 +121,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
             num_workers=self._num_workers,
             drop_last=True,
             pin_memory=True,
+            persistent_workers=True,
         )
 
     def val_dataloader(self) -> EVAL_DATALOADERS:
@@ -130,6 +131,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
             num_workers=self._num_workers,
             drop_last=True,
             pin_memory=True,
+            persistent_workers=True,
         )
 
     def test_dataloader(self) -> EVAL_DATALOADERS:
@@ -139,6 +141,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
             num_workers=self._num_workers,
             drop_last=True,
             pin_memory=True,
+            persistent_workers=True,
         )
 
 
@@ -249,6 +252,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
             num_workers=self._num_workers,
             drop_last=True,
             pin_memory=True,
+            persistent_workers=True,
         )
 
     def val_dataloader(self) -> EVAL_DATALOADERS:
@@ -258,6 +262,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
             num_workers=self._num_workers,
             drop_last=True,
             pin_memory=True,
+            persistent_workers=True,
         )
 
     def test_dataloader(self) -> EVAL_DATALOADERS:
@@ -267,6 +272,7 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
             num_workers=self._num_workers,
             drop_last=True,
             pin_memory=True,
+            persistent_workers=True,
         )
 
 
