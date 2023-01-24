@@ -1,9 +1,6 @@
 experiment: 'iros/21_11_25_first_test_data/dropout/short_seq'
 lightning_module: 'PredictiveHorizonModule'
 lightning_data_module: 'ImageSequenceDataModule'
-model_checkpoint: 
-    monitor: 'val/distance'
-    mode: 'min'
 trainer:
     accelerator: 'gpu'
     devices: 1
@@ -39,6 +36,13 @@ data:
     val_transforms: null
     test_transforms: null
     load_images: True
+callbacks:
+    - module: pytorch_lightning.callbacks
+      name: ModelCheckpoint
+      kwargs: {
+        "monitor": "val/loss",
+        "mode": "min"
+      }
 model:
     backbone: {
         'module': 'r2plus1d', 

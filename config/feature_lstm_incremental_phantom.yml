@@ -1,9 +1,6 @@
 experiment: 'miccai/feature_lstm/phantom/resnet34'
 lightning_module: 'FeatureLSTMIncrementalModule'
 lightning_data_module: 'ImageSequenceDuvDataModule'
-model_checkpoint: 
-    monitor: 'val/loss'
-    mode: 'min'
 trainer:
     accelerator: 'gpu'
     devices: 1
@@ -38,7 +35,13 @@ data:
     val_transforms: null
     test_transforms: null
     load_images: True
-callbacks: {}
+callbacks:
+    - module: pytorch_lightning.callbacks
+      name: ModelCheckpoint
+      kwargs: {
+        "monitor": "val/loss",
+        "mode": "min"
+      }
 model:
     encoder: {
         module: "models",

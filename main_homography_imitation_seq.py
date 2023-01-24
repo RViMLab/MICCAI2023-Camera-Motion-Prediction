@@ -1,9 +1,9 @@
 import argparse
+import importlib
 import os
 
 import pandas as pd
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 
 import lightning_callbacks
@@ -28,8 +28,8 @@ if __name__ == "__main__":
         "-c", "--config", type=str, required=True, help="Path to configuration file."
     )
     parser.add_argument(
-        "-bp",
-        "--backbone_path",
+        "-hr",
+        "--homography_regression",
         type=str,
         help="Path to log folders, relative to server logging location.",
     )
@@ -41,28 +41,6 @@ if __name__ == "__main__":
     config_path = server["config"]["location"]
 
     configs = load_yaml(args.config)
-
-    # append configs by backbone
-    if args.backbone_path:
-        backbone_configs = load_yaml(
-            os.path.join(
-                server["logging"]["location"], args.backbone_path, "config.yml"
-            )
-        )
-        df = scan2df(
-            os.path.join(
-                server["logging"]["location"], args.backbone_path, "checkpoints"
-            ),
-            ".ckpt",
-        )
-        ckpts = sorted(list(df["file"]), key=natural_keys)
-        configs["model"]["homography_regression"] = {
-            "lightning_module": backbone_configs["lightning_module"],
-            "model": backbone_configs["model"],
-            "path": args.backbone_path,
-            "checkpoint": "checkpoints/{}".format(ckpts[-1]),
-            "experiment": backbone_configs["experiment"],
-        }
 
     # prepare data
     prefix = os.path.join(server["database"]["location"], configs["data"]["pkl_path"])
@@ -77,38 +55,65 @@ if __name__ == "__main__":
 
     dm = getattr(lightning_data_modules, configs["lightning_data_module"])(**kwargs)
 
-    # load specific module
-    kwargs = {
-        k: v for k, v in configs["model"].items() if k not in "homography_regression"
-    }  # exclude homography regression from kwargs
-
-    module = getattr(lightning_modules, configs["lightning_module"])(**kwargs)
-
-    # inject homography regression into module
-    if args.backbone_path:
-        configs["model"]["homography_regression"]["model"][
-            "pretrained"
-        ] = False  # set to false, as loaded anyways
-        module.inject_homography_regression(
-            homography_regression=configs["model"]["homography_regression"],
-            homography_regression_prefix=server["logging"]["location"],
-        )
+    module = getattr(lightning_modules, configs["lightning_module"])(**configs["model"])
 
     logger = TensorBoardLogger(
         save_dir=server["logging"]["location"], name=configs["experiment"]
     )
 
+    # callbacks
+    callbacks = []
+    for callback in configs["callbacks"]:
+        callbacks.append(
+            getattr(importlib.import_module(callback["module"]), callback["name"])(
+                **callback["kwargs"]
+            )
+        )
+
+    # load homography regression callback
+    if args.homography_regression:
+        homography_regression_config = load_yaml(
+            os.path.join(
+                server["logging"]["location"], args.homography_regression, "config.yml"
+            )
+        )
+        df = scan2df(
+            os.path.join(
+                server["logging"]["location"], args.homography_regression, "checkpoints"
+            ),
+            ".ckpt",
+        )
+        ckpts = sorted(list(df["file"]), key=natural_keys)
+        homography_regression_ckpt = ckpts[-1]
+
+        device = "cpu"
+        if configs["trainer"]["accelerator"] == "gpu":
+            device = "cuda"
+
+        callbacks.append(
+            getattr(lightning_callbacks, "HomographyRegressionCallback")(
+                package="lightning_modules",
+                module=homography_regression_config["lightning_module"],
+                device=device,
+                checkpoint_path=os.path.join(
+                    server["logging"]["location"],
+                    args.homography_regression,
+                    "checkpoints",
+                    homography_regression_ckpt,
+                ),
+                **homography_regression_config["model"],
+            )
+        )
+
     # save configs
     generate_path(logger.log_dir)
     save_yaml(os.path.join(logger.log_dir, "config.yml"), configs)
+    save_yaml(
+        os.path.join(logger.log_dir, "homography_regression_config.yml"),
+        homography_regression_config,
+    )
 
-    # callbacks
-    callbacks = [ModelCheckpoint(**configs["model_checkpoint"])]
-    for callback in configs["callbacks"]:
-        callbacks.append(
-            getattr(lightning_callbacks, callback["name"])(**callback["kwargs"])
-        )
-
+    # trainer
     trainer = pl.Trainer(
         **configs["trainer"],
         logger=logger,

@@ -1,9 +1,6 @@
-experiment: 'miccai/conv_homography_predictor/phantom/resnet50'
+experiment: 'test/miccai/conv_homography_predictor/phantom/resnet50'
 lightning_module: 'ConvHomographyPredictorModule'
 lightning_data_module: 'ImageSequenceDataModule'
-model_checkpoint: 
-    monitor: 'val/loss'
-    mode: 'min'
 trainer:
     accelerator: 'gpu'
     devices: 1
@@ -45,7 +42,13 @@ data:
         test_spectral_transforms: null
         test_geometric_transforms: null
         load_images: True
-callbacks: {}
+callbacks:
+    - module: pytorch_lightning.callbacks
+      name: ModelCheckpoint
+      kwargs: {
+        "monitor": "val/loss",
+        "mode": "min"
+      }
 model:
     predictor: {
         module: "models",

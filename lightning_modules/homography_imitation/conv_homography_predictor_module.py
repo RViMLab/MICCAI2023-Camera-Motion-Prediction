@@ -1,11 +1,8 @@
 import importlib
-import os
 
 import pytorch_lightning as pl
 import torch
 
-import lightning_modules
-from utils import frame_pairs
 from utils.viz import create_blend_from_four_point_homography, yt_alpha_blend
 
 
@@ -33,23 +30,6 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         self._train_logged = False
         self._val_logged = False
 
-    def inject_homography_regression(
-        self, homography_regression: dict, homography_regression_prefix: str
-    ):
-        # load trained homography regression model
-        self._homography_regression = getattr(
-            lightning_modules, homography_regression["lightning_module"]
-        ).load_from_checkpoint(
-            checkpoint_path=os.path.join(
-                homography_regression_prefix,
-                homography_regression["path"],
-                homography_regression["checkpoint"],
-            ),
-            **homography_regression["model"]
-        )
-        self._homography_regression = self._homography_regression.eval()
-        self._homography_regression.freeze()
-
     def on_train_epoch_start(self):
         if self._homography_regression:
             self._homography_regression = self._homography_regression.eval()
@@ -67,16 +47,10 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             tf_imgs,
             frame_idcs,
             vid_idcs,
+            duv_reg,  # added through HomographyRegressionCallback
         ) = batch  # transformed images and four point homography
         B, T, C, H, W = imgs.shape
-        imgs, wrps = frame_pairs(imgs, T-1)
-        imgs, wrps = imgs.float() / 255.0, wrps.float() / 255.0
         tf_imgs = tf_imgs.float() / 255.0
-
-        with torch.no_grad():
-            imgs, wrps = imgs.view(-1, C, H, W), wrps.view(-1, C, H, W)
-            duv_reg = self._homography_regression(imgs, wrps)
-            duv_reg = duv_reg.view(B, 1, 4, 2)
 
         imgs = tf_imgs[:, :-1]
         imgs = imgs.view(B, -1, H, W)
@@ -90,15 +64,15 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             self._train_logged = True
             blend_identity = yt_alpha_blend(
                 tf_imgs[0, 0].unsqueeze(0),
-                tf_imgs[0, T-1].unsqueeze(0),
+                tf_imgs[0, T - 1].unsqueeze(0),
             )
             blend_reg = create_blend_from_four_point_homography(
                 tf_imgs[0, 0].unsqueeze(0),
-                tf_imgs[0, T-1].unsqueeze(0),
+                tf_imgs[0, T - 1].unsqueeze(0),
                 duv_reg[0],
             )
             blend_pred = create_blend_from_four_point_homography(
-                tf_imgs[0, 0].unsqueeze(0), tf_imgs[0, T-1].unsqueeze(0), duv_pred[0]
+                tf_imgs[0, 0].unsqueeze(0), tf_imgs[0, T - 1].unsqueeze(0), duv_pred[0]
             )
 
             self.logger.experiment.add_images(
@@ -127,16 +101,10 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             tf_imgs,
             frame_idcs,
             vid_idcs,
+            duv_reg,  # added through HomographyRegressionCallback
         ) = batch  # transformed images and four point homography
         B, T, C, H, W = imgs.shape
-        imgs, wrps = frame_pairs(imgs, T-1)
-        imgs, wrps = imgs.float() / 255.0, wrps.float() / 255.0
         tf_imgs = tf_imgs.float() / 255.0
-
-        with torch.no_grad():
-            imgs, wrps = imgs.view(-1, C, H, W), wrps.view(-1, C, H, W)
-            duv_reg = self._homography_regression(imgs, wrps)
-            duv_reg = duv_reg.view(B, 1, 4, 2)
 
         imgs = tf_imgs[:, :-1]
         imgs = imgs.view(B, -1, H, W)
@@ -150,15 +118,15 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             self._val_logged = True
             blend_identity = yt_alpha_blend(
                 tf_imgs[0, 0].unsqueeze(0),
-                tf_imgs[0, T-1].unsqueeze(0),
+                tf_imgs[0, T - 1].unsqueeze(0),
             )
             blend_reg = create_blend_from_four_point_homography(
                 tf_imgs[0, 0].unsqueeze(0),
-                tf_imgs[0, T-1].unsqueeze(0),
+                tf_imgs[0, T - 1].unsqueeze(0),
                 duv_reg[0],
             )
             blend_pred = create_blend_from_four_point_homography(
-                tf_imgs[0, 0].unsqueeze(0), tf_imgs[0, T-1].unsqueeze(0), duv_pred[0]
+                tf_imgs[0, 0].unsqueeze(0), tf_imgs[0, T - 1].unsqueeze(0), duv_pred[0]
             )
 
             self.logger.experiment.add_images(

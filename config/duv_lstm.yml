@@ -1,9 +1,6 @@
 experiment: 'test/miccai/lstm/deep/adaptive'
 lightning_module: 'LSTMModule'
 lightning_data_module: 'ImageSequenceDuvDataModule'
-model_checkpoint: 
-    monitor: 'val/distance'
-    mode: 'min'
 trainer:
     accelerator: 'gpu'
     devices: 1
@@ -32,10 +29,17 @@ data:
     test_transforms: null
     load_images: False
 callbacks:
-    - name: "WorstSamplingCallback"
+    - module: "lightning_callbacks"
+      name: "WorstSamplingCallback"
       kwargs: {
         "worst": 0.1,
         "random": 0.2
+      }
+    - module: pytorch_lightning.callbacks
+      name: ModelCheckpoint
+      kwargs: {
+        "monitor": "val/loss",
+        "mode": "min"
       }
 model:
     lstm_hidden_size: 256

@@ -1,2 +1,3 @@
+from .homography_regression_callback import HomographyRegressionCallback
 from .rho_callback import RhoCallback
 from .weighted_sampling_callback import WorstSamplingCallback
