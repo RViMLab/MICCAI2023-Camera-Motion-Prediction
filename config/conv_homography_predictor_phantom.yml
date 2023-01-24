@@ -1,4 +1,4 @@
-experiment: 'test/miccai/conv_homography_predictor/phantom/resnet50'
+experiment: 'miccai/conv_homography_predictor/phantom/resnet50'
 lightning_module: 'ConvHomographyPredictorModule'
 lightning_data_module: 'ImageSequenceDataModule'
 trainer:
@@ -35,7 +35,7 @@ data:
         train_geometric_transforms:
             - {'chance': 0.5, 'module': 'imgaug.augmenters', 'type': 'Flipud', 'kwargs': {}}
             - {'chance': 0.5, 'module': 'imgaug.augmenters', 'type': 'Fliplr', 'kwargs': {}}
-            # - {'chance': 1.0, 'module': 'imgaug.augmenters', 'type': 'Rotate', 'kwargs': {'rotate': !!python/tuple [-90, 90], 'mode': 'symmetric'}}
+            - {'chance': 1.0, 'module': 'imgaug.augmenters', 'type': 'Rotate', 'kwargs': {'rotate': !!python/tuple [-90, 90], 'mode': 'symmetric'}}
             # - {'chance': 1.0, 'module': 'imgaug.augmenters', 'type': 'ElasticTransformation', 'kwargs': {}}
         val_spectral_transforms: null
         val_geometric_transforms: null
