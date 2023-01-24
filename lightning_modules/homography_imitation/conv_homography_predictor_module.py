@@ -75,9 +75,9 @@ class ConvHomographyPredictorModule(pl.LightningModule):
                 tf_imgs[0, 0].unsqueeze(0), tf_imgs[0, T - 1].unsqueeze(0), duv_pred[0]
             )
 
-            self.logger.experiment.add_images(
-                "train/transformed_imgs", tf_imgs[0], self.global_step
-            )
+            # self.logger.experiment.add_images(
+            #     "train/transformed_imgs", tf_imgs[0], self.global_step
+            # )
             self.logger.experiment.add_images(
                 "train/blend/identity", blend_identity, self.global_step
             )
@@ -129,9 +129,9 @@ class ConvHomographyPredictorModule(pl.LightningModule):
                 tf_imgs[0, 0].unsqueeze(0), tf_imgs[0, T - 1].unsqueeze(0), duv_pred[0]
             )
 
-            self.logger.experiment.add_images(
-                "val/transformed_imgs", tf_imgs[0], self.global_step
-            )
+            # self.logger.experiment.add_images(
+            #     "val/transformed_imgs", tf_imgs[0], self.global_step
+            # )
             self.logger.experiment.add_images(
                 "val/blend/identity", blend_identity, self.global_step
             )
