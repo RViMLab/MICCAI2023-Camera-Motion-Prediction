@@ -683,30 +683,30 @@ class FeatureLSTMModule(pl.LightningModule):
             duvs_reg.reshape(-1, 2),
         )
 
-        self.log("val/loss", loss.mean())
+        self.log("val/loss", loss.mean(), sync_dist=True)
 
-        if not self._val_logged:
-            self._val_logged = True
-            frames_i, frames_ips = frame_pairs(
-                tf_imgs, self._frame_stride
-            )  # re-sort images
+        # if not self._val_logged:
+        #     self._val_logged = True
+        #     frames_i, frames_ips = frame_pairs(
+        #         tf_imgs, self._frame_stride
+        #     )  # re-sort images
 
-            # visualize sequence N in zeroth batch
-            blends = create_blend_from_four_point_homography(
-                frames_i[0], frames_ips[0], duvs_reg[0, :-1]
-            )
+        #     # visualize sequence N in zeroth batch
+        #     blends = create_blend_from_four_point_homography(
+        #         frames_i[0], frames_ips[0], duvs_reg[0, :-1]
+        #     )
 
-            self.logger.experiment.add_images("val/blend", blends, self.global_step)
+        #     self.logger.experiment.add_images("val/blend", blends, self.global_step)
 
-            uv = image_edges(frames_i[0, 0].unsqueeze(0))
-            uv_reg = integrate_duv(uv, duvs_reg[0])  # batch 0
-            uv_pred = integrate_duv(uv, duvs[0])  # batch 0
-            uv_traj_fig = uv_trajectory_figure(
-                uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy()
-            )
-            self.logger.experiment.add_figure(
-                "val/uv_traj_fig", uv_traj_fig, self.global_step
-            )
+        #     uv = image_edges(frames_i[0, 0].unsqueeze(0))
+        #     uv_reg = integrate_duv(uv, duvs_reg[0])  # batch 0
+        #     uv_pred = integrate_duv(uv, duvs[0])  # batch 0
+        #     uv_traj_fig = uv_trajectory_figure(
+        #         uv_reg.cpu().numpy(), uv_pred.detach().cpu().numpy()
+        #     )
+        #     self.logger.experiment.add_figure(
+        #         "val/uv_traj_fig", uv_traj_fig, self.global_step
+        #     )
 
         # classical estimation
         duvs_taylor = self._taylor(duvs_reg.cpu())
@@ -720,8 +720,8 @@ class FeatureLSTMModule(pl.LightningModule):
             .cpu()
             .reshape(-1, 2),  # note that the first two values are skipped
         )
-        self.log("val/loss_taylor", loss_taylor.mean())
-        self.log("val/taylor_loss_minus_loss", loss_taylor.mean() - loss.mean())
+        self.log("val/loss_taylor", loss_taylor.mean(), sync_dist=True)
+        self.log("val/taylor_loss_minus_loss", loss_taylor.mean() - loss.mean(), sync_dist=True)
 
     def on_validation_epoch_end(self) -> None:
         self._val_logged = False
