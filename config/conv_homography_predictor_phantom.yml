@@ -76,5 +76,8 @@ model:
     scheduler: {
         module: "torch.optim.lr_scheduler",
         name: "ReduceLROnPlateau",
-        kwargs: {}
+        kwargs: {
+            "patience": 100,
+            "verbose": True
+        }
     }
