@@ -33,8 +33,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
                 importlib.import_module(scheduler["module"]), scheduler["name"]
             )(optimizer=self._optimizer, **scheduler["kwargs"])
 
-        self._train_logged = False
-        self._val_logged = False
+        self._log_nth_epoch = 10
 
     def configure_optimizers(self):
         if self._scheduler:
@@ -66,8 +65,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
         norm = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
 
-        if not self._train_logged:
-            self._train_logged = True
+        if self.current_epoch % self._log_nth_epoch == 0 and batch_idx == 0:
             blend_identity = yt_alpha_blend(
                 tf_imgs[0, 0].unsqueeze(0),
                 tf_imgs[0, T - 1].unsqueeze(0),
@@ -119,8 +117,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
         norm = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
 
-        if not self._val_logged:
-            self._val_logged = True
+        if self.current_epoch % self._log_nth_epoch == 0 and batch_idx == 0:
             blend_identity = yt_alpha_blend(
                 tf_imgs[0, 0].unsqueeze(0),
                 tf_imgs[0, T - 1].unsqueeze(0),
@@ -170,11 +167,3 @@ class ConvHomographyPredictorModule(pl.LightningModule):
 
         self.log("test/loss", loss.mean())
         self.log("test/norm", norm.mean())
-
-    def on_train_epoch_end(self) -> None:
-        self._train_logged = False
-        return super().on_train_epoch_end()
-
-    def on_validation_epoch_end(self) -> None:
-        self._val_logged = False
-        return super().on_validation_epoch_end()
