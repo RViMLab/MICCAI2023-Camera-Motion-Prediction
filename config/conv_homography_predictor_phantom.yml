@@ -73,3 +73,8 @@ model:
         name: "PairwiseDistance",
         kwargs: {}
     } 
+    scheduler: {
+        module: "torch.optim.lr_scheduler",
+        name: "ReduceLROnPlateau",
+        kwargs: {}
+    }

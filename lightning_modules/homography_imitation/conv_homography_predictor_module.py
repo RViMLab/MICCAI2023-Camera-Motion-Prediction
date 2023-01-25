@@ -12,6 +12,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         predictor: dict,
         optimizer: dict,
         loss: dict,
+        scheduler: dict,
     ):
         super().__init__()
         self._predictor = getattr(
@@ -26,6 +27,12 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             **loss["kwargs"]
         )
 
+        self._scheduler = None
+        if scheduler:
+            self._scheduler = getattr(
+                importlib.import_module(scheduler["module"]), scheduler["name"]
+            )(optimizer=self._optimizer, **scheduler["kwargs"])
+
         self._homography_regression = None
         self._train_logged = False
         self._val_logged = False
@@ -36,6 +43,12 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             self._homography_regression.freeze()
 
     def configure_optimizers(self):
+        if self._scheduler:
+            return {
+                "optimizer": self._optimizer,
+                "lr_scheduler": self._scheduler,
+                "monitor": "val/loss",
+            }
         return self._optimizer
 
     def forward(self, imgs: torch.Tensor) -> torch.Tensor:
