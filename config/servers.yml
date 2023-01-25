@@ -12,7 +12,7 @@ personal:
         location: '/home/martin/data'
     logging:
         location: '/tmp'
-dgx1-1:
+headnode:
     config:
         location: '/workspace/homography_imitation_learning/config'
     database: 
