@@ -4,7 +4,7 @@ lightning_data_module: 'ImageSequenceDataModule'
 trainer:
     accelerator: 'gpu'
     devices: 1
-    max_epochs: 1000
+    max_epochs: 2000
     log_every_n_steps: 1
     limit_train_batches: 1.0
     limit_val_batches: 1.0
@@ -35,7 +35,7 @@ data:
         train_geometric_transforms:
             - {'chance': 0.5, 'module': 'imgaug.augmenters', 'type': 'Flipud', 'kwargs': {}}
             - {'chance': 0.5, 'module': 'imgaug.augmenters', 'type': 'Fliplr', 'kwargs': {}}
-            - {'chance': 0.3, 'module': 'imgaug.augmenters', 'type': 'Rotate', 'kwargs': {'rotate': !!python/tuple [-90, 90], 'mode': 'symmetric'}}
+            - {'chance': 0.5, 'module': 'imgaug.augmenters', 'type': 'Rotate', 'kwargs': {'rotate': !!python/tuple [-90, 90], 'mode': 'symmetric'}}
             # - {'chance': 1.0, 'module': 'imgaug.augmenters', 'type': 'ElasticTransformation', 'kwargs': {}}
         val_spectral_transforms: null
         val_geometric_transforms: null
