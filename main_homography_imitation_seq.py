@@ -123,5 +123,5 @@ if __name__ == "__main__":
     # fit and validation
     trainer.fit(module, dm)
 
-    # # test
-    # trainer.test(datamodule=dm)
+    # test
+    trainer.test(datamodule=dm)
