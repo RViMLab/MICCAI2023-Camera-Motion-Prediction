@@ -52,7 +52,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         return self._optimizer
 
     def forward(self, imgs: torch.Tensor) -> torch.Tensor:
-        return self._predictor(imgs)
+        return self._predictor(imgs).view(-1, 4, 2)
 
     def training_step(self, batch, batch_idx):
         (
@@ -68,7 +68,6 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         imgs = tf_imgs[:, :-1]
         imgs = imgs.view(B, -1, H, W)
         duv_pred = self(imgs)
-        duv_pred = duv_pred.view(B, 1, 4, 2)
 
         loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
         norm = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
@@ -122,7 +121,6 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         imgs = tf_imgs[:, :-1]
         imgs = imgs.view(B, -1, H, W)
         duv_pred = self(imgs)
-        duv_pred = duv_pred.view(B, 1, 4, 2)
 
         loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
         norm = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))

@@ -40,7 +40,6 @@ class HomographyRegressionCallback(pl.Callback):
         with torch.no_grad():
             imgs, wrps = imgs.view(-1, C, H, W), wrps.view(-1, C, H, W)
             duv = self._homography_regression(imgs, wrps)
-            duv = duv.view(B, 1, 4, 2)
 
         return duv
 
