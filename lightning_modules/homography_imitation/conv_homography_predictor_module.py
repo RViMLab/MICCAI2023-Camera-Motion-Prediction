@@ -33,7 +33,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
                 importlib.import_module(scheduler["module"]), scheduler["name"]
             )(optimizer=self._optimizer, **scheduler["kwargs"])
 
-        self._log_nth_epoch = 10
+        self._log_nth_epoch = 50
 
     def configure_optimizers(self):
         if self._scheduler:
@@ -165,5 +165,5 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
         norm = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
 
-        self.log("test/loss", loss.mean())
-        self.log("test/norm", norm.mean())
+        self.log("test/loss", loss.mean(), on_epoch=True)
+        self.log("test/norm", norm.mean(), on_epoch=True)
