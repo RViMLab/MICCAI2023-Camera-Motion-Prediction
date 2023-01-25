@@ -33,14 +33,8 @@ class ConvHomographyPredictorModule(pl.LightningModule):
                 importlib.import_module(scheduler["module"]), scheduler["name"]
             )(optimizer=self._optimizer, **scheduler["kwargs"])
 
-        self._homography_regression = None
         self._train_logged = False
         self._val_logged = False
-
-    def on_train_epoch_start(self):
-        if self._homography_regression:
-            self._homography_regression = self._homography_regression.eval()
-            self._homography_regression.freeze()
 
     def configure_optimizers(self):
         if self._scheduler:
