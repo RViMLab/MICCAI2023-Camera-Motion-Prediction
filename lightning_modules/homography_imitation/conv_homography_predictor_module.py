@@ -151,7 +151,25 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         self.log("val/norm", norm.mean())
 
     def test_step(self, batch, batch_idx):
-        pass
+        (
+            imgs,
+            tf_imgs,
+            frame_idcs,
+            vid_idcs,
+            duv_reg,  # added through HomographyRegressionCallback
+        ) = batch  # transformed images and four point homography
+        B, T, C, H, W = imgs.shape
+        imgs = imgs.float() / 255.0
+
+        imgs = imgs[:, :-1]
+        imgs = imgs.view(B, -1, H, W)
+        duv_pred = self(imgs)
+
+        loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
+        norm = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
+
+        self.log("test/loss", loss.mean())
+        self.log("test/norm", norm.mean())
 
     def on_train_epoch_end(self) -> None:
         self._train_logged = False
