@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
 RUN apt-get install -y tmux
-RUN apt-get install build-essential
+RUN apt-get install build-essential -y
 
 ARG USER_ID
 ARG GROUP_ID
