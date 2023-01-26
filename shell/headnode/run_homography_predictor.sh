@@ -2,7 +2,7 @@
 
 # activate conda environment
 eval "$(conda shell.bash hook)"
-conda activate torch110
+conda activate torch113
 
 python /workspace/homography_imitation_learning/homography_imitation_main.py \
   --server headnode \
