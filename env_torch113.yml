@@ -32,7 +32,7 @@ dependencies:
       - scikit-learn
       - efficientnet_pytorch
       - h5py
-      # - git+https://github.com/facebookresearch/pycls@main # pycls
+      - pycls
       # - git+https://github.com/facebookresearch/pytorchvideo.git@main # pytorchvideo
       - iopath
       - segmentation_models_pytorch

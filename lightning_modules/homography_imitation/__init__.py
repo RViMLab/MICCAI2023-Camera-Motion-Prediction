@@ -5,4 +5,3 @@ from .lstm_module import (
     FeatureLSTMModule,
     LSTMModule,
 )
-from .predictive_horizon_module import PredictiveHorizonModule
