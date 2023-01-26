@@ -39,3 +39,4 @@ dependencies:
     - decord
     - setuptools==59.5.0 # pinning https://github.com/pytorch/pytorch/pull/69904#issuecomment-1033388098
     - scikit-learn
+    - git+https://github.com/charliebudd/torch-content-area
