@@ -1,13 +1,9 @@
-# Start from nvidia base image 
-# - cuda only: https://hub.docker.com/r/nvidia/cuda
-# - torch: https://ngc.nvidia.com/catalog/containers/nvidia:pytorch has conda by default
-FROM nvcr.io/nvidia/pytorch:21.12-py3
+# Start from miniconda
+FROM continuumio/miniconda3:latest
 
-# OpenCV bug https://github.com/NVIDIA/nvidia-docker/issues/864 
-RUN apt-get update
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get install -y libsm6 libxext6 libxrender-dev
+ENV DEBIAN_FRONTEND noninteractive
 
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
 RUN apt-get install -y tmux
 
 ARG USER_ID
@@ -20,9 +16,8 @@ RUN useradd --uid $USER_ID --gid $GROUP_ID $USER
 
 # Create conda env
 WORKDIR /workspace
-COPY env_torch110.yml .
-RUN conda update conda
-RUN conda update conda-build
+COPY env_torch113.yml .
+RUN conda update --name base conda
 RUN conda install mamba -c conda-forge
-RUN conda create -n torch110 python=3.9
-RUN mamba env update -n torch110 -f env_torch110.yml
+RUN conda create -n torch113 python=3
+RUN mamba env update -n torch113 -f env_torch113.yml
