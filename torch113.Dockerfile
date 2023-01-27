@@ -1,11 +1,11 @@
 # Start from miniconda
-FROM continuumio/miniconda3:latest
+FROM continuumio/miniconda3
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
+RUN apt-get update
+RUN apt-get install -y apt-utils
 RUN apt-get install -y tmux
-RUN apt-get install build-essential -y
 
 ARG USER_ID
 ARG GROUP_ID

@@ -1,8 +1,8 @@
 name: torch113
 channels:
   - defaults
-  - nvidia
   - pytorch
+  - nvidia
 dependencies:
   - python
   - pytorch
@@ -33,7 +33,6 @@ dependencies:
       - efficientnet_pytorch
       - h5py
       - pycls
-      # - git+https://github.com/facebookresearch/pytorchvideo.git@main # pytorchvideo
       - iopath
       - segmentation_models_pytorch
       - pytorch_toolbelt
