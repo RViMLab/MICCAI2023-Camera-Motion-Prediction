@@ -1,4 +1,4 @@
-runai submit f-lstm-phantom \
+runai submit hil-supervised-backbone-half-res \
   -p mhuber \
   -i aicregistry:5000/mhuber:torch113 \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
@@ -11,4 +11,4 @@ runai submit f-lstm-phantom \
   --working-dir /workspace/homography_imitation_learning/ \
   --backoff-limit 1 \
   --run-as-user \
-  -- /workspace/homography_imitation_learning/shell/headnode/run_feature_lstm.sh
+  -- /workspace/homography_imitation_learning/shell/headnode/run/deep_image_homography_estimation_backbone_half_res.sh

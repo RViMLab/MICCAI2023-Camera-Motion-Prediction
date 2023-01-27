@@ -1,4 +1,4 @@
-runai submit hil-supervised-backbone-half-res \
+runai submit pre-processor \
   -p mhuber \
   -i aicregistry:5000/mhuber:torch113 \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
@@ -11,4 +11,4 @@ runai submit hil-supervised-backbone-half-res \
   --working-dir /workspace/homography_imitation_learning/ \
   --backoff-limit 1 \
   --run-as-user \
-  -- /workspace/homography_imitation_learning/shell/headnode/run_deep_image_homography_estimation_backbone_half_res.sh
+  -- /workspace/homography_imitation_learning/shell/headnode/run/pre_processing.sh

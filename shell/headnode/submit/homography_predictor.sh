@@ -1,4 +1,4 @@
-runai submit hil-unsupervised-backbone \
+runai submit hil-next \
   -p mhuber \
   -i aicregistry:5000/mhuber:torch113 \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
@@ -11,4 +11,4 @@ runai submit hil-unsupervised-backbone \
   --working-dir /workspace/homography_imitation_learning/ \
   --backoff-limit 1 \
   --run-as-user \
-  -- /workspace/homography_imitation_learning/shell/headnode/run_unsupervised_deep_homography_estimation_backbone.sh
+  -- /workspace/homography_imitation_learning/shell/headnode/run/homography_predictor.sh

@@ -1,4 +1,4 @@
-runai submit c-pred-phantom-resnet34 \
+runai submit hil-content \
   -p mhuber \
   -i aicregistry:5000/mhuber:torch113 \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
@@ -11,4 +11,4 @@ runai submit c-pred-phantom-resnet34 \
   --working-dir /workspace/homography_imitation_learning/ \
   --backoff-limit 1 \
   --run-as-user \
-  -- /workspace/homography_imitation_learning/shell/headnode/run_conv_homography_predictor.sh
+  -- /workspace/homography_imitation_learning/shell/headnode/run/content_aware_unsupervised_deep_homography_estimation.sh

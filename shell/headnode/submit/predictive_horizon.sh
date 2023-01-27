@@ -1,4 +1,4 @@
-runai submit duv-lstm \
+runai submit hil-predictive \
   -p mhuber \
   -i aicregistry:5000/mhuber:torch113 \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
@@ -11,4 +11,4 @@ runai submit duv-lstm \
   --working-dir /workspace/homography_imitation_learning/ \
   --backoff-limit 1 \
   --run-as-user \
-  -- /workspace/homography_imitation_learning/shell/headnode/run_lstm.sh
+  -- /workspace/homography_imitation_learning/shell/headnode/run/predictive_horizon.sh

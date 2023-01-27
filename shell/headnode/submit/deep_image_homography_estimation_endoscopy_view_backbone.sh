@@ -11,4 +11,4 @@ runai submit hil-resnet-34-48-25 \
   --working-dir /workspace/homography_imitation_learning/ \
   --backoff-limit 1 \
   --run-as-user \
-  -- /workspace/homography_imitation_learning/shell/headnode/run_deep_image_homography_estimation_endoscopy_view_backbone.sh
+  -- /workspace/homography_imitation_learning/shell/headnode/run/deep_image_homography_estimation_endoscopy_view_backbone.sh
