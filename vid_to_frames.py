@@ -10,7 +10,8 @@ from utils.processing import (
     SingleProcessInferenceVideoSequencer,
 )
 
-if __name__ == "__main__":
+
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-sf",
@@ -106,3 +107,7 @@ if __name__ == "__main__":
     else:
         vs.start(output_prefix=output_prefix)
     print("\nDone.")
+
+
+if __name__ == "__main__":
+    main()

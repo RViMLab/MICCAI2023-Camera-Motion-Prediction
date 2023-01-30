@@ -6,7 +6,8 @@ from pytorch_lightning.loggers import TensorBoardLogger
 
 from utils import generate_path, load_yaml, save_yaml
 
-if __name__ == "__main__":
+
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-sf",
@@ -49,3 +50,7 @@ if __name__ == "__main__":
     trainer = pl.Trainer(**configs["trainer"], logger=logger)
     trainer.fit(model, data_module)
     # trainer.test(model, data_module)
+
+
+if __name__ == "__main__":
+    main()

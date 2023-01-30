@@ -12,8 +12,8 @@ from lightning_callbacks import RhoCallback
 from lightning_modules import homography_regression
 from utils.io import generate_path, load_yaml, save_yaml
 
-if __name__ == "__main__":
 
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-sf",
@@ -103,3 +103,7 @@ if __name__ == "__main__":
 
         # test
         trainer.test(datamodule=dm)
+
+
+if __name__ == "__main__":
+    main()

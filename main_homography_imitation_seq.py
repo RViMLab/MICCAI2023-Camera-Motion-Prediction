@@ -11,8 +11,8 @@ import lightning_data_modules
 import lightning_modules
 from utils.io import generate_path, load_yaml, natural_keys, save_yaml, scan2df
 
-if __name__ == "__main__":
 
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-sf",
@@ -125,3 +125,7 @@ if __name__ == "__main__":
 
     # test
     trainer.test(datamodule=dm)
+
+
+if __name__ == "__main__":
+    main()

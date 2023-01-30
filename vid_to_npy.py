@@ -10,7 +10,8 @@ from utils.processing import RandomEdgeHomography
 from utils.sampling import ConsecutiveSequences
 from utils.transforms import Compose, any_dict_list_to_compose
 
-if __name__ == "__main__":
+
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--server", type=str, required=True)
     parser.add_argument(
@@ -103,3 +104,7 @@ if __name__ == "__main__":
     df_name = args.log
     log_df.to_pickle(os.path.join(output_prefix, "{}.pkl".format(df_name)))
     log_df.to_csv(os.path.join(output_prefix, "{}.csv".format(df_name)))
+
+
+if __name__ == "__main__":
+    main()

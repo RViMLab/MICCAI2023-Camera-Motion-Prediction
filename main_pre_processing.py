@@ -12,8 +12,8 @@ from lightning_modules import DeepImageHomographyEstimationModuleBackbone
 from utils.io import load_yaml, natural_keys, scan2df
 from utils.processing import LoFTRHomographyEstimation, frame_pairs
 
-if __name__ == "__main__":
 
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--server", type=str, default="local", help="Server to be used."
@@ -159,3 +159,7 @@ if __name__ == "__main__":
 
     # Safe data
     df.to_pickle(os.path.join(data_prefix, args.out_pkl))
+
+
+if __name__ == "__main__":
+    main()

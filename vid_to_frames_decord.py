@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from utils.io import load_yaml, recursive_scan2df
 
-if __name__ == "__main__":
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-sf",
@@ -125,3 +125,8 @@ if __name__ == "__main__":
             os.path.join(output_prefix, "circle_log_{}.pkl".format(vid_idx))
         )
         log_df.to_csv(os.path.join(output_prefix, "circle_log_{}.csv".format(vid_idx)))
+
+
+
+if __name__ == "__main__":
+    main()

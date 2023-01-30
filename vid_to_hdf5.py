@@ -11,7 +11,8 @@ from utils.io import generate_path, load_yaml
 from utils.sampling import ConsecutiveSequences
 from utils.transforms import any_dict_list_to_compose
 
-if __name__ == "__main__":
+
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--server", type=str, required=True)
     parser.add_argument(
@@ -105,3 +106,7 @@ if __name__ == "__main__":
     hdf_storage.close()
     log_df.to_pickle(os.path.join(args.output_folder, "{}.pkl".format(args.log)))
     log_df.to_csv(os.path.join(args.output_folder, "{}.csv".format(args.log)))
+
+
+if __name__ == "__main__":
+    main()
