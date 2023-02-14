@@ -1,0 +1,84 @@
+experiment: 'miccai/conv_homography_predictor/phantom/resnet18'
+lightning_module: 'ConvHomographyPredictorModule'
+lightning_data_module: 'ImageSequenceDataModule'
+trainer:
+    accelerator: 'gpu'
+    devices: 1
+    max_epochs: 2000
+    log_every_n_steps: 1
+    limit_train_batches: 1.0
+    limit_val_batches: 1.0
+    limit_test_batches: 1.0
+    fast_dev_run: False
+    profiler: False
+data:
+    pkl_name: 'test_train_log.pkl'
+    pkl_path: '21_11_25_first_test_data_frames'
+    kwargs:
+        train_split: 0.8
+        batch_size: 32
+        num_workers: 16
+        random_state: 42
+        tolerance: 0.2 # change this tolerance
+        seq_len: 10
+        frame_increment: 5
+        frames_between_clips: 25 # seq_len*frame_increment
+        random_frame_offset: False
+        train_spectral_transforms:
+            - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'MultiplyAndAddToBrightness', 'kwargs': {'mul': [0.5, 1.5], 'add': [30, 30]}}
+            - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Grayscale',                  'kwargs': {}}
+            - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'ChangeColorTemperature',     'kwargs': {'kelvin': [3000, 15000]}}
+            - {'chance': 0.2, 'module': 'imgaug.augmenters.imgcorruptlike', 'type': 'Contrast',                   'kwargs': {'severity': 1}}
+            - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'AdditiveGaussianNoise',      'kwargs': {'scale': [0, 51]}}
+            - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'GaussianBlur',               'kwargs': {}}
+            - {'chance': 0.2, 'module': 'imgaug.augmenters.imgcorruptlike', 'type': 'Fog',                        'kwargs': {'severity': 2}}
+        train_geometric_transforms:
+            - {'chance': 0.5, 'module': 'imgaug.augmenters', 'type': 'Flipud', 'kwargs': {}}
+            - {'chance': 0.5, 'module': 'imgaug.augmenters', 'type': 'Fliplr', 'kwargs': {}}
+            - {'chance': 0.5, 'module': 'imgaug.augmenters', 'type': 'Rotate', 'kwargs': {'rotate': !!python/tuple [-90, 90], 'mode': 'symmetric'}}
+            # - {'chance': 1.0, 'module': 'imgaug.augmenters', 'type': 'ElasticTransformation', 'kwargs': {}}
+        val_spectral_transforms: null
+        val_geometric_transforms: null
+        test_spectral_transforms: null
+        test_geometric_transforms: null
+        load_images: True
+callbacks:
+    - module: pytorch_lightning.callbacks
+      name: ModelCheckpoint
+      kwargs: {
+        "monitor": "val/loss",
+        "mode": "min"
+      }
+model:
+    predictor: {
+        module: "models",
+        name: "VarResNet",
+        kwargs: {
+            "in_channels": 27, # (seq_len-1)*3
+            "out_features": 8,
+            "name": "resnet18",
+            "pretrained": False
+        }
+    }
+    optimizer: {
+        module: "torch.optim",
+        name: "Adam",
+        kwargs: {
+            "lr": 6.e-4,
+            "betas": [0.9, 0.999]
+        }
+    }
+    loss: {
+        module: "torch.nn",
+        name: "PairwiseDistance",
+        kwargs: {}
+    } 
+    scheduler: {
+        module: "torch.optim.lr_scheduler",
+        name: "ReduceLROnPlateau",
+        kwargs: {
+            "patience": 200,
+            "factor": 0.5,
+            "verbose": True,
+        }
+    }

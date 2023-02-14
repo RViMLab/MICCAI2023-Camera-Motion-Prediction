@@ -1,4 +1,4 @@
-experiment: 'miccai/conv_homography_predictor/phantom/resnet34'
+experiment: 'miccai/conv_homography_predictor/phantom/resnet18'
 lightning_module: 'ConvHomographyPredictorModule'
 lightning_data_module: 'ImageSequenceDataModule'
 trainer:
@@ -56,7 +56,7 @@ model:
         kwargs: {
             "in_channels": 27, # (seq_len-1)*3
             "out_features": 8,
-            "name": "resnet34",
+            "name": "resnet18",
             "pretrained": False
         }
     }
