@@ -144,6 +144,8 @@ def unique_video_train_test(
     train_split: float = 0.8,
     tolerance: float = 0.05,
     random_state: int = 42,
+    trial: int = 0,
+    max_trials: int = 100,
 ):
     r"""Splits videos into train and test set.
 
@@ -152,6 +154,8 @@ def unique_video_train_test(
         train_split (float): Fraction of train data, default 0.8
         tolerance (float): Split tolerance, train_split + tolerance <= len(df[df.train] == False)/len(df) <= train_split + tolerance
         random_state (int): Random state for deterministic splitting
+        trial (int): Current re-roll trial of recursive call
+        max_trials (int): If trial > max_trials, then RuntimeError is thrown
 
     Return:
         df (pd.DataFrame): Pandas dataframe, contain {'folder': , 'file': , 'vid': , 'frame': , 'train': }
@@ -168,12 +172,17 @@ def unique_video_train_test(
 
     # assert if fraction off
     fraction = len(df[df.train == False]) / len(df)
-    assert np.isclose(
-        fraction, 1 - train_split, atol=tolerance
-    ), "Train set fraction {:.3f} not close enough to (1 - train_split) {} at tolerance {}".format(
-        fraction, 1 - train_split, tolerance
-    )
-
+    if not np.isclose(fraction, 1 - train_split, atol=tolerance):
+        if trial >= max_trials:
+            raise RuntimeError(
+                f"Failed to find valid split within {max_trials} trials."
+            )
+        print(
+            f"Fraction {fraction} to {1 - train_split} not close enough, re-running on random state {random_state + 1}"
+        )
+        return unique_video_train_test(
+            df, train_split, tolerance, random_state + 1, trial + 1
+        )
     return df
 
 
