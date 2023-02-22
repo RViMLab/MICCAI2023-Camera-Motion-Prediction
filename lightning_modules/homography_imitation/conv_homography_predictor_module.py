@@ -33,7 +33,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
                 importlib.import_module(scheduler["module"]), scheduler["name"]
             )(optimizer=self._optimizer, **scheduler["kwargs"])
 
-        self._log_nth_epoch = 50
+        self._log_nth_epoch = 1
 
     def configure_optimizers(self):
         if self._scheduler:
