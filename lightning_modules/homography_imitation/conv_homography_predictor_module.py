@@ -63,7 +63,8 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         duv_pred = self(imgs)
 
         loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
-        norm = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
+        norm_reg = self._loss(duv_reg.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
+        norm_pred = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
 
         if self.current_epoch % self._log_nth_epoch == 0 and batch_idx == 0:
             blend_identity = yt_alpha_blend(
@@ -93,7 +94,8 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             )
 
         self.log("train/loss", loss.mean())
-        self.log("train/norm", norm.mean())
+        self.log("train/norm_reg", norm_reg.mean())
+        self.log("train/norm_pred", norm_pred.mean())
 
         return {
             "loss": loss.mean(),
@@ -115,7 +117,8 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         duv_pred = self(imgs)
 
         loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
-        norm = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
+        norm_reg = self._loss(duv_reg.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
+        norm_pred = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
 
         if self.current_epoch % self._log_nth_epoch == 0 and batch_idx == 0:
             blend_identity = yt_alpha_blend(
@@ -145,7 +148,8 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             )
 
         self.log("val/loss", loss.mean())
-        self.log("val/norm", norm.mean())
+        self.log("val/norm_reg", norm_reg.mean())
+        self.log("val/norm_pred", norm_pred.mean())
 
     def test_step(self, batch, batch_idx):
         (
@@ -163,7 +167,9 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         duv_pred = self(imgs)
 
         loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
-        norm = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
+        norm_reg = self._loss(duv_reg.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
+        norm_pred = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
 
         self.log("test/loss", loss.mean(), on_epoch=True)
-        self.log("test/norm", norm.mean(), on_epoch=True)
+        self.log("test/norm_reg", norm_reg.mean(), on_epoch=True)
+        self.log("test/norm_pred", norm_pred.mean(), on_epoch=True)
