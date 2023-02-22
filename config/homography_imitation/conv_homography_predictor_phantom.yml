@@ -24,7 +24,7 @@ data:
         frame_increment: 5
         frames_between_clips: 25 # seq_len*frame_increment
         random_frame_offset: False
-        train_spectral_transforms:
+        train_photometric_transforms:
             - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'MultiplyAndAddToBrightness', 'kwargs': {'mul': [0.5, 1.5], 'add': [30, 30]}}
             - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Grayscale',                  'kwargs': {}}
             - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'ChangeColorTemperature',     'kwargs': {'kelvin': [3000, 15000]}}
@@ -37,9 +37,9 @@ data:
             - {'chance': 0.5, 'module': 'imgaug.augmenters', 'type': 'Fliplr', 'kwargs': {}}
             - {'chance': 0.5, 'module': 'imgaug.augmenters', 'type': 'Rotate', 'kwargs': {'rotate': !!python/tuple [-90, 90], 'mode': 'symmetric'}}
             # - {'chance': 1.0, 'module': 'imgaug.augmenters', 'type': 'ElasticTransformation', 'kwargs': {}}
-        val_spectral_transforms: null
+        val_photometric_transforms: null
         val_geometric_transforms: null
-        test_spectral_transforms: null
+        test_photometric_transforms: null
         test_geometric_transforms: null
         load_images: True
 callbacks:

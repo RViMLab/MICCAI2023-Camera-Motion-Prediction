@@ -25,11 +25,11 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         frame_increment: int = 1,
         frames_between_clips: int = 1,
         random_frame_offset: bool = False,
-        train_spectral_transforms: List[dict] = None,
+        train_photometric_transforms: List[dict] = None,
         train_geometric_transforms: List[dict] = None,
-        val_spectral_transforms: List[dict] = None,
+        val_photometric_transforms: List[dict] = None,
         val_geometric_transforms: List[dict] = None,
-        test_spectral_transforms: List[dict] = None,
+        test_photometric_transforms: List[dict] = None,
         test_geometric_transforms: List[dict] = None,
         load_images: bool = True,
     ):
@@ -70,13 +70,13 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         self._frames_between_clips = frames_between_clips
         self._random_frame_offset = random_frame_offset
 
-        self._train_spectral_tranforms = dict_list_to_augment(train_spectral_transforms)
+        self._train_spectral_tranforms = dict_list_to_augment(train_photometric_transforms)
         self._train_geometric_transforms = dict_list_to_augment(
             train_geometric_transforms
         )
-        self._val_spectral_transforms = dict_list_to_augment(val_spectral_transforms)
+        self._val_photometric_transforms = dict_list_to_augment(val_photometric_transforms)
         self._val_geometric_transforms = dict_list_to_augment(val_geometric_transforms)
-        self._test_spectral_transforms = dict_list_to_augment(test_spectral_transforms)
+        self._test_photometric_transforms = dict_list_to_augment(test_photometric_transforms)
         self._test_geometric_transforms = dict_list_to_augment(
             test_geometric_transforms
         )
@@ -92,7 +92,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
                 random_frame_offset=self._random_frame_offset,
-                spectral_transforms=self._train_spectral_tranforms,
+                photometric_transforms=self._train_spectral_tranforms,
                 geometric_transforms=self._train_geometric_transforms,
                 load_images=self._load_images,
                 seeds=False,
@@ -104,7 +104,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
                 random_frame_offset=False,
-                spectral_transforms=self._val_spectral_transforms,
+                photometric_transforms=self._val_photometric_transforms,
                 geometric_transforms=self._val_geometric_transforms,
                 load_images=self._load_images,
                 seeds=True,
@@ -117,7 +117,7 @@ class ImageSequenceDataModule(pl.LightningDataModule):
                 frame_increment=self._frame_increment,
                 frames_between_clips=self._frames_between_clips,
                 random_frame_offset=False,
-                spectral_transforms=self._test_spectral_transforms,
+                photometric_transforms=self._test_photometric_transforms,
                 geometric_transforms=self._test_geometric_transforms,
                 load_images=self._load_images,
                 seeds=True,
