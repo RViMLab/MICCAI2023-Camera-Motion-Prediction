@@ -4,6 +4,7 @@ import pytorch_lightning as pl
 import torch
 
 from utils.viz import create_blend_from_four_point_homography, yt_alpha_blend
+from utils.processing import frame_pairs
 
 
 class ConvHomographyPredictorModule(pl.LightningModule):
@@ -13,6 +14,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         optimizer: dict,
         loss: dict,
         scheduler: dict,
+        preview_horizon: int = 1,
     ):
         super().__init__()
         self._predictor = getattr(
@@ -33,6 +35,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
                 importlib.import_module(scheduler["module"]), scheduler["name"]
             )(optimizer=self._optimizer, **scheduler["kwargs"])
 
+        self._preview_horizon = preview_horizon
         self._log_nth_epoch = 1
 
     def configure_optimizers(self):
@@ -58,26 +61,36 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         B, T, C, H, W = imgs.shape
         tf_imgs = tf_imgs.float() / 255.0
 
-        imgs = tf_imgs[:, :-1]
+        imgs = tf_imgs[:, : -self._preview_horizon]
         imgs = imgs.view(B, -1, H, W)
         duv_pred = self(imgs)
 
-        loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
-        norm_reg = self._loss(duv_reg.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
-        norm_pred = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
+        loss = self._loss(
+            duv_pred.view(-1, 2), duv_reg[:, -self._preview_horizon :].reshape(-1, 2)
+        )
+        norm_reg = self._loss(
+            duv_reg[:, -self._preview_horizon :].reshape(-1, 2),
+            torch.zeros_like(duv_pred).view(-1, 2),
+        )
+        norm_pred = self._loss(
+            duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2)
+        )
 
         if self.current_epoch % self._log_nth_epoch == 0 and batch_idx == 0:
+            tf_imgs, tf_wrps = frame_pairs(tf_imgs)
             blend_identity = yt_alpha_blend(
-                tf_imgs[0, -2].unsqueeze(0),
-                tf_imgs[0, -1].unsqueeze(0),
+                tf_imgs[0, -self._preview_horizon :],
+                tf_wrps[0, -self._preview_horizon :],
             )
             blend_reg = create_blend_from_four_point_homography(
-                tf_imgs[0, -2].unsqueeze(0),
-                tf_imgs[0, -1].unsqueeze(0),
-                duv_reg[0],
+                tf_imgs[0, -self._preview_horizon :],
+                tf_wrps[0, -self._preview_horizon :],
+                duv_reg[0, -self._preview_horizon :],
             )
             blend_pred = create_blend_from_four_point_homography(
-                tf_imgs[0, -2].unsqueeze(0), tf_imgs[0, -1].unsqueeze(0), duv_pred[0]
+                tf_imgs[0, -self._preview_horizon :],
+                tf_wrps[0, -self._preview_horizon :],
+                duv_pred[0],
             )
 
             # self.logger.experiment.add_images(
@@ -112,26 +125,36 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         B, T, C, H, W = imgs.shape
         tf_imgs = tf_imgs.float() / 255.0
 
-        imgs = tf_imgs[:, :-1]
+        imgs = tf_imgs[:, : -self._preview_horizon]
         imgs = imgs.view(B, -1, H, W)
         duv_pred = self(imgs)
 
-        loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
-        norm_reg = self._loss(duv_reg.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
-        norm_pred = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
+        loss = self._loss(
+            duv_pred.view(-1, 2), duv_reg[:, -self._preview_horizon :].reshape(-1, 2)
+        )
+        norm_reg = self._loss(
+            duv_reg[:, -self._preview_horizon :].reshape(-1, 2),
+            torch.zeros_like(duv_pred).view(-1, 2),
+        )
+        norm_pred = self._loss(
+            duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2)
+        )
 
         if self.current_epoch % self._log_nth_epoch == 0 and batch_idx == 0:
+            tf_imgs, tf_wrps = frame_pairs(tf_imgs)
             blend_identity = yt_alpha_blend(
-                tf_imgs[0, -2].unsqueeze(0),
-                tf_imgs[0, -1].unsqueeze(0),
+                tf_imgs[0, -self._preview_horizon :],
+                tf_wrps[0, -self._preview_horizon :],
             )
             blend_reg = create_blend_from_four_point_homography(
-                tf_imgs[0, -2].unsqueeze(0),
-                tf_imgs[0, -1].unsqueeze(0),
-                duv_reg[0],
+                tf_imgs[0, -self._preview_horizon :],
+                tf_wrps[0, -self._preview_horizon :],
+                duv_reg[0, -self._preview_horizon :],
             )
             blend_pred = create_blend_from_four_point_homography(
-                tf_imgs[0, -2].unsqueeze(0), tf_imgs[0, -1].unsqueeze(0), duv_pred[0]
+                tf_imgs[0, -self._preview_horizon :],
+                tf_wrps[0, -self._preview_horizon :],
+                duv_pred[0],
             )
 
             # self.logger.experiment.add_images(
@@ -162,13 +185,20 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         B, T, C, H, W = imgs.shape
         imgs = imgs.float() / 255.0
 
-        imgs = imgs[:, :-1]
+        imgs = imgs[:, : -self._preview_horizon]
         imgs = imgs.view(B, -1, H, W)
         duv_pred = self(imgs)
 
-        loss = self._loss(duv_pred.view(-1, 2), duv_reg.reshape(-1, 2))
-        norm_reg = self._loss(duv_reg.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
-        norm_pred = self._loss(duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2))
+        loss = self._loss(
+            duv_pred.view(-1, 2), duv_reg[:, -self._preview_horizon :].reshape(-1, 2)
+        )
+        norm_reg = self._loss(
+            duv_reg[:, -self._preview_horizon :].reshape(-1, 2),
+            torch.zeros_like(duv_pred).view(-1, 2),
+        )
+        norm_pred = self._loss(
+            duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2)
+        )
 
         self.log("test/loss", loss.mean(), on_epoch=True)
         self.log("test/norm_reg", norm_reg.mean(), on_epoch=True)

@@ -14,7 +14,6 @@ class HomographyRegressionCallback(pl.Callback):
 
     def __init__(
         self,
-        preview_horizon: int,
         package: str,
         module: str,
         device: str,
@@ -22,7 +21,6 @@ class HomographyRegressionCallback(pl.Callback):
         **kwargs,
     ) -> None:
         super().__init__()
-        self._preview_horizon = preview_horizon
         print(
             f"HomographyRegressionCallback: Loading homography regression from {checkpoint_path}"
         )
@@ -42,17 +40,13 @@ class HomographyRegressionCallback(pl.Callback):
     def _regress_homography(self, imgs: torch.Tensor) -> torch.Tensor:
         B, T, C, H, W = imgs.shape
         imgs, wrps = frame_pairs(imgs)
-        imgs, wrps = (
-            imgs[:, -self._preview_horizon :],
-            wrps[:, -self._preview_horizon :],
-        )
         imgs, wrps = imgs.float() / 255.0, wrps.float() / 255.0
 
         with torch.no_grad():
             imgs, wrps = imgs.view(-1, C, H, W), wrps.view(-1, C, H, W)
             duv = self._homography_regression(imgs, wrps)
 
-        return duv.view(B, self._preview_horizon, 4, 2)
+        return duv.view(B, T-1, 4, 2)
 
     def on_train_batch_start(
         self,
