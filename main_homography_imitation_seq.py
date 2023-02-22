@@ -92,6 +92,7 @@ def main() -> None:
 
         callbacks.append(
             getattr(lightning_callbacks, "HomographyRegressionCallback")(
+                preview_horizon=1,
                 package="lightning_modules",
                 module=homography_regression_config["lightning_module"],
                 device=device,

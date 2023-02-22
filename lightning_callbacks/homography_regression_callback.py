@@ -13,9 +13,16 @@ class HomographyRegressionCallback(pl.Callback):
     """
 
     def __init__(
-        self, package: str, module: str, device: str, checkpoint_path: str, **kwargs
+        self,
+        preview_horizon: int,
+        package: str,
+        module: str,
+        device: str,
+        checkpoint_path: str,
+        **kwargs,
     ) -> None:
         super().__init__()
+        self._preview_horizon = preview_horizon
         print(
             f"HomographyRegressionCallback: Loading homography regression from {checkpoint_path}"
         )
@@ -34,14 +41,18 @@ class HomographyRegressionCallback(pl.Callback):
 
     def _regress_homography(self, imgs: torch.Tensor) -> torch.Tensor:
         B, T, C, H, W = imgs.shape
-        imgs, wrps = frame_pairs(imgs, T - 1)
+        imgs, wrps = frame_pairs(imgs)
+        imgs, wrps = (
+            imgs[:, -self._preview_horizon :],
+            wrps[:, -self._preview_horizon :],
+        )
         imgs, wrps = imgs.float() / 255.0, wrps.float() / 255.0
 
         with torch.no_grad():
             imgs, wrps = imgs.view(-1, C, H, W), wrps.view(-1, C, H, W)
             duv = self._homography_regression(imgs, wrps)
 
-        return duv
+        return duv.view(B, self._preview_horizon, 4, 2)
 
     def on_train_batch_start(
         self,
@@ -89,7 +100,12 @@ class HomographyRegressionCallback(pl.Callback):
 if __name__ == "__main__":
     import os
 
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from kornia import tensor_to_image
+
     from utils.io import load_yaml
+    from utils.viz import create_blend_from_four_point_homography
 
     # load configs
     server = "local"
@@ -108,7 +124,9 @@ if __name__ == "__main__":
     )
 
     # create homography regressor
+    preview_horizon = 1
     homography_regression_callback = HomographyRegressionCallback(
+        preview_horizon=preview_horizon,
         package="lightning_modules",
         module="DeepImageHomographyEstimationModuleBackbone",
         device="cpu",  # for debugging
@@ -135,8 +153,8 @@ if __name__ == "__main__":
         random_state=42,
         tolerance=0.2,
         seq_len=10,
-        frame_increment=2,
-        frames_between_clips=20,
+        frame_increment=10,
+        frames_between_clips=50,
         load_images=True,
     )
 
@@ -144,4 +162,14 @@ if __name__ == "__main__":
     train_dl = dm.train_dataloader()
 
     for batch in train_dl:
-        homography_regression_callback._regress_homography(batch[0])
+        duv = homography_regression_callback._regress_homography(batch[0])
+        print(duv.shape)
+        print(batch[0].shape)
+        imgs, wrps = frame_pairs(batch[0])
+        imgs, wrps = imgs[:, -preview_horizon:], wrps[:, -preview_horizon:]
+        print(imgs.shape, wrps.shape)
+        imgs, wrps = imgs.float() / 255.0, wrps.float() / 255.0
+        blend = create_blend_from_four_point_homography(imgs[0], wrps[0], duv[0])
+        blend = tensor_to_image(blend)
+        plt.imshow(blend)
+        plt.show()
