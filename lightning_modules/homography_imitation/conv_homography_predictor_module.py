@@ -3,8 +3,8 @@ import importlib
 import pytorch_lightning as pl
 import torch
 
+from utils.processing import TaylorHomographyPrediction, frame_pairs
 from utils.viz import create_blend_from_four_point_homography, yt_alpha_blend
-from utils.processing import frame_pairs
 
 
 class ConvHomographyPredictorModule(pl.LightningModule):
@@ -36,6 +36,8 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             )(optimizer=self._optimizer, **scheduler["kwargs"])
 
         self._preview_horizon = preview_horizon
+        self._taylor_1st_order = TaylorHomographyPrediction(order=1)
+        self._taylor_2nd_order = TaylorHomographyPrediction(order=2)
         self._log_nth_epoch = 1
 
     def configure_optimizers(self):
@@ -112,6 +114,8 @@ class ConvHomographyPredictorModule(pl.LightningModule):
 
         return {
             "loss": loss.mean(),
+            "duv_reg": duv_reg.detach().cpu().numpy(),
+            "duv_pred": duv_pred.detach().cpu().numpy(),
         }
 
     def validation_step(self, batch, batch_idx):
@@ -129,8 +133,23 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         imgs = imgs.view(B, -1, H, W)
         duv_pred = self(imgs)
 
+        duv_pred_taylor_1st_order = self._taylor_1st_order(duv_reg.cpu())[
+            :, -self._preview_horizon :
+        ].to(self.device)
+        duv_pred_taylor_2nd_order = self._taylor_2nd_order(duv_reg.cpu())[
+            :, -self._preview_horizon :
+        ].to(self.device)
+
         loss = self._loss(
             duv_pred.view(-1, 2), duv_reg[:, -self._preview_horizon :].reshape(-1, 2)
+        )
+        loss_taylor_1st_order = self._loss(
+            duv_pred_taylor_1st_order.reshape(-1, 2),
+            duv_reg[:, -self._preview_horizon :].reshape(-1, 2),
+        )
+        loss_taylor_2nd_order = self._loss(
+            duv_pred_taylor_2nd_order.reshape(-1, 2),
+            duv_reg[:, -self._preview_horizon :].reshape(-1, 2),
         )
         norm_reg = self._loss(
             duv_reg[:, -self._preview_horizon :].reshape(-1, 2),
@@ -171,6 +190,16 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             )
 
         self.log("val/loss", loss.mean())
+        self.log("val/loss_taylor_1st_order", loss_taylor_1st_order.mean())
+        self.log("val/loss_taylor_2nd_order", loss_taylor_2nd_order.mean())
+        self.log(
+            "val/loss_taylor_1st_order_minus_loss",
+            (loss_taylor_1st_order - loss).mean(),
+        )
+        self.log(
+            "val/loss_taylor_2nd_order_minus_loss",
+            (loss_taylor_2nd_order - loss).mean(),
+        )
         self.log("val/norm_reg", norm_reg.mean())
         self.log("val/norm_pred", norm_pred.mean())
 
@@ -189,6 +218,22 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         imgs = imgs.view(B, -1, H, W)
         duv_pred = self(imgs)
 
+        duv_pred_taylor_1st_order = self._taylor_1st_order(duv_reg.cpu())[
+            :, -self._preview_horizon :
+        ].to(self.device)
+        duv_pred_taylor_2nd_order = self._taylor_2nd_order(duv_reg.cpu())[
+            :, -self._preview_horizon :
+        ].to(self.device)
+
+        loss_taylor_1st_order = self._loss(
+            duv_pred_taylor_1st_order.reshape(-1, 2),
+            duv_reg[:, -self._preview_horizon :].reshape(-1, 2),
+        )
+        loss_taylor_2nd_order = self._loss(
+            duv_pred_taylor_2nd_order.reshape(-1, 2),
+            duv_reg[:, -self._preview_horizon :].reshape(-1, 2),
+        )
+
         loss = self._loss(
             duv_pred.view(-1, 2), duv_reg[:, -self._preview_horizon :].reshape(-1, 2)
         )
@@ -201,5 +246,21 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         )
 
         self.log("test/loss", loss.mean(), on_epoch=True)
+        self.log(
+            "val/loss_taylor_1st_order", loss_taylor_1st_order.mean(), on_epoch=True
+        )
+        self.log(
+            "val/loss_taylor_2nd_order", loss_taylor_2nd_order.mean(), on_epoch=True
+        )
+        self.log(
+            "val/loss_taylor_1st_order_minus_loss",
+            (loss_taylor_1st_order - loss).mean(),
+            on_epoch=True,
+        )
+        self.log(
+            "val/loss_taylor_2nd_order_minus_loss",
+            (loss_taylor_2nd_order - loss).mean(),
+            on_epoch=True,
+        )
         self.log("test/norm_reg", norm_reg.mean(), on_epoch=True)
         self.log("test/norm_pred", norm_pred.mean(), on_epoch=True)
