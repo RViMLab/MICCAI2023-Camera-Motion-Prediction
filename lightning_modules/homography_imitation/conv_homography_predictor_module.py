@@ -67,16 +67,16 @@ class ConvHomographyPredictorModule(pl.LightningModule):
 
         if self.current_epoch % self._log_nth_epoch == 0 and batch_idx == 0:
             blend_identity = yt_alpha_blend(
-                tf_imgs[0, 0].unsqueeze(0),
-                tf_imgs[0, T - 1].unsqueeze(0),
+                tf_imgs[0, -2].unsqueeze(0),
+                tf_imgs[0, -1].unsqueeze(0),
             )
             blend_reg = create_blend_from_four_point_homography(
-                tf_imgs[0, 0].unsqueeze(0),
-                tf_imgs[0, T - 1].unsqueeze(0),
+                tf_imgs[0, -2].unsqueeze(0),
+                tf_imgs[0, -1].unsqueeze(0),
                 duv_reg[0],
             )
             blend_pred = create_blend_from_four_point_homography(
-                tf_imgs[0, 0].unsqueeze(0), tf_imgs[0, T - 1].unsqueeze(0), duv_pred[0]
+                tf_imgs[0, -2].unsqueeze(0), tf_imgs[0, -1].unsqueeze(0), duv_pred[0]
             )
 
             # self.logger.experiment.add_images(
@@ -119,16 +119,16 @@ class ConvHomographyPredictorModule(pl.LightningModule):
 
         if self.current_epoch % self._log_nth_epoch == 0 and batch_idx == 0:
             blend_identity = yt_alpha_blend(
-                tf_imgs[0, 0].unsqueeze(0),
-                tf_imgs[0, T - 1].unsqueeze(0),
+                tf_imgs[0, -2].unsqueeze(0),
+                tf_imgs[0, -1].unsqueeze(0),
             )
             blend_reg = create_blend_from_four_point_homography(
-                tf_imgs[0, 0].unsqueeze(0),
-                tf_imgs[0, T - 1].unsqueeze(0),
+                tf_imgs[0, -2].unsqueeze(0),
+                tf_imgs[0, -1].unsqueeze(0),
                 duv_reg[0],
             )
             blend_pred = create_blend_from_four_point_homography(
-                tf_imgs[0, 0].unsqueeze(0), tf_imgs[0, T - 1].unsqueeze(0), duv_pred[0]
+                tf_imgs[0, -2].unsqueeze(0), tf_imgs[0, -1].unsqueeze(0), duv_pred[0]
             )
 
             # self.logger.experiment.add_images(
