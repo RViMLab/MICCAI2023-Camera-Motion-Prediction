@@ -38,7 +38,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         self._preview_horizon = preview_horizon
         self._taylor_1st_order = TaylorHomographyPrediction(order=1)
         self._taylor_2nd_order = TaylorHomographyPrediction(order=2)
-        self._log_nth_epoch = 1
+        self._log_nth_epoch = 50
 
     def configure_optimizers(self):
         if self._scheduler:
@@ -85,9 +85,9 @@ class ConvHomographyPredictorModule(pl.LightningModule):
                 tf_wrps[0, -self._preview_horizon :],
             )
             blend_reg = create_blend_from_four_point_homography(
-                tf_imgs[0, -self._preview_horizon :],
-                tf_wrps[0, -self._preview_horizon :],
-                duv_reg[0, -self._preview_horizon :],
+                tf_imgs[0],
+                tf_wrps[0],
+                duv_reg[0],
             )
             blend_pred = create_blend_from_four_point_homography(
                 tf_imgs[0, -self._preview_horizon :],
@@ -166,9 +166,9 @@ class ConvHomographyPredictorModule(pl.LightningModule):
                 tf_wrps[0, -self._preview_horizon :],
             )
             blend_reg = create_blend_from_four_point_homography(
-                tf_imgs[0, -self._preview_horizon :],
-                tf_wrps[0, -self._preview_horizon :],
-                duv_reg[0, -self._preview_horizon :],
+                tf_imgs[0],
+                tf_wrps[0],
+                duv_reg[0],
             )
             blend_pred = create_blend_from_four_point_homography(
                 tf_imgs[0, -self._preview_horizon :],
