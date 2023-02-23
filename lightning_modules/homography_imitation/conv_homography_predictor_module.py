@@ -134,12 +134,12 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         imgs = imgs.view(B, -1, H, W)
         duv_pred = self(imgs)
 
-        duv_pred_taylor_1st_order = self._taylor_1st_order(duv_reg.cpu())[
-            :, -self._preview_horizon :
-        ].to(self.device)
-        duv_pred_taylor_2nd_order = self._taylor_2nd_order(duv_reg.cpu())[
-            :, -self._preview_horizon :
-        ].to(self.device)
+        duv_pred_taylor_1st_order = self._taylor_1st_order(
+            duv_reg[:, : -self._preview_horizon].cpu()
+        )[:, -self._preview_horizon :].to(self.device)
+        duv_pred_taylor_2nd_order = self._taylor_2nd_order(
+            duv_reg[:, : -self._preview_horizon].cpu()
+        )[:, -self._preview_horizon :].to(self.device)
 
         loss = self._loss(
             duv_pred.view(-1, 2), duv_reg[:, -self._preview_horizon :].reshape(-1, 2)
@@ -179,12 +179,12 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             blend_pred_taylor_1st_order = create_blend_from_four_point_homography(
                 tf_imgs[0, -self._preview_horizon :],
                 tf_wrps[0, -self._preview_horizon :],
-                duv_pred_taylor_1st_order[0]
-            ) 
+                duv_pred_taylor_1st_order[0],
+            )
             blend_pred_taylor_2nd_order = create_blend_from_four_point_homography(
                 tf_imgs[0, -self._preview_horizon :],
                 tf_wrps[0, -self._preview_horizon :],
-                duv_pred_taylor_2nd_order[0]
+                duv_pred_taylor_2nd_order[0],
             )
 
             # self.logger.experiment.add_images(
@@ -200,10 +200,14 @@ class ConvHomographyPredictorModule(pl.LightningModule):
                 "val/blend/predicted/deep", blend_pred, self.global_step
             )
             self.logger.experiment.add_images(
-                "val/blend/predicted/taylor_1s_order", blend_pred_taylor_1st_order, self.global_step
+                "val/blend/predicted/taylor_1st_order",
+                blend_pred_taylor_1st_order,
+                self.global_step,
             )
             self.logger.experiment.add_images(
-                "val/blend/predicted/taylor_2nd_order", blend_pred_taylor_2nd_order, self.global_step
+                "val/blend/predicted/taylor_2nd_order",
+                blend_pred_taylor_2nd_order,
+                self.global_step,
             )
 
         self.log("val/loss", loss.mean())
@@ -235,12 +239,12 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         imgs = imgs.view(B, -1, H, W)
         duv_pred = self(imgs)
 
-        duv_pred_taylor_1st_order = self._taylor_1st_order(duv_reg.cpu())[
-            :, -self._preview_horizon :
-        ].to(self.device)
-        duv_pred_taylor_2nd_order = self._taylor_2nd_order(duv_reg.cpu())[
-            :, -self._preview_horizon :
-        ].to(self.device)
+        duv_pred_taylor_1st_order = self._taylor_1st_order(
+            duv_reg[:, : -self._preview_horizon].cpu()
+        )[:, -self._preview_horizon :].to(self.device)
+        duv_pred_taylor_2nd_order = self._taylor_2nd_order(
+            duv_reg[:, : -self._preview_horizon].cpu()
+        )[:, -self._preview_horizon :].to(self.device)
 
         loss_taylor_1st_order = self._loss(
             duv_pred_taylor_1st_order.reshape(-1, 2),
