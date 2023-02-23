@@ -115,8 +115,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
 
         return {
             "loss": loss.mean(),
-            "duv_reg": duv_reg.detach().cpu().numpy(),
-            "duv_pred": duv_pred.detach().cpu().numpy(),
+            "per_sequence_loss": loss.detach().view(B, -1).mean(axis=-1).cpu().numpy(),
         }
 
     def validation_step(self, batch, batch_idx):

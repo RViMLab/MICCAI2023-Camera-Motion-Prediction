@@ -24,9 +24,12 @@ class WorstSamplingCallback(pl.Callback):
         batch: Any,
         batch_idx: int,
     ) -> None:
-        n_samples = len(trainer.train_dataloader.dataset.datasets.valid_idcs)
+        n_samples = len(trainer.train_dataloader.dataset.datasets.sample_idcs)
         batch_size = trainer.train_dataloader.loaders.batch_size
-        batch_idcs = (np.arange(batch_size) + batch_idx * batch_size).tolist()
+        current_batch_size = batch_size
+        if int(np.floor(n_samples / batch_size)) == batch_idx:
+            current_batch_size = n_samples - batch_idx * batch_size
+        batch_idcs = (np.arange(current_batch_size) + batch_idx * batch_size).tolist()
         sample_idcs = trainer.train_dataloader.dataset.datasets.sample_idcs[batch_idcs]
         if trainer.train_dataloader.loaders.drop_last:
             total_batches = int(np.floor(n_samples / batch_size))
