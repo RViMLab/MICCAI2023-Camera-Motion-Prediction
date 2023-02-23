@@ -1,5 +1,6 @@
 import importlib
 
+import numpy as np
 import pytorch_lightning as pl
 import torch
 
@@ -245,22 +246,37 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2)
         )
 
-        self.log("test/loss", loss.mean(), on_epoch=True)
-        self.log(
-            "val/loss_taylor_1st_order", loss_taylor_1st_order.mean(), on_epoch=True
+        return {
+            "loss": loss.cpu().numpy(),
+            "loss_taylor_1st_order": loss_taylor_1st_order.cpu().numpy(),
+            "loss_taylor_2nd_order": loss_taylor_2nd_order.cpu().numpy(),
+            "norm_reg": norm_reg.cpu().numpy(),
+            "norm_pred": norm_pred.cpu().numpy(),
+        }
+
+    def test_epoch_end(self, outputs) -> None:
+        # accumulate outputs
+        loss = np.concatenate([item["loss"] for item in outputs])
+        loss_taylor_1st_order = np.concatenate(
+            [item["loss_taylor_1st_order"] for item in outputs]
         )
-        self.log(
-            "val/loss_taylor_2nd_order", loss_taylor_2nd_order.mean(), on_epoch=True
+        loss_taylor_2nd_order = np.concatenate(
+            [item["loss_taylor_2nd_order"] for item in outputs]
         )
-        self.log(
-            "val/loss_taylor_1st_order_minus_loss",
-            (loss_taylor_1st_order - loss).mean(),
-            on_epoch=True,
-        )
-        self.log(
-            "val/loss_taylor_2nd_order_minus_loss",
-            (loss_taylor_2nd_order - loss).mean(),
-            on_epoch=True,
-        )
-        self.log("test/norm_reg", norm_reg.mean(), on_epoch=True)
-        self.log("test/norm_pred", norm_pred.mean(), on_epoch=True)
+        norm_reg = np.concatenate([item["norm_reg"] for item in outputs])
+        norm_pred = np.concatenate([item["norm_pred"] for item in outputs])
+
+        tensorboard = self.logger.experiment
+        table = f"""
+            | Metric | Mean | Std |
+            | --- | --- | --- |
+            | loss | {loss.mean():.4f} | {loss.std():.4f} |
+            | loss_taylor_1st_order | {loss_taylor_1st_order.mean():.4f} | {loss_taylor_1st_order.std():.4f} |
+            | loss_taylor_2nd_order | {loss_taylor_2nd_order.mean():.4f} | {loss_taylor_2nd_order.std():.4f} |
+            | norm_reg | {norm_reg.mean():.4f} | {norm_reg.std():.4f} |
+            | norm_pred | {norm_pred.mean():.4f} | {norm_pred.std():.4f} |            
+        """
+        table = "\n".join(l.strip() for l in table.splitlines())
+        tensorboard.add_text("table", table, global_step=0)
+
+        return super().test_epoch_end(outputs)
