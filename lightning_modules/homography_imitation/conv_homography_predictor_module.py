@@ -176,6 +176,16 @@ class ConvHomographyPredictorModule(pl.LightningModule):
                 tf_wrps[0, -self._preview_horizon :],
                 duv_pred[0],
             )
+            blend_pred_taylor_1st_order = create_blend_from_four_point_homography(
+                tf_imgs[0, -self._preview_horizon :],
+                tf_wrps[0, -self._preview_horizon :],
+                duv_pred_taylor_1st_order[0]
+            ) 
+            blend_pred_taylor_2nd_order = create_blend_from_four_point_homography(
+                tf_imgs[0, -self._preview_horizon :],
+                tf_wrps[0, -self._preview_horizon :],
+                duv_pred_taylor_2nd_order[0]
+            )
 
             # self.logger.experiment.add_images(
             #     "val/transformed_imgs", tf_imgs[0], self.global_step
@@ -187,7 +197,13 @@ class ConvHomographyPredictorModule(pl.LightningModule):
                 "val/blend/regressed", blend_reg, self.global_step
             )
             self.logger.experiment.add_images(
-                "val/blend/predicted", blend_pred, self.global_step
+                "val/blend/predicted/deep", blend_pred, self.global_step
+            )
+            self.logger.experiment.add_images(
+                "val/blend/predicted/taylor_1s_order", blend_pred_taylor_1st_order, self.global_step
+            )
+            self.logger.experiment.add_images(
+                "val/blend/predicted/taylor_2nd_order", blend_pred_taylor_2nd_order, self.global_step
             )
 
         self.log("val/loss", loss.mean())
