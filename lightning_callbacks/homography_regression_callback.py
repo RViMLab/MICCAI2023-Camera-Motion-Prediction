@@ -45,7 +45,7 @@ class HomographyRegressionCallback(pl.Callback):
             imgs, wrps = imgs.view(-1, C, H, W), wrps.view(-1, C, H, W)
             duv = self._homography_regression(imgs, wrps)
 
-        return duv.view(B, T-1, 4, 2)
+        return duv.view(B, T - 1, 4, 2)
 
     def on_train_batch_start(
         self,
