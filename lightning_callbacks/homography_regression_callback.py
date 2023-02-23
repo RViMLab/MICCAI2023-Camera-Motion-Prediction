@@ -4,7 +4,7 @@ from typing import Any
 import pytorch_lightning as pl
 import torch
 
-from utils import LoFTRHomographyEstimation, frame_pairs
+from utils import frame_pairs
 
 
 class HomographyRegressionCallback(pl.Callback):
@@ -21,19 +21,16 @@ class HomographyRegressionCallback(pl.Callback):
         **kwargs,
     ) -> None:
         super().__init__()
-        # print(
-        #     f"HomographyRegressionCallback: Loading homography regression from {checkpoint_path}"
-        # )
-        # self._homography_regression = getattr(
-        #     importlib.import_module(package), module
-        # ).load_from_checkpoint(checkpoint_path=checkpoint_path, **kwargs)
-        # print("Done.")
+        print(
+            f"HomographyRegressionCallback: Loading homography regression from {checkpoint_path}"
+        )
+        self._homography_regression = getattr(
+            importlib.import_module(package), module
+        ).load_from_checkpoint(checkpoint_path=checkpoint_path, **kwargs)
+        print("Done.")
         self._device = device
-        # self._homography_regression.to(self._device)
-
-        # self._freeze()
-        self._homography_regression = LoFTRHomographyEstimation()
         self._homography_regression.to(self._device)
+        self._freeze()
 
     def _freeze(self):
         self._homography_regression = self._homography_regression.eval()
