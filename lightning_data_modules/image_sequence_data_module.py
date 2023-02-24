@@ -1,13 +1,12 @@
 from typing import List
 
-import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
-from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
 from datasets import ImageSequenceDataset, ImageSequenceDuvDataset
+from utils.processing import unique_video_train_test
 from utils.transforms import dict_list_to_augment
 
 
@@ -40,26 +39,11 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         self._test_df = df[df.train == False]
 
         # further split train into train and validation set
-        unique_vid = self._train_df.vid.unique()
-
-        train_vid, val_vid = train_test_split(
-            unique_vid, train_size=train_split, random_state=random_state
+        self._train_df = unique_video_train_test(
+            self._train_df, train_split, tolerance=tolerance, random_state=random_state
         )
-
-        self._val_df = self._train_df[
-            self._train_df.vid.apply(lambda x: x in val_vid)
-        ].reset_index()
-        self._train_df = self._train_df[
-            self._train_df.vid.apply(lambda x: x in train_vid)
-        ].reset_index()
-
-        # assert if fraction off
-        fraction = len(self._val_df) / (len(self._train_df) + len(self._val_df))
-        assert np.isclose(
-            fraction, 1 - train_split, atol=tolerance
-        ), "Train set fraction {:.3f} not close enough to (1 - train_split) {} at tolerance {}".format(
-            fraction, 1 - train_split, tolerance
-        )
+        self._val_df = self._train_df[self._train_df.train == False].reset_index()
+        self._train_df = self._train_df[self._train_df.train == True].reset_index()
 
         self._prefix = prefix
         self._batch_size = batch_size
@@ -70,13 +54,19 @@ class ImageSequenceDataModule(pl.LightningDataModule):
         self._frames_between_clips = frames_between_clips
         self._random_frame_offset = random_frame_offset
 
-        self._train_spectral_tranforms = dict_list_to_augment(train_photometric_transforms)
+        self._train_spectral_tranforms = dict_list_to_augment(
+            train_photometric_transforms
+        )
         self._train_geometric_transforms = dict_list_to_augment(
             train_geometric_transforms
         )
-        self._val_photometric_transforms = dict_list_to_augment(val_photometric_transforms)
+        self._val_photometric_transforms = dict_list_to_augment(
+            val_photometric_transforms
+        )
         self._val_geometric_transforms = dict_list_to_augment(val_geometric_transforms)
-        self._test_photometric_transforms = dict_list_to_augment(test_photometric_transforms)
+        self._test_photometric_transforms = dict_list_to_augment(
+            test_photometric_transforms
+        )
         self._test_geometric_transforms = dict_list_to_augment(
             test_geometric_transforms
         )
@@ -184,26 +174,11 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
         self._test_df = df[df.train == False]
 
         # further split train into train and validation set
-        unique_vid = self._train_df.vid.unique()
-
-        train_vid, val_vid = train_test_split(
-            unique_vid, train_size=train_split, random_state=random_state
+        self._train_df = unique_video_train_test(
+            self._train_df, train_split, tolerance=tolerance, random_state=random_state
         )
-
-        self._val_df = self._train_df[
-            self._train_df.vid.apply(lambda x: x in val_vid)
-        ].reset_index()
-        self._train_df = self._train_df[
-            self._train_df.vid.apply(lambda x: x in train_vid)
-        ].reset_index()
-
-        # assert if fraction off
-        fraction = len(self._val_df) / (len(self._train_df) + len(self._val_df))
-        assert np.isclose(
-            fraction, 1 - train_split, atol=tolerance
-        ), "Train set fraction {:.3f} not close enough to (1 - train_split) {} at tolerance {}".format(
-            fraction, 1 - train_split, tolerance
-        )
+        self._val_df = self._train_df[self._train_df.train == False].reset_index()
+        self._train_df = self._train_df[self._train_df.train == True].reset_index()
 
         self._prefix = prefix
         self._batch_size = batch_size
