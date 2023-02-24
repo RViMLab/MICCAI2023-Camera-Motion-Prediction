@@ -70,7 +70,7 @@ def main() -> None:
             )
         )
 
-    # load homography regression callback
+    # load homography regression callback TODO: move this callback into configs
     if args.homography_regression:
         homography_regression_config = load_yaml(
             os.path.join(
