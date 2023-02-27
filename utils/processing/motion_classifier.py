@@ -85,7 +85,7 @@ def angle_to_zoom_rotate(
         duv_3_0_ang (float): Bottom left duv vector angle
 
     Returns:
-        str: zoom or rotate type [zoom-in, zoom-out, rotate_left, rotate_right]
+        str: zoom or rotate type [zoom_in, zoom_out, rotate_left, rotate_right]
     """
     duv_0_quarter = np.floor(duv_0_0_ang / (np.pi / 2))
     duv_1_quarter = np.floor(duv_1_0_ang / (np.pi / 2))
@@ -98,14 +98,14 @@ def angle_to_zoom_rotate(
         and duv_2_quarter == 3
         and duv_3_quarter == 2
     ):
-        return "zoom-out"
+        return "zoom_out"
     if (
         duv_0_quarter == 3
         and duv_1_quarter == 2
         and duv_2_quarter == 1
         and duv_3_quarter == 0
     ):
-        return "zoom-in"
+        return "zoom_in"
     if (
         duv_0_quarter == 0
         and duv_1_quarter == 3
@@ -148,7 +148,7 @@ def classify_duv_motion(
         motion_threadhold (float, optional): Threshold for motion. Defaults to 10.
 
     Returns:
-        str: motion type [static, unkown, left, right, up, down, zoom-in, zoom-out, rotate_left, rotate_right]
+        str: motion type [static, unkown, left, right, up, down, zoom_in, zoom_out, rotate_left, rotate_right]
     """
     duv_0_length = np.sqrt(duv_0_0**2 + duv_0_1**2)
     duv_1_length = np.sqrt(duv_1_0**2 + duv_1_1**2)
