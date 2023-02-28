@@ -1,4 +1,4 @@
-experiment: 'test/miccai/motion_labels/cholec80/resnet34'
+experiment: 'miccai/motion_labels/cholec80/resnet34'
 lightning_module: 'ConvHomographyPredictorModule'
 lightning_data_module: 'ImageSequenceMotionLabelDataModule'
 trainer:
