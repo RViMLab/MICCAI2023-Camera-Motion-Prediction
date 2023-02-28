@@ -69,7 +69,7 @@ def angle_to_translate(
         and duv_3_quarter == 3
     ):
         return "down"
-    return "unknown"
+    return "mixture"
 
 
 def angle_to_zoom_rotate(
@@ -120,7 +120,7 @@ def angle_to_zoom_rotate(
         and duv_3_quarter == 3
     ):
         return "rotate_left"
-    return "unknown"
+    return "mixture"
 
 
 def classify_duv_motion(
@@ -148,7 +148,7 @@ def classify_duv_motion(
         motion_threadhold (float, optional): Threshold for motion. Defaults to 10.
 
     Returns:
-        str: motion type [static, unkown, left, right, up, down, zoom_in, zoom_out, rotate_left, rotate_right]
+        str: motion type [static, mixture, left, right, up, down, zoom_in, zoom_out, rotate_left, rotate_right]
     """
     duv_0_length = np.sqrt(duv_0_0**2 + duv_0_1**2)
     duv_1_length = np.sqrt(duv_1_0**2 + duv_1_1**2)
@@ -172,6 +172,6 @@ def classify_duv_motion(
 
     # classify
     case = angle_to_translate(duv_0_0_ang, duv_1_0_ang, duv_2_0_ang, duv_3_0_ang)
-    if case != "unknown":
+    if case != "mixture":
         return case
     return angle_to_zoom_rotate(duv_0_0_ang, duv_1_0_ang, duv_2_0_ang, duv_3_0_ang)
