@@ -5,7 +5,11 @@ import pytorch_lightning as pl
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
 from torch.utils.data import DataLoader
 
-from datasets import ImageSequenceDataset, ImageSequenceDuvDataset
+from datasets import (
+    ImageSequenceDataset,
+    ImageSequenceDuvDataset,
+    ImageSequenceMotionLabelDataset,
+)
 from utils.processing import unique_video_train_test
 from utils.transforms import dict_list_to_augment
 
@@ -231,6 +235,144 @@ class ImageSequenceDuvDataModule(pl.LightningDataModule):
                 load_images=True,
                 seeds=True,
             )
+
+    def train_dataloader(self) -> TRAIN_DATALOADERS:
+        return DataLoader(
+            self._train_set,
+            batch_size=self._batch_size,
+            shuffle=True,
+            num_workers=self._num_workers,
+            drop_last=False,
+            pin_memory=True,
+            persistent_workers=True,
+        )
+
+    def val_dataloader(self) -> EVAL_DATALOADERS:
+        return DataLoader(
+            self._val_set,
+            batch_size=self._batch_size,
+            num_workers=self._num_workers,
+            drop_last=False,
+            pin_memory=True,
+            persistent_workers=True,
+        )
+
+    def test_dataloader(self) -> EVAL_DATALOADERS:
+        return DataLoader(
+            self._test_set,
+            batch_size=self._batch_size,
+            num_workers=self._num_workers,
+            drop_last=False,
+            pin_memory=True,
+            persistent_workers=True,
+        )
+
+
+class ImageSequenceMotionLabelDataModule(pl.LightningDataModule):
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        prefix: str,
+        train_split: float,
+        batch_size: int,
+        num_workers: int = 2,
+        random_state: int = 42,
+        tolerance: float = 0.05,
+        seq_len: int = 10,
+        frame_increment: int = 1,
+        frames_between_clips: int = 1,
+        random_frame_offset: bool = False,
+        train_photometric_transforms: List[dict] = None,
+        train_geometric_transforms: List[dict] = None,
+        val_photometric_transforms: List[dict] = None,
+        val_geometric_transforms: List[dict] = None,
+        test_photometric_transforms: List[dict] = None,
+        test_geometric_transforms: List[dict] = None,
+        load_images: bool = True,
+    ):
+        super().__init__()
+
+        # train/test
+        self._train_df = df[df.train == True]
+        self._test_df = df[df.train == False]
+
+        # further split train into train and validation set
+        self._train_df = unique_video_train_test(
+            self._train_df, train_split, tolerance=tolerance, random_state=random_state
+        )
+        self._val_df = self._train_df[self._train_df.train == False].reset_index()
+        self._train_df = self._train_df[self._train_df.train == True].reset_index()
+
+        self._prefix = prefix
+        self._batch_size = batch_size
+        self._num_workers = num_workers
+
+        self._seq_len = seq_len
+        self._frame_increment = frame_increment
+        self._frames_between_clips = frames_between_clips
+        self._random_frame_offset = random_frame_offset
+
+        self._train_spectral_tranforms = dict_list_to_augment(
+            train_photometric_transforms
+        )
+        self._train_geometric_transforms = dict_list_to_augment(
+            train_geometric_transforms
+        )
+        self._val_photometric_transforms = dict_list_to_augment(
+            val_photometric_transforms
+        )
+        self._val_geometric_transforms = dict_list_to_augment(val_geometric_transforms)
+        self._test_photometric_transforms = dict_list_to_augment(
+            test_photometric_transforms
+        )
+        self._test_geometric_transforms = dict_list_to_augment(
+            test_geometric_transforms
+        )
+
+        self._load_images = load_images
+
+    def setup(self, stage: str = None) -> None:
+        if stage == "fit" or stage is None:
+            self._train_set = ImageSequenceMotionLabelDataset(
+                df=self._train_df,
+                prefix=self._prefix,
+                seq_len=self._seq_len,
+                frame_increment=self._frame_increment,
+                frames_between_clips=self._frames_between_clips,
+                random_frame_offset=self._random_frame_offset,
+                photometric_transforms=self._train_spectral_tranforms,
+                geometric_transforms=self._train_geometric_transforms,
+                load_images=self._load_images,
+                seeds=False,
+            )
+            self._val_set = ImageSequenceMotionLabelDataset(
+                df=self._val_df,
+                prefix=self._prefix,
+                seq_len=self._seq_len,
+                frame_increment=self._frame_increment,
+                frames_between_clips=self._frames_between_clips,
+                random_frame_offset=False,
+                photometric_transforms=self._val_photometric_transforms,
+                geometric_transforms=self._val_geometric_transforms,
+                load_images=self._load_images,
+                seeds=True,
+            )
+        if stage == "test":
+            self._test_set = ImageSequenceMotionLabelDataset(
+                df=self._test_df,
+                prefix=self._prefix,
+                seq_len=self._seq_len,
+                frame_increment=self._frame_increment,
+                frames_between_clips=self._frames_between_clips,
+                random_frame_offset=False,
+                photometric_transforms=self._test_photometric_transforms,
+                geometric_transforms=self._test_geometric_transforms,
+                load_images=self._load_images,
+                seeds=True,
+            )
+
+    # def transfer_batch_to_device(self, batch, device, dataloader_idx):
+    #     pass
 
     def train_dataloader(self) -> TRAIN_DATALOADERS:
         return DataLoader(
