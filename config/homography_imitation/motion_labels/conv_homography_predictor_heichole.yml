@@ -1,4 +1,4 @@
-experiment: 'miccai/motion_label/cholec80/resnet34'
+experiment: 'miccai/motion_labels/heichole/resnet34'
 lightning_module: 'ConvHomographyPredictorModule'
 lightning_data_module: 'ImageSequenceMotionLabelDataModule'
 trainer:
@@ -13,7 +13,7 @@ trainer:
     profiler: False
 data:
     pkl_name: '23_02_24_motion_label_frame_increment_5_frames_between_clips_1_log_test_train.pkl'
-    pkl_path: 'cholec80_single_video_frames_cropped'
+    pkl_path: 'heichole_single_frames_cropped'
     kwargs:
         train_split: 0.8
         batch_size: 32

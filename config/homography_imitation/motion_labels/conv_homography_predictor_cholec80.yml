@@ -1,19 +1,19 @@
-experiment: 'miccai/motion_label/phantom/resnet34'
+experiment: 'miccai/motion_labels/cholec80/resnet34'
 lightning_module: 'ConvHomographyPredictorModule'
 lightning_data_module: 'ImageSequenceMotionLabelDataModule'
 trainer:
     accelerator: 'gpu'
     devices: 1
-    max_epochs: 2000
-    log_every_n_steps: 1
+    max_epochs: 50
+    log_every_n_steps: 10
     limit_train_batches: 1.0
     limit_val_batches: 1.0
     limit_test_batches: 1.0
     fast_dev_run: False
     profiler: False
 data:
-    pkl_name: '23_02_24_motion_label_frame_increment_10_frames_between_clips_1_log_test_train.pkl'
-    pkl_path: '21_11_25_first_test_data_frames'
+    pkl_name: '23_02_24_motion_label_frame_increment_5_frames_between_clips_1_log_test_train.pkl'
+    pkl_path: 'cholec80_single_video_frames_cropped'
     kwargs:
         train_split: 0.8
         batch_size: 32
@@ -21,7 +21,7 @@ data:
         random_state: 42
         tolerance: 0.2 # change this tolerance
         seq_len: 10
-        frame_increment: 25
+        frame_increment: 5
         frames_between_clips: 25 # seq_len*frame_increment
         random_frame_offset: False
         train_photometric_transforms:
@@ -75,10 +75,10 @@ model:
     } 
     scheduler: {
         module: "torch.optim.lr_scheduler",
-        name: "ReduceLROnPlateau",
+        name: "StepLR",
         kwargs: {
-            "patience": 50,
-            "factor": 0.1,
-            "verbose": True,
+            "step_size": 20,
+            "gamma": 0.5,
+            "verbose": True
         }
     }
