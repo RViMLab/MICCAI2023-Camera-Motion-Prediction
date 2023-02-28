@@ -12,7 +12,7 @@ trainer:
     fast_dev_run: False
     profiler: False
 data:
-    pkl_name: '23_02_24_motion_label_frame_increment_10_frames_between_clips_1_log_test_train.pkl'
+    pkl_name: '23_02_24_motion_label_window_1_frame_increment_10_frames_between_clips_1_log_test_train.pkl'
     pkl_path: '21_11_25_first_test_data_frames'
     kwargs:
         train_split: 0.8

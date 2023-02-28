@@ -1,29 +1,29 @@
-experiment: 'miccai/motion_labels/cholec80/resnet34'
+experiment: 'test/miccai/motion_labels/cholec80/resnet34'
 lightning_module: 'ConvHomographyPredictorModule'
 lightning_data_module: 'ImageSequenceMotionLabelDataModule'
 trainer:
     accelerator: 'gpu'
     devices: 1
     max_epochs: 50
-    log_every_n_steps: 10
+    log_every_n_steps: 1
     limit_train_batches: 1.0
     limit_val_batches: 1.0
     limit_test_batches: 1.0
     fast_dev_run: False
     profiler: False
 data:
-    pkl_name: '23_02_24_motion_label_frame_increment_5_frames_between_clips_1_log_test_train.pkl'
+    pkl_name: '23_02_24_motion_label_window_1_frame_increment_5_frames_between_clips_1_log_test_train.pkl'
     pkl_path: 'cholec80_single_video_frames_cropped'
     kwargs:
         train_split: 0.8
-        batch_size: 32
+        batch_size: 64
         num_workers: 16
         random_state: 42
         tolerance: 0.2 # change this tolerance
         seq_len: 10
         frame_increment: 5
-        frames_between_clips: 25 # seq_len*frame_increment
-        random_frame_offset: False
+        frames_between_clips: 5 # seq_len*frame_increment
+        random_frame_offset: True
         train_photometric_transforms:
             - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'MultiplyAndAddToBrightness', 'kwargs': {'mul': [0.5, 1.5], 'add': [30, 30]}}
             - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Grayscale',                  'kwargs': {}}
@@ -64,7 +64,7 @@ model:
         module: "torch.optim",
         name: "Adam",
         kwargs: {
-            "lr": 1.e-3,
+            "lr": 1.e-4,
             "betas": [0.9, 0.999]
         }
     }
@@ -77,7 +77,7 @@ model:
         module: "torch.optim.lr_scheduler",
         name: "StepLR",
         kwargs: {
-            "step_size": 20,
+            "step_size": 40,
             "gamma": 0.5,
             "verbose": True
         }
