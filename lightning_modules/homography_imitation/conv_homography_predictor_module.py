@@ -39,7 +39,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         self._preview_horizon = preview_horizon
         self._taylor_1st_order = TaylorHomographyPrediction(order=1)
         self._taylor_2nd_order = TaylorHomographyPrediction(order=2)
-        self._log_nth_epoch = 50
+        self._log_nth_epoch = 10
 
     def configure_optimizers(self):
         if self._scheduler:
@@ -114,7 +114,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         self.log("train/norm_pred", norm_pred.mean())
 
         return {
-            "loss": loss.mean(),
+            "loss": loss.mean() - 0.1*norm_pred.mean(),
             "per_sequence_loss": loss.detach().view(B, -1).mean(axis=-1).cpu().numpy(),
         }
 
