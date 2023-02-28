@@ -13,6 +13,8 @@ def dataframe_duv_running_average(df: pd.DataFrame, window: int = 20) -> pd.Data
 
     Returns:
         pd.DataFrame: Dataframe with running average of duv, duv split into individual columns.
+        float: Mean of the norm of the duv vectors.
+        float: Standard deviation of the norm of the duv vectors.
     """
 
     def duv_label() -> List[str]:
@@ -26,6 +28,7 @@ def dataframe_duv_running_average(df: pd.DataFrame, window: int = 20) -> pd.Data
     df_running_averge = pd.DataFrame(
         df_running_averge["duv"].to_list(), columns=duv_label()
     )
+
     df_running_averge = pd.concat(
         [df[["folder", "file", "vid", "frame"]], df_running_averge], axis=1
     )
@@ -38,4 +41,4 @@ def dataframe_duv_running_average(df: pd.DataFrame, window: int = 20) -> pd.Data
         .reset_index(drop=True)
     )
 
-    return df_running_averge
+    return df_running_averge, df["duv_mpd"].mean(), df["duv_mpd"].std()
