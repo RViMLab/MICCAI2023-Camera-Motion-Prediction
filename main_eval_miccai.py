@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 import lightning_data_modules
 import lightning_modules
 from utils.io import load_yaml, natural_keys, scan2df
+from utils.processing import frame_pairs
 
 
 def test(
@@ -24,21 +25,26 @@ def test(
         B, T, C, H, W = imgs.shape
         imgs = imgs.to(camera_motion_predictor.device)
         imgs = imgs.float() / 255.0
-        
+
         # inference camera motion predictor
         recall_imgs = imgs[:, :-preview_horizon]
         recall_imgs = recall_imgs.view(B, -1, H, W)
-        duvs_pred = camera_motion_predictor(recall_imgs)
+
+        with torch.no_grad():
+            duvs_pred = camera_motion_predictor(recall_imgs)
 
         # inference camera motion estimator
-        preview_imgs = imgs[:, -preview_horizon - 1:]
+        preview_imgs = imgs[:, -preview_horizon - 1 :]
+        preview_imgs_i, preview_imgs_ip1 = frame_pairs(preview_imgs)
 
-        # duvs_esti = camera_motion_estimator()
+        with torch.no_grad():
+            preview_imgs_i, preview_imgs_ip1 = preview_imgs_i.view(
+                -1, C, H, W
+            ), preview_imgs_ip1.view(-1, C, H, W)
+            duvs_esti = camera_motion_estimator(preview_imgs_i, preview_imgs_ip1)
 
-
-        print(duvs)
-        print(imgs.shape)
-        print(duvs.shape)
+        print(duvs_pred.shape)
+        print(duvs_esti.shape)
         break
 
 
