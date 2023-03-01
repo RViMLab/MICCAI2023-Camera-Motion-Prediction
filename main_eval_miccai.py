@@ -73,9 +73,11 @@ def main() -> None:
     best_checkpoint = sorted(list(df["file"]), key=natural_keys)[-1]
 
     # load camera motion predictor with best checkpoint
-    config = load_yaml(os.path.join(logging_location, args.experiment, "config.yml"))
+    camera_motion_predictor_config = load_yaml(
+        os.path.join(logging_location, args.experiment, "config.yml")
+    )
     camera_motion_predictor = getattr(
-        lightning_modules, config["lightning_module"]
+        lightning_modules, camera_motion_predictor_config["lightning_module"]
     ).load_from_checkpoint(
         checkpoint_path=os.path.join(
             logging_location,
@@ -83,7 +85,7 @@ def main() -> None:
             "checkpoints",
             best_checkpoint,
         ),
-        **config["model"]
+        **camera_motion_predictor_config["model"]
     )
 
     device = "cpu"
@@ -94,7 +96,7 @@ def main() -> None:
     camera_motion_predictor.freeze()
     camera_motion_predictor = camera_motion_predictor.eval()
 
-    # load camera motion estimator
+    # load camera motion estimator configs
     camera_motion_estimator_config = load_yaml(
         os.path.join(
             logging_location, args.experiment, "homography_regression_config.yml"
@@ -112,42 +114,43 @@ def main() -> None:
         ".ckpt",
     )
 
-    print(df)
+    # load camera motion estimator with best checkpoint
+    camera_motion_estimator = getattr(
+        lightning_modules, camera_motion_estimator_config["lightning_module"]
+    ).load_from_checkpoint(
+        checkpoint_path=os.path.join(
+            logging_location,
+            camera_motion_estimator_config["experiment"],
+            args.camera_motion_estimator_version,
+            "checkpoints",
+            best_checkpoint,
+        ),
+        **camera_motion_estimator_config["model"]
+    )
 
-    # best_checkkpoint = sorted(list(df["file"]), key=natural_keys)[-1]
-
-    # device = "cpu"
-    # if configs["trainer"]["accelerator"] == "gpu":
-    #     device = "cuda"
-
-    # callbacks.append(
-    #     getattr(lightning_callbacks, "HomographyRegressionCallback")(
-    #         package="lightning_modules",
-    #         module=homography_regression_config["lightning_module"],
-    #         device=device,
-    #         checkpoint_path=os.path.join(
-    #             logging_location,
-    #             args.homography_regression,
-    #             "checkpoints",
-    #             homography_regression_ckpt,
-    #         ),
-    #         **homography_regression_config["model"],
-    #     )
-    # )
+    camera_motion_estimator.to(device)
+    camera_motion_estimator.freeze()
+    camera_motion_estimator = camera_motion_estimator.eval()
 
     # load data module
     df = pd.read_pickle(
         os.path.join(
-            database_location, config["data"]["pkl_path"], config["data"]["pkl_name"]
+            database_location,
+            camera_motion_predictor_config["data"]["pkl_path"],
+            camera_motion_predictor_config["data"]["pkl_name"],
         )
     )
     kwargs = {
         "df": df,
-        "prefix": os.path.join(database_location, config["data"]["pkl_path"]),
-        **config["data"]["kwargs"],
+        "prefix": os.path.join(
+            database_location, camera_motion_predictor_config["data"]["pkl_path"]
+        ),
+        **camera_motion_predictor_config["data"]["kwargs"],
     }
 
-    dm = getattr(lightning_data_modules, config["lightning_data_module"])(**kwargs)
+    dm = getattr(
+        lightning_data_modules, camera_motion_predictor_config["lightning_data_module"]
+    )(**kwargs)
     dm.setup(stage="test")
     test_dataloader = dm.test_dataloader()
 
