@@ -53,6 +53,12 @@ def main() -> None:
         default="ae_cai/resnet/48/25/34/version_0",
         help="Path camera motion estimator, relative to server.logging.location.",
     )
+    parser.add_argument(
+        "--camera_motion_estimator_version",
+        type=str,
+        default="version_0",
+        help="Version of camera motion estimator.",
+    )
     args = parser.parse_args()
     server = load_yaml(args.config)[args.server]
 
@@ -100,6 +106,7 @@ def main() -> None:
         os.path.join(
             logging_location,
             camera_motion_estimator_config["experiment"],
+            args.camera_motion_estimator_version,
             "checkpoints",
         ),
         ".ckpt",
