@@ -24,10 +24,17 @@ def test(
         B, T, C, H, W = imgs.shape
         imgs = imgs.to(camera_motion_predictor.device)
         imgs = imgs.float() / 255.0
+        
+        # inference camera motion predictor
         recall_imgs = imgs[:, :-preview_horizon]
         recall_imgs = recall_imgs.view(B, -1, H, W)
+        duvs_pred = camera_motion_predictor(recall_imgs)
 
-        duvs = camera_motion_predictor(recall_imgs)
+        # inference camera motion estimator
+        preview_imgs = imgs[:, -preview_horizon - 1:]
+
+        # duvs_esti = camera_motion_estimator()
+
 
         print(duvs)
         print(imgs.shape)
@@ -113,6 +120,7 @@ def main() -> None:
         ),
         ".ckpt",
     )
+    best_checkpoint = sorted(list(df["file"]), key=natural_keys)[-1]
 
     # load camera motion estimator with best checkpoint
     camera_motion_estimator = getattr(
