@@ -508,13 +508,18 @@ class ImageSequenceMotionLabelDataset(Dataset):
         valid_idcs: pd.Index,
         seq_len: int = 2,
         frame_increment: int = 1,
+        preview_horizon: int = 1,
     ) -> pd.Index:
         r"""Filter non-static sequences from valid indices, ie sequences not labeled as static.
         Sample up to the anchor point of the respective sequence.
         """
-        anchor_idcs = valid_idcs.intersection(df[df["labels"] != "static"].index)
-        # convolution is max at end -> shift by full seq_len, ie (seq_len-1)*frame_increment
-        shifted_anchor_idcs = anchor_idcs - (seq_len - 1) * frame_increment
+        anchor_idcs = df[df["labels"] != "static"].index
+        # shift so that last image in sequence has non-static motion
+        shifted_anchor_idcs = (
+            anchor_idcs
+            - (seq_len - 1) * frame_increment
+            - preview_horizon * frame_increment
+        )
         return valid_idcs.intersection(shifted_anchor_idcs)
 
 
