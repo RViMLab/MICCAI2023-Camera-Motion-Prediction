@@ -7,13 +7,27 @@ from torch.utils.data import DataLoader
 
 import lightning_data_modules
 import lightning_modules
+import torch
 from utils.io import load_yaml, natural_keys, scan2df
 
 
-def test(module: pl.LightningModule, test_dataloader: DataLoader) -> None:
+def test(camera_motion_predictor: pl.LightningModule, camera_motion_estimator: pl.LightningModule, test_dataloader: DataLoader, preview_horizon: int=1) -> None:
     for batch in test_dataloader:
-        img, tf_img, frame_idcs, vid_idcs = batch
-        print(img.shape)
+        imgs, tf_imgs, frame_idcs, vid_idcs = batch
+
+        # process images
+        B, T, C, H, W = imgs.shape
+        imgs = imgs.to(camera_motion_predictor.device)
+        imgs = imgs.float() / 255.
+        recall_imgs = imgs[:, : -preview_horizon]
+        recall_imgs = recall_imgs.view(B, -1, H, W)
+
+        duvs = camera_motion_predictor(recall_imgs)
+
+        print(duvs)
+        print(imgs.shape)
+        print(duvs.shape)
+        break
 
 
 def main() -> None:
@@ -52,6 +66,12 @@ def main() -> None:
         ),
         **config["model"]
     )
+
+    device = "cpu"
+    if torch.cuda.is_available():
+        device = "cuda"
+
+    model.to(device)
     model.freeze()
     model = model.eval()
 
