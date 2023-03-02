@@ -166,9 +166,7 @@ def main() -> None:
         **camera_motion_predictor_config["data"]["kwargs"],
     }
 
-    dm = getattr(
-        lightning_data_modules, camera_motion_predictor_config["lightning_data_module"]
-    )(**kwargs)
+    dm = lightning_data_modules.ImageSequenceDataModule(**kwargs)
     dm.setup(stage="test")
     test_dataloader = dm.test_dataloader()
     assert kwargs["frames_between_clips"] == kwargs["frame_increment"]
