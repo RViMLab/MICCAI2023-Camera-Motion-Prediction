@@ -18,6 +18,8 @@ def test(
     test_dataloader: DataLoader,
     preview_horizon: int = 1,
 ) -> None:
+
+    # run prediction vs estimation on an entire sequence
     for batch in test_dataloader:
         imgs, tf_imgs, frame_idcs, vid_idcs = batch
 
@@ -42,6 +44,8 @@ def test(
                 -1, C, H, W
             ), preview_imgs_ip1.view(-1, C, H, W)
             duvs_esti = camera_motion_estimator(preview_imgs_i, preview_imgs_ip1)
+
+        # plot estimated vs predicted camera motion
 
         print(duvs_pred.shape)
         print(duvs_esti.shape)
@@ -167,6 +171,7 @@ def main() -> None:
     )(**kwargs)
     dm.setup(stage="test")
     test_dataloader = dm.test_dataloader()
+    assert kwargs["frames_between_clips"] == kwargs["frame_increment"]
 
     # run tests
     test(
