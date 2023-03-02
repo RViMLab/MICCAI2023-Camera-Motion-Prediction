@@ -1,6 +1,10 @@
 import argparse
 import os
 
+import cv2
+from kornia import tensor_to_image
+from kornia.geometry import resize
+import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
 import torch
@@ -21,6 +25,8 @@ def test(
 ) -> None:
 
     # run prediction vs estimation on an entire sequence
+    cnt = 0
+    max_cnt = 200
     for batch in test_dataloader:
         imgs, tf_imgs, frame_idcs, vid_idcs = batch
 
@@ -51,10 +57,32 @@ def test(
             preview_imgs_i, preview_imgs_ip1, duvs_esti
         )
 
-        print(blends.shape)
-        print(duvs_pred.shape)
-        print(duvs_esti.shape)
-        break
+        blends = resize(blends, [480, 640])
+        blends = tensor_to_image(blends[0], keepdim=False)
+        blends = (blends * 255.).astype(np.uint8)
+        cv2.imwrite(f"/nfs/home/mhuber/logs/miccai/esti/blend_{cnt}.png", blends)
+
+        blends = create_blend_from_four_point_homography(
+            preview_imgs_i, preview_imgs_ip1, duvs_pred
+        )
+
+        blends = resize(blends, [480, 640])
+        blends = tensor_to_image(blends[0], keepdim=False)
+        blends = (blends * 255.).astype(np.uint8)
+        cv2.imwrite(f"/nfs/home/mhuber/logs/miccai/pred/blend_{cnt}.png", blends)
+
+        preview_imgs_i = resize(preview_imgs_i, [480, 640])
+        preview_imgs_i = tensor_to_image(preview_imgs_i[0], keepdim=False)
+        preview_imgs_i = (preview_imgs_i * 255.).astype(np.uint8)
+        cv2.imwrite(f"/nfs/home/mhuber/logs/miccai/img/img_{cnt}.png", preview_imgs_i)
+
+
+        # break
+        cnt += 1
+        print(frame_idcs[:, -2])
+        print(f"{cnt}/{max_cnt}")
+        if cnt >= max_cnt:
+            break
 
 
 def main() -> None:
@@ -171,6 +199,7 @@ def main() -> None:
         **camera_motion_predictor_config["data"]["kwargs"],
     }
     kwargs["batch_size"] = 1
+    kwargs["random_frame_offset"] = False
     assert kwargs["frames_between_clips"] == kwargs["frame_increment"]
 
     dm = lightning_data_modules.ImageSequenceDataModule(**kwargs)
