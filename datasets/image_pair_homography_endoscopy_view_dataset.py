@@ -80,7 +80,10 @@ class ImagePairHomographyEndoscopyViewDataset(Dataset):
                     "In ImagePairHomographyEndoscopyViewDataset: Length of dataframe must equal length of seeds."
                 )
 
-        self._df = df.sort_values(["vid", "frame"]).reset_index(drop=True)
+        self._df = df
+        self._df[["vid", "frame"]] = df[["vid", "frame"]].astype(float)
+        self._df = df.sort_values(by=["vid", "frame"]).reset_index(drop=True)
+        self._df[["vid", "frame"]] = df[["vid", "frame"]].astype(int)
         self._prefix = prefix
         self._rho = rho
         self._reh = RandomEdgeHomography(

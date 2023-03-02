@@ -44,7 +44,10 @@ class ImageSequenceDataset(Dataset):
         load_images: bool = True,
         seeds: bool = False,
     ):
-        self._df = df.sort_values(["vid", "frame"]).reset_index(drop=True)
+        self._df = df
+        self._df[["vid", "frame"]] = df[["vid", "frame"]].astype(float)
+        self._df = df.sort_values(by=["vid", "frame"]).reset_index(drop=True)
+        self._df[["vid", "frame"]] = df[["vid", "frame"]].astype(int)
         self._prefix = prefix
         self._seq_len = seq_len
         self._frame_increment = frame_increment
@@ -208,7 +211,10 @@ class ImageSequenceDuvDataset(Dataset):
         load_images: bool = True,
         seeds: bool = False,
     ):
-        self._df = df.sort_values(["vid", "frame"]).reset_index(drop=True)
+        self._df = df
+        self._df[["vid", "frame"]] = df[["vid", "frame"]].astype(float)
+        self._df = df.sort_values(by=["vid", "frame"]).reset_index(drop=True)
+        self._df[["vid", "frame"]] = df[["vid", "frame"]].astype(int)
         self._prefix = prefix
         self._seq_len = seq_len
         self._frame_increment = frame_increment
@@ -367,7 +373,10 @@ class ImageSequenceMotionLabelDataset(Dataset):
         load_images: bool = True,
         seeds: bool = False,
     ):
-        self._df = df.sort_values(["vid", "frame"]).reset_index(drop=True)
+        self._df = df
+        self._df[["vid", "frame"]] = df[["vid", "frame"]].astype(float)
+        self._df = df.sort_values(by=["vid", "frame"]).reset_index(drop=True)
+        self._df[["vid", "frame"]] = df[["vid", "frame"]].astype(int)
         self._prefix = prefix
         self._seq_len = seq_len
         self._frame_increment = frame_increment
