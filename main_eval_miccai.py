@@ -10,6 +10,7 @@ import lightning_data_modules
 import lightning_modules
 from utils.io import load_yaml, natural_keys, scan2df
 from utils.processing import frame_pairs
+from utils.viz import create_blend_from_four_point_homography
 
 
 def test(
@@ -46,7 +47,11 @@ def test(
             duvs_esti = camera_motion_estimator(preview_imgs_i, preview_imgs_ip1)
 
         # plot estimated vs predicted camera motion
+        blends = create_blend_from_four_point_homography(
+            preview_imgs_i, preview_imgs_ip1, duvs_esti
+        )
 
+        print(blends.shape)
         print(duvs_pred.shape)
         print(duvs_esti.shape)
         break
@@ -165,11 +170,12 @@ def main() -> None:
         ),
         **camera_motion_predictor_config["data"]["kwargs"],
     }
+    kwargs["batch_size"] = 1
+    assert kwargs["frames_between_clips"] == kwargs["frame_increment"]
 
     dm = lightning_data_modules.ImageSequenceDataModule(**kwargs)
     dm.setup(stage="test")
     test_dataloader = dm.test_dataloader()
-    assert kwargs["frames_between_clips"] == kwargs["frame_increment"]
 
     # run tests
     test(
