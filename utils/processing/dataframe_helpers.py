@@ -30,7 +30,7 @@ def dataframe_duv_running_average(df: pd.DataFrame, window: int = 20) -> pd.Data
     )
 
     df_running_averge = pd.concat(
-        [df[["folder", "file", "vid", "frame"]], df_running_averge], axis=1
+        [df[["folder", "file", "vid", "frame"]].reset_index(drop=True), df_running_averge], axis=1
     )
 
     df_running_averge[duv_label()] = (
