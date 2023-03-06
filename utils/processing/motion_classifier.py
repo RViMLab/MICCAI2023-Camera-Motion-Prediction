@@ -36,37 +36,37 @@ def angle_to_translate(
     Returns:
         str: translation type [right, left, up, down]
     """
-    duv_0_quarter = np.floor((duv_0_0_ang + np.pi / 4.0) / (np.pi / 2))
-    duv_1_quarter = np.floor((duv_1_0_ang + np.pi / 4.0) / (np.pi / 2))
-    duv_2_quarter = np.floor((duv_2_0_ang + np.pi / 4.0) / (np.pi / 2))
-    duv_3_quarter = np.floor((duv_3_0_ang + np.pi / 4.0) / (np.pi / 2))
+    duv_0_quarter = np.floor(duv_0_0_ang / (np.pi / 2))
+    duv_1_quarter = np.floor(duv_1_0_ang / (np.pi / 2))
+    duv_2_quarter = np.floor(duv_2_0_ang / (np.pi / 2))
+    duv_3_quarter = np.floor(duv_3_0_ang / (np.pi / 2))
 
     if (
-        duv_0_quarter == 0
-        and duv_1_quarter == 0
-        and duv_2_quarter == 0
-        and duv_3_quarter == 0
+        (duv_0_quarter == 0 or duv_0_quarter == 3) and
+        (duv_1_quarter == 0 or duv_1_quarter == 3) and
+        (duv_2_quarter == 0 or duv_2_quarter == 3) and
+        (duv_3_quarter == 0 or duv_3_quarter == 3)
     ):
         return "right"
     if (
-        duv_0_quarter == 2
-        and duv_1_quarter == 2
-        and duv_2_quarter == 2
-        and duv_3_quarter == 2
+        (duv_0_quarter == 1 or duv_0_quarter == 2) and
+        (duv_1_quarter == 1 or duv_1_quarter == 2) and
+        (duv_2_quarter == 1 or duv_2_quarter == 2) and
+        (duv_3_quarter == 1 or duv_3_quarter == 2)
     ):
         return "left"
     if (
-        duv_0_quarter == 1
-        and duv_1_quarter == 1
-        and duv_2_quarter == 1
-        and duv_3_quarter == 1
+        (duv_0_quarter == 0 or duv_0_quarter == 1) and
+        (duv_1_quarter == 0 or duv_1_quarter == 1) and
+        (duv_2_quarter == 0 or duv_2_quarter == 1) and
+        (duv_3_quarter == 0 or duv_3_quarter == 1)
     ):
         return "up"
     if (
-        duv_0_quarter == 3
-        and duv_1_quarter == 3
-        and duv_2_quarter == 3
-        and duv_3_quarter == 3
+        (duv_0_quarter == 2 or duv_0_quarter == 3) and
+        (duv_1_quarter == 2 or duv_1_quarter == 3) and
+        (duv_2_quarter == 2 or duv_2_quarter == 3) and
+        (duv_3_quarter == 2 or duv_3_quarter == 3)
     ):
         return "down"
     return "mixture"
