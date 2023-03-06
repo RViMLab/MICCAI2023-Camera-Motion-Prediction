@@ -56,6 +56,7 @@ def create_blend_from_four_point_homography(
     try:  # handle inversion error
         wrps = warp_perspective(frames_i, torch.inverse(Hs), frames_i.shape[-2:])
         blends = yt_alpha_blend(wrps, frames_ips)
-    except:
+    except Exception as e:
+        print("Failed to warp image.\n", e)
         return frames_i
     return blends
