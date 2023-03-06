@@ -144,7 +144,8 @@ class LoFTRHomographyEstimation(object):
             "image0": kornia.color.rgb_to_grayscale(img),
             "image1": kornia.color.rgb_to_grayscale(wrp),
         }
-        correspondence_dict = self._loftr(input)
+        with torch.no_grad():
+            correspondence_dict = self._loftr(input)
 
         H = []
         for i in range(img.shape[0]):  # ransac might not be parallelizeable!
@@ -209,7 +210,7 @@ if __name__ == "__main__":
         print("H - H_pred:\n", H - H_pred)
         print("duv:\n", duv)
 
-    def test_kornia_homography():
+    def test_kornia_loftr_homography():
         import cv2
         import matplotlib.pyplot as plt
         from helpers import four_point_homography_to_matrix, image_edges
@@ -257,4 +258,4 @@ if __name__ == "__main__":
             plt.show()
 
     # test_cv_homography()
-    # test_kornia_homography()
+    # test_kornia_loftr_homography()
