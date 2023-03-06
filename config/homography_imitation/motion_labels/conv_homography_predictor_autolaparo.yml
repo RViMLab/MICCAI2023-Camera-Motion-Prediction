@@ -1,4 +1,4 @@
-experiment: 'miccai/final/autolaparo/resnet34'
+experiment: 'miccai/final/autolaparo/resnet50'
 lightning_module: 'ConvHomographyPredictorModule'
 lightning_data_module: 'ImageSequenceMotionLabelDataModule'
 trainer:
@@ -58,8 +58,8 @@ model:
         kwargs: {
             "in_channels": 42, # (seq_len-1)*3
             "out_features": 8,
-            "name": "resnet34",
-            "pretrained": True
+            "name": "resnet50",
+            "pretrained": False
         }
     }
     optimizer: {
