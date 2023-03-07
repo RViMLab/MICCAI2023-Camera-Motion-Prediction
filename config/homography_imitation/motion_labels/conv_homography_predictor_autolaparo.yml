@@ -12,7 +12,7 @@ trainer:
     fast_dev_run: False
     profiler: False
 data:
-    pkl_name: '23_03_03_motion_label_window_1_frame_increment_5_frames_between_clips_1_log_test_train.pkl'
+    pkl_name: '23_03_07_motion_label_window_1_frame_increment_5_frames_between_clips_1_log_test_train.pkl'
     pkl_path: 'autolaparo_single_frames/AutoLaparo_Task2'
     kwargs:
         train_split: 0.8
