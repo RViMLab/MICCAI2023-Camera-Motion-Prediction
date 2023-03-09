@@ -13,6 +13,7 @@ from torch.utils.data import DataLoader
 
 import lightning_data_modules
 import lightning_modules
+import lightning_callbacks
 from utils.io import load_yaml, natural_keys, scan2df, generate_path
 from utils.processing import frame_pairs
 from utils.viz import create_blend_from_four_point_homography
@@ -61,7 +62,7 @@ def visualize(
 
         blends = resize(blends, [480, 640])
         blends = tensor_to_image(blends[0], keepdim=False)
-        blends = (blends * 255.).astype(np.uint8)
+        blends = (blends * 255.0).astype(np.uint8)
         cv2.imwrite(os.path.join(output_path, f"esti_blend_{cnt}.png"), blends)
 
         blends = create_blend_from_four_point_homography(
@@ -70,12 +71,12 @@ def visualize(
 
         blends = resize(blends, [480, 640])
         blends = tensor_to_image(blends[0], keepdim=False)
-        blends = (blends * 255.).astype(np.uint8)
+        blends = (blends * 255.0).astype(np.uint8)
         cv2.imwrite(os.path.join(output_path, f"pred_blend_{cnt}.png"), blends)
 
         preview_imgs_i = resize(preview_imgs_i, [480, 640])
         preview_imgs_i = tensor_to_image(preview_imgs_i[0], keepdim=False)
-        preview_imgs_i = (preview_imgs_i * 255.).astype(np.uint8)
+        preview_imgs_i = (preview_imgs_i * 255.0).astype(np.uint8)
         cv2.imwrite(os.path.join(output_path, f"img_{cnt}.png"), preview_imgs_i)
 
         # break
@@ -85,6 +86,7 @@ def visualize(
         if cnt >= max_cnt:
             break
 
+
 def eval(
     camera_motion_predictor: pl.LightningModule,
     camera_motion_estimator_checkpoint: str,
@@ -93,7 +95,7 @@ def eval(
     data_module: pl.LightningDataModule,
     logging_location: str,
     configs: dict,
-    output_path: str="miccai/eval",
+    output_path: str = "miccai/eval",
 ) -> None:
 
     # ckpts = sorted(list(df["file"]), key=natural_keys)
@@ -103,15 +105,16 @@ def eval(
     if configs["trainer"]["accelerator"] == "gpu":
         device = "cuda"
 
+    callbacks = []
     callbacks.append(
         getattr(lightning_callbacks, "HomographyRegressionCallback")(
             package="lightning_modules",
             module=camera_motion_estimator_config["lightning_module"],
             device=device,
             checkpoint_path=os.path.join(
-                server["logging"]["location"],
+                logging_location,
                 camera_motion_estimator_config["ae_cai/resnet/48/25/34"],
-                ,
+                camera_motion_estimator_version,
                 "checkpoints",
                 camera_motion_estimator_checkpoint,
             ),
@@ -121,15 +124,17 @@ def eval(
 
     # add a logger
     logger = TensorBoardLogger(
-        save_dir=logging_location, name=os.path.join(output_path, "/".join(configs["experiment"].split("/")[-2:]))
+        save_dir=logging_location,
+        name=os.path.join(output_path, "/".join(configs["experiment"].split("/")[-2:])),
     )
 
     # generate output path
     generate_path(logger.log_dir)
 
-    # trainer = pl.Trainer(**configs["experiment"], logger=logger)
+    # trainer = pl.Trainer(**configs["experiment"], logger=logger, callbacks=callbacks)
     # trainer.test(camera_motion_predictor, datamodule=data_module)
     # print("hello")
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -150,13 +155,20 @@ def main() -> None:
         help="Version of camera motion estimator.",
     )
     parser.add_argument(
-        "--visualize", action="store_true", help="Visualize camera motion prediction.")
-    
+        "--visualize", action="store_true", help="Visualize camera motion prediction."
+    )
+
     parser.add_argument(
-        "--pkl_path", type=str, default="heichole_single_frames_cropped", help="Path to pkl file."
+        "--pkl_path",
+        type=str,
+        default="heichole_single_frames_cropped",
+        help="Path to pkl file.",
     )
     parser.add_argument(
-        "--pkl_name", type=str, default="23_03_07_motion_label_window_1_frame_increment_5_frames_between_clips_1_log_test_train.pkl", help="Name of pkl file."
+        "--pkl_name",
+        type=str,
+        default="23_03_07_motion_label_window_1_frame_increment_5_frames_between_clips_1_log_test_train.pkl",
+        help="Name of pkl file.",
     )
 
     args = parser.parse_args()
@@ -185,7 +197,7 @@ def main() -> None:
             "checkpoints",
             best_checkpoint,
         ),
-        **camera_motion_predictor_config["model"]
+        **camera_motion_predictor_config["model"],
     )
 
     device = "cpu"
@@ -237,7 +249,7 @@ def main() -> None:
     if args.pkl_path and args.pkl_name:
         camera_motion_predictor_config["data"]["pkl_path"] = args.pkl_path
         camera_motion_predictor_config["data"]["pkl_name"] = args.pkl_name
-    
+
     df = pd.read_pickle(
         os.path.join(
             database_location,
@@ -260,13 +272,13 @@ def main() -> None:
     dm.setup(stage="test")
     test_dataloader = dm.test_dataloader()
 
-    # run tests
-    if args.visualize:
-        visualize(
-            camera_motion_predictor=camera_motion_predictor,
-            camera_motion_estimator=camera_motion_estimator,
-            test_dataloader=test_dataloader,
-        )
+    # # run tests
+    # if args.visualize:
+    #     visualize(
+    #         camera_motion_predictor=camera_motion_predictor,
+    #         camera_motion_estimator=camera_motion_estimator,
+    #         test_dataloader=test_dataloader,
+    #     )
 
     eval(
         camera_motion_predictor=camera_motion_predictor,
