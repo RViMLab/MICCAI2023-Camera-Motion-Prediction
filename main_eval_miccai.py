@@ -7,12 +7,13 @@ from kornia.geometry import resize
 import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
+from pytorch_lightning.loggers import TensorBoardLogger
 import torch
 from torch.utils.data import DataLoader
 
 import lightning_data_modules
 import lightning_modules
-from utils.io import load_yaml, natural_keys, scan2df
+from utils.io import load_yaml, natural_keys, scan2df, generate_path
 from utils.processing import frame_pairs
 from utils.viz import create_blend_from_four_point_homography
 
@@ -86,10 +87,49 @@ def visualize(
 
 def eval(
     camera_motion_predictor: pl.LightningModule,
+    camera_motion_estimator_checkpoint: str,
+    camera_motion_estimator_config: dict,
+    camera_motion_estimator_version: str,
     data_module: pl.LightningDataModule,
+    logging_location: str,
+    configs: dict,
+    output_path: str="miccai/eval",
 ) -> None:
-    trainer = pl.Trainer(gpus=1, progress_bar_refresh_rate=1)
-    trainer.test(camera_motion_predictor, datamodule=data_module)
+
+    # ckpts = sorted(list(df["file"]), key=natural_keys)
+    # homography_regression_ckpt = ckpts[-1]
+
+    device = "cpu"
+    if configs["trainer"]["accelerator"] == "gpu":
+        device = "cuda"
+
+    callbacks.append(
+        getattr(lightning_callbacks, "HomographyRegressionCallback")(
+            package="lightning_modules",
+            module=camera_motion_estimator_config["lightning_module"],
+            device=device,
+            checkpoint_path=os.path.join(
+                server["logging"]["location"],
+                camera_motion_estimator_config["ae_cai/resnet/48/25/34"],
+                ,
+                "checkpoints",
+                camera_motion_estimator_checkpoint,
+            ),
+            **camera_motion_estimator_config["model"],
+        )
+    )
+
+    # add a logger
+    logger = TensorBoardLogger(
+        save_dir=logging_location, name=os.path.join(output_path, "/".join(configs["experiment"].split("/")[-2:]))
+    )
+
+    # generate output path
+    generate_path(logger.log_dir)
+
+    # trainer = pl.Trainer(**configs["experiment"], logger=logger)
+    # trainer.test(camera_motion_predictor, datamodule=data_module)
+    # print("hello")
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -100,14 +140,8 @@ def main() -> None:
     parser.add_argument(
         "--experiment",
         type=str,
-        default="miccai/motion_labels/heichole/resnet50/version_0",
+        default="miccai/final/cholec80/resnet34/version_2",
         help="Path to experiment, relative to server.logging.location.",
-    )
-    parser.add_argument(
-        "--camera_motion_predictor",
-        type=str,
-        default="ae_cai/resnet/48/25/34/version_0",
-        help="Path camera motion estimator, relative to server.logging.location.",
     )
     parser.add_argument(
         "--camera_motion_estimator_version",
@@ -119,10 +153,10 @@ def main() -> None:
         "--visualize", action="store_true", help="Visualize camera motion prediction.")
     
     parser.add_argument(
-        "--pkl_path", type=str, default="cholec80_single_frames_cropped", help="Path to pkl file."
+        "--pkl_path", type=str, default="heichole_single_frames_cropped", help="Path to pkl file."
     )
     parser.add_argument(
-        "--pkl_name", type=str, default="log.pkl", help="Name of pkl file."
+        "--pkl_name", type=str, default="23_03_07_motion_label_window_1_frame_increment_5_frames_between_clips_1_log_test_train.pkl", help="Name of pkl file."
     )
 
     args = parser.parse_args()
@@ -181,23 +215,23 @@ def main() -> None:
     )
     best_checkpoint = sorted(list(df["file"]), key=natural_keys)[-1]
 
-    # load camera motion estimator with best checkpoint
-    camera_motion_estimator = getattr(
-        lightning_modules, camera_motion_estimator_config["lightning_module"]
-    ).load_from_checkpoint(
-        checkpoint_path=os.path.join(
-            logging_location,
-            camera_motion_estimator_config["experiment"],
-            args.camera_motion_estimator_version,
-            "checkpoints",
-            best_checkpoint,
-        ),
-        **camera_motion_estimator_config["model"]
-    )
+    # # load camera motion estimator with best checkpoint
+    # camera_motion_estimator = getattr(
+    #     lightning_modules, camera_motion_estimator_config["lightning_module"]
+    # ).load_from_checkpoint(
+    #     checkpoint_path=os.path.join(
+    #         logging_location,
+    #         camera_motion_estimator_config["experiment"],
+    #         args.camera_motion_estimator_version,
+    #         "checkpoints",
+    #         best_checkpoint,
+    #     ),
+    #     **camera_motion_estimator_config["model"]
+    # )
 
-    camera_motion_estimator.to(device)
-    camera_motion_estimator.freeze()
-    camera_motion_estimator = camera_motion_estimator.eval()
+    # camera_motion_estimator.to(device)
+    # camera_motion_estimator.freeze()
+    # camera_motion_estimator = camera_motion_estimator.eval()
 
     # load data module
     if args.pkl_path and args.pkl_name:
@@ -236,7 +270,12 @@ def main() -> None:
 
     eval(
         camera_motion_predictor=camera_motion_predictor,
+        camera_motion_estimator_checkpoint=best_checkpoint,
+        camera_motion_estimator_config=camera_motion_estimator_config,
+        camera_motion_estimator_version=args.camera_motion_estimator_version,
         data_module=dm,
+        logging_location=logging_location,
+        configs=camera_motion_predictor_config,
     )
 
 
