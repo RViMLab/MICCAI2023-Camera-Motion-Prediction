@@ -17,10 +17,11 @@ from utils.processing import frame_pairs
 from utils.viz import create_blend_from_four_point_homography
 
 
-def test(
+def visualize(
     camera_motion_predictor: pl.LightningModule,
     camera_motion_estimator: pl.LightningModule,
     test_dataloader: DataLoader,
+    output_path: str,
     preview_horizon: int = 1,
 ) -> None:
 
@@ -60,7 +61,7 @@ def test(
         blends = resize(blends, [480, 640])
         blends = tensor_to_image(blends[0], keepdim=False)
         blends = (blends * 255.).astype(np.uint8)
-        cv2.imwrite(f"/nfs/home/mhuber/logs/miccai/esti/blend_{cnt}.png", blends)
+        cv2.imwrite(os.path.join(output_path, f"esti_blend_{cnt}.png"), blends)
 
         blends = create_blend_from_four_point_homography(
             preview_imgs_i, preview_imgs_ip1, duvs_pred
@@ -69,13 +70,12 @@ def test(
         blends = resize(blends, [480, 640])
         blends = tensor_to_image(blends[0], keepdim=False)
         blends = (blends * 255.).astype(np.uint8)
-        cv2.imwrite(f"/nfs/home/mhuber/logs/miccai/pred/blend_{cnt}.png", blends)
+        cv2.imwrite(os.path.join(output_path, f"pred_blend_{cnt}.png"), blends)
 
         preview_imgs_i = resize(preview_imgs_i, [480, 640])
         preview_imgs_i = tensor_to_image(preview_imgs_i[0], keepdim=False)
         preview_imgs_i = (preview_imgs_i * 255.).astype(np.uint8)
-        cv2.imwrite(f"/nfs/home/mhuber/logs/miccai/img/img_{cnt}.png", preview_imgs_i)
-
+        cv2.imwrite(os.path.join(output_path, f"img_{cnt}.png"), preview_imgs_i)
 
         # break
         cnt += 1
@@ -84,6 +84,12 @@ def test(
         if cnt >= max_cnt:
             break
 
+def eval(
+    camera_motion_predictor: pl.LightningModule,
+    data_module: pl.LightningDataModule,
+) -> None:
+    trainer = pl.Trainer(gpus=1, progress_bar_refresh_rate=1)
+    trainer.test(camera_motion_predictor, datamodule=data_module)
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -109,6 +115,16 @@ def main() -> None:
         default="version_0",
         help="Version of camera motion estimator.",
     )
+    parser.add_argument(
+        "--visualize", action="store_true", help="Visualize camera motion prediction.")
+    
+    parser.add_argument(
+        "--pkl_path", type=str, default="cholec80_single_frames_cropped", help="Path to pkl file."
+    )
+    parser.add_argument(
+        "--pkl_name", type=str, default="log.pkl", help="Name of pkl file."
+    )
+
     args = parser.parse_args()
     server = load_yaml(args.config)[args.server]
 
@@ -184,6 +200,10 @@ def main() -> None:
     camera_motion_estimator = camera_motion_estimator.eval()
 
     # load data module
+    if args.pkl_path and args.pkl_name:
+        camera_motion_predictor_config["data"]["pkl_path"] = args.pkl_path
+        camera_motion_predictor_config["data"]["pkl_name"] = args.pkl_name
+    
     df = pd.read_pickle(
         os.path.join(
             database_location,
@@ -207,10 +227,16 @@ def main() -> None:
     test_dataloader = dm.test_dataloader()
 
     # run tests
-    test(
+    if args.visualize:
+        visualize(
+            camera_motion_predictor=camera_motion_predictor,
+            camera_motion_estimator=camera_motion_estimator,
+            test_dataloader=test_dataloader,
+        )
+
+    eval(
         camera_motion_predictor=camera_motion_predictor,
-        camera_motion_estimator=camera_motion_estimator,
-        test_dataloader=test_dataloader,
+        data_module=dm,
     )
 
 
