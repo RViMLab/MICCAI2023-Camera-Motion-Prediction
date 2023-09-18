@@ -1,0 +1,65 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Homography Imitation Sequence",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main_homography_imitation_seq.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--servers_file",
+                "config/servers.yml",
+                "--server",
+                "local",
+                "--config",
+                "config/homography_imitation/motion_labels/conv_homography_predictor_phantom.yml",
+                "--homography_regression",
+                "ae_cai/resnet/48/25/34/version_0"
+            ]
+        },
+        {
+            "name": "Python: Pre-processing",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main_pre_processing.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--server",
+                "local",
+                "--servers_file",
+                "config/servers.yml",
+                "--backbone_path",
+                "ae_cai/resnet/48/25/34/version_0",
+                "--data_prefix",
+                "21_11_25_first_test_data_frames",
+                "--in_pkl",
+                "test_train_log.pkl",
+                "--out_pkl",
+                "tmp.pkl",
+                "--num_workers",
+                "2",
+                "--batch_size",
+                "2",
+                "--frame_increment",
+                "1",
+                "--frames_between_clips",
+                "1",
+                "--loftr"
+            ]
+        }
+    ]
+}

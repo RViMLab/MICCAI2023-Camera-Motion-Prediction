@@ -1,4 +1,4 @@
-name: torch113
+name: hil_torch2
 channels:
   - defaults
   - pytorch
@@ -8,7 +8,7 @@ dependencies:
   - pytorch
   - torchvision
   - torchaudio
-  - pytorch-cuda=11.6
+  - pytorch-cuda=11.8
   - matplotlib
   - numpy
   - pip

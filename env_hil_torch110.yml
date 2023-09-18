@@ -1,4 +1,4 @@
-name: torch110
+name: hil_torch110
 channels:
   - pytorch
   - defaults

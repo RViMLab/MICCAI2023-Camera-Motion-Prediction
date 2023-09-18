@@ -20,9 +20,9 @@ RUN useradd --uid $USER_ID --gid $GROUP_ID $USER
 
 # Create conda env
 WORKDIR /workspace
-COPY env_torch110.yml .
+COPY env_hil_torch110.yml .
 RUN conda update conda
 RUN conda update conda-build
 RUN conda install mamba -c conda-forge
-RUN conda create -n torch110 python=3.9
-RUN mamba env update -n torch110 -f env_torch110.yml
+RUN conda create -n hil_torch110 python=3.9
+RUN mamba env update -n hil_torch110 -f env_hil_torch110.yml

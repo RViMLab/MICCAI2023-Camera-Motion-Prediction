@@ -17,8 +17,8 @@ RUN useradd --uid $USER_ID --gid $GROUP_ID $USER
 
 # Create conda env
 WORKDIR /workspace
-COPY env_torch113.yml .
+COPY env_hil_torch113.yml .
 RUN conda update --name base conda
 RUN conda install mamba -c conda-forge
-RUN conda create -n torch113 python=3
-RUN mamba env update -n torch113 -f env_torch113.yml
+RUN conda create -n hil_torch113 python=3
+RUN mamba env update -n hil_torch113 -f env_hil_torch113.yml
