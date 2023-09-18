@@ -1,4 +1,4 @@
-experiment: 'miccai/cross_val/cholec80/resnet34'
+experiment: 'miccai/conv_homography_predictor/cholec80/resnet50'
 lightning_module: 'ConvHomographyPredictorModule'
 lightning_data_module: 'ImageSequenceDataModule'
 trainer:
@@ -16,14 +16,14 @@ data:
     pkl_path: 'cholec80_single_video_frames_cropped'
     kwargs:
         train_split: 0.8
-        batch_size: 32
+        batch_size: 64
         num_workers: 16
         random_state: 42
         tolerance: 0.2 # change this tolerance
         seq_len: 10
-        frame_increment: 5
-        frames_between_clips: 25 # seq_len*frame_increment
-        random_frame_offset: False
+        frame_increment: 25
+        frames_between_clips: 125 # seq_len*frame_increment
+        random_frame_offset: True
         train_photometric_transforms:
             - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'MultiplyAndAddToBrightness', 'kwargs': {'mul': [0.5, 1.5], 'add': [30, 30]}}
             - {'chance': 0.2, 'module': 'imgaug.augmenters',                'type': 'Grayscale',                  'kwargs': {}}
@@ -56,15 +56,15 @@ model:
         kwargs: {
             "in_channels": 27, # (seq_len-1)*3
             "out_features": 8,
-            "name": "resnet34",
-            "pretrained": False
+            "name": "resnet50",
+            "pretrained": True
         }
     }
     optimizer: {
         module: "torch.optim",
         name: "Adam",
         kwargs: {
-            "lr": 1.e-3,
+            "lr": 1.e-4,
             "betas": [0.9, 0.999]
         }
     }
@@ -73,12 +73,4 @@ model:
         name: "PairwiseDistance",
         kwargs: {}
     } 
-    scheduler: {
-        module: "torch.optim.lr_scheduler",
-        name: "StepLR",
-        kwargs: {
-            "step_size": 20,
-            "gamma": 0.5,
-            "verbose": True
-        }
-    }
+    scheduler: null

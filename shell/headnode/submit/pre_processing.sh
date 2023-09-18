@@ -1,11 +1,11 @@
-runai submit pre-processor \
+runai submit pre-process-cholec80 \
   -p mhuber \
   -i aicregistry:5000/mhuber:torch110 \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
   -v /nfs/home/mhuber/data:/nfs/home/mhuber/data \
   -v /nfs/home/mhuber/tresorit/homography_imitation_learning_logs:/nfs/home/mhuber/tresorit/homography_imitation_learning_logs \
   -v /nfs/home/mhuber/.torch:/nfs/home/mhuber/.torch \
-  -g 1 \
+  -g 0.3 \
   --environment TORCH_HOME=/nfs/home/mhuber/.torch \
   --large-shm \
   --working-dir /workspace/homography_imitation_learning/ \

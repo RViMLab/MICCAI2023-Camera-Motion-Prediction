@@ -39,7 +39,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
         self._preview_horizon = preview_horizon
         self._taylor_1st_order = TaylorHomographyPrediction(order=1)
         self._taylor_2nd_order = TaylorHomographyPrediction(order=2)
-        self._log_nth_epoch = 10
+        self._log_nth_epoch = 5
 
     def configure_optimizers(self):
         if self._scheduler:
@@ -159,7 +159,7 @@ class ConvHomographyPredictorModule(pl.LightningModule):
             duv_pred.view(-1, 2), torch.zeros_like(duv_pred).view(-1, 2)
         )
 
-        if self.current_epoch % self._log_nth_epoch == 0 and batch_idx == 0:
+        if self.current_epoch % self._log_nth_epoch == 0 and batch_idx == 42:
             tf_imgs, tf_wrps = frame_pairs(tf_imgs)
             blend_identity = yt_alpha_blend(
                 tf_imgs[0, -self._preview_horizon :],

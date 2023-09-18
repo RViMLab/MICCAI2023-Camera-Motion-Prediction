@@ -8,4 +8,5 @@ runai submit test \
   -v /nfs/home/mhuber/tresorit/homography_imitation_learning_logs:/nfs/home/mhuber/tresorit/homography_imitation_learning_logs \
   --large-shm \
   --environment TORCH_HOME=/nfs/home/mhuber \
+  --node-type "A100" \
   -- sleep infinity

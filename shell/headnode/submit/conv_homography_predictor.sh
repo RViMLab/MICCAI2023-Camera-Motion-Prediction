@@ -1,4 +1,4 @@
-runai submit c-pred-phantom-resnet34 \
+runai submit cholec80-resnet34-new \
   -p mhuber \
   -i aicregistry:5000/mhuber:torch110 \
   -v /nfs/home/mhuber/proj/homography_imitation_learning/:/workspace/homography_imitation_learning \
@@ -8,7 +8,8 @@ runai submit c-pred-phantom-resnet34 \
   -g 1 \
   --environment TORCH_HOME=/nfs/home/mhuber/.torch \
   --large-shm \
+  --node-type "A100" \
   --working-dir /workspace/homography_imitation_learning/ \
-  --backoff-limit 1 \
+  --backoff-limit 0 \
   --run-as-user \
   -- /workspace/homography_imitation_learning/shell/headnode/run/conv_homography_predictor.sh
