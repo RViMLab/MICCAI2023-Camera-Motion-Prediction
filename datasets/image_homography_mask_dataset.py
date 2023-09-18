@@ -7,7 +7,6 @@ import kornia
 import numpy as np
 import pandas as pd
 import torch
-from pytorch_lightning.utilities.seed import reset_seed, seed_everything
 from torch.utils.data import Dataset
 from torch.utils.data.dataset import T_co
 
