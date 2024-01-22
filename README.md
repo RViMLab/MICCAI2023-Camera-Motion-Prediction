@@ -28,7 +28,7 @@ Source lives under [lightning_modules/homography_imitation](lightning_modules/ho
 Figure 1 paper: Training pipeline, refer to Section 2.3. From left to right: Image sequences are importance sampled from the video database and random augmentations are applied per sequence online. The lower branch estimates camera motion between subsequent frames, which is taken as pseudo-ground-truth for the upper branch, which learns to predict camera motion on a preview horizon
 
 #### Citation
-```
+```bibtex
 @inproceedings{huber2023deep,
     author="Huber, Martin and Ourselin, S{\'e}bastien and Bergeles, Christos and Vercauteren, Tom",
     title="Deep Homography Prediction for Endoscopic Camera Motion Imitation Learning",
@@ -39,7 +39,6 @@ Figure 1 paper: Training pipeline, refer to Section 2.3. From left to right: Ima
     pages="217--226",
     isbn="978-3-031-43996-4"
 }
-
 ```
 
 ### Deep Homography Estimation in Dynamic Surgical Scenes for Laparoscopic Camera Motion Extraction
@@ -51,7 +50,7 @@ Source lives under [lightning_modules/homography_regression](lightning_modules/h
 Figure 3 paper: Deep homography estimation training pipeline. Image pairs are sampled from the HFR da Vinci surgery dataset. The homography generation algorithm then adds synthetic camera motion to the augmented images, which is regressed through a backbone DNN.
 
 #### Citation
-```
+```bibtex
 @article{huber2022deep,
   title={Deep homography estimation in dynamic surgical scenes for laparoscopic camera motion extraction},
   author={Huber, Martin and Ourselin, S{\'e}bastien and Bergeles, Christos and Vercauteren, Tom},
