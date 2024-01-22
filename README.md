@@ -2,7 +2,7 @@
 This repository holds the source code for:
 
 - [Deep Homography Prediction for Endoscopic Camera Motion Imitation Learning](https://arxiv.org/abs/2307.12792)
-- [Deep Homography Estimation in Dynamic Surgical Scenes for Laparoscopic Camera Motion Extraction](https://arxiv.org/abs/2109.15098) ()
+- [Deep Homography Estimation in Dynamic Surgical Scenes for Laparoscopic Camera Motion Extraction](https://arxiv.org/abs/2109.15098)
 
 Inference code for these papers can be found [here](https://github.com/RViMLab/endoscopy).
 
