@@ -29,7 +29,7 @@ Figure 1 paper: Training pipeline, refer to Section 2.3. From left to right: Ima
 
 #### Citation
 ```bibtex
-@inproceedings{huber2023deep,
+@inproceedings{huber2023deeppre,
     author="Huber, Martin and Ourselin, S{\'e}bastien and Bergeles, Christos and Vercauteren, Tom",
     title="Deep Homography Prediction for Endoscopic Camera Motion Imitation Learning",
     booktitle="Medical Image Computing and Computer Assisted Intervention -- MICCAI 2023",
@@ -51,7 +51,7 @@ Figure 3 paper: Deep homography estimation training pipeline. Image pairs are sa
 
 #### Citation
 ```bibtex
-@article{huber2022deep,
+@article{huber2022deepest,
   title={Deep homography estimation in dynamic surgical scenes for laparoscopic camera motion extraction},
   author={Huber, Martin and Ourselin, S{\'e}bastien and Bergeles, Christos and Vercauteren, Tom},
   journal={Computer Methods in Biomechanics and Biomedical Engineering: Imaging \& Visualization},
