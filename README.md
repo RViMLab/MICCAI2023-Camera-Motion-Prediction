@@ -8,6 +8,17 @@ Inference code for these papers can be found [here](https://github.com/RViMLab/e
 
 This repository is under active development and might change. See details below.
 
+## Create Environment
+Create environment
+```shell
+conda create -n hil_torch2 # names in env_*yml
+```
+
+Install dependencies with `mamba` (quicker)
+```shell
+mamba env update -f env_hil_torch2.yml
+```
+
 ## Code Structure
 This code is built with [PyTorch Lightning](https://lightning.ai/docs/pytorch/stable/). A refactoring is necessary at some point.
 
