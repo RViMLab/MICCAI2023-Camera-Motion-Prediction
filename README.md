@@ -14,7 +14,7 @@ Create environment
 conda create -n hil_torch2 # names in env_*yml
 ```
 
-Install dependencies with `mamba` (quicker)
+Install dependencies with [mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html) (quicker)
 ```shell
 mamba env update -f env_hil_torch2.yml
 ```
